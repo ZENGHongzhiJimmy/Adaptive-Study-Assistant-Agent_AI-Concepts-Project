@@ -75,6 +75,7 @@ class ChromaVectorStore:
         self.persist_dir.mkdir(parents=True, exist_ok=True)
         self.collection_name = collection_name
         self._owns_client = client is None
+        self._closed = False
         if client is None:
             import chromadb
 
@@ -171,8 +172,20 @@ class ChromaVectorStore:
         return seen
 
     def close(self) -> None:
-        """Release ChromaDB's SQLite handle (needed on Windows before cleanup)."""
-        if self._owns_client:
+        """Release ChromaDB's SQLite handle (needed on Windows before cleanup).
+
+        ChromaDB >= 1.x caches a shared System per path. Calling
+        ``_system.stop()`` directly leaves that cache poisoned, so reopening the
+        same index in the same process fails with "Could not connect to tenant".
+        ``client.close()`` releases the refcount and removes the cache entry.
+        """
+        if not self._owns_client or self._closed:
+            return
+        self._closed = True
+        close = getattr(self._client, "close", None)
+        if callable(close):
+            close()
+        else:  # pragma: no cover - older chromadb releases
             system = getattr(self._client, "_system", None)
             if system is not None and hasattr(system, "stop"):
                 system.stop()

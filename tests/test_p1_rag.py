@@ -181,6 +181,29 @@ def test_index_rebuild_is_idempotent(rag):
     assert store.count() == ids_after_first
 
 
+def test_reopening_same_index_in_one_process_keeps_data(rag):
+    """Regression: ChromaDB >= 1.x must be closed via client.close().
+
+    P3 builds an index and then reopens it for Teach retrieval in the same
+    process; stopping the shared System directly used to break this with
+    "Could not connect to tenant default_tenant".
+    """
+    directory, topic_map, embedder, store = rag
+    stats = build_index(directory, store, embedder, topic_map=topic_map, rebuild=True)
+    store.close()
+
+    reopened = ChromaVectorStore(store.persist_dir, collection_name=store.collection_name)
+    try:
+        assert reopened.count() == stats.chunk_count
+        hits = reopened.search(
+            "posteriorformula posterior", embedder, top_k=1, topic="Bayes Theorem"
+        )
+        assert hits and hits[0].lecture == "Lecture 05"
+    finally:
+        reopened.close()
+    # The fixture will call store.close() again; closing twice must be harmless.
+
+
 def test_empty_materials_is_a_safe_noop(tmp_path):
     empty = tmp_path / "empty_materials"
     empty.mkdir()

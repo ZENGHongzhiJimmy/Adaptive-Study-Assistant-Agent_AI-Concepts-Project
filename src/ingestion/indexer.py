@@ -119,6 +119,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     except (FileNotFoundError, ValueError) as exc:
         print(f"[P1 index] {exc}")
         return 2
+    finally:
+        store.close()  # correctly releases ChromaDB's shared System
 
     print(json.dumps(stats.as_dict(), ensure_ascii=False, indent=2))
     if stats.chunk_count == 0:
