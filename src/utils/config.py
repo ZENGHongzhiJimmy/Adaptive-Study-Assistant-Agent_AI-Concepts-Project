@@ -88,6 +88,7 @@ def config_for_log(config: dict[str, Any] | None = None) -> dict[str, Any]:
         "retrieval_top_k": cfg.get("retrieval", {}).get("top_k"),
         "mastery_alpha": cfg["mastery"]["alpha"],
         "planner_mode": planner["mode"],
+        "llm_mode": cfg.get("agent", {}).get("llm_mode", "on"),
         "planner_thresholds": dict(planner["thresholds"]),
         "target_mastery": planner["target_mastery"],
         "max_steps": planner["max_steps"],

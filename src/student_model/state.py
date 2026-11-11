@@ -163,6 +163,7 @@ class StudentStateStore:
         completion_tokens: int | None = None,
         total_tokens: int | None = None,
         cost_usd: float | None = None,
+        model: str | None = None,
     ) -> dict[str, Any]:
         """Evaluate one objective answer, update state, append exactly one event."""
         if event_key:
@@ -208,6 +209,9 @@ class StudentStateStore:
             "total_tokens": total_tokens,
             "cost_usd": cost_usd,
         }
+        if model:
+            # P4: log the model that actually answered, not just the configured one.
+            fields["model"] = model
 
         with self._conn:
             self._conn.execute(

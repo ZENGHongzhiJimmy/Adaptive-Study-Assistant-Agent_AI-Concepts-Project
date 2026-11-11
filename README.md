@@ -5,7 +5,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 
-![Status](https://img.shields.io/badge/Status-P0%20done%20%2F%20WIP-orange)
+![Status](https://img.shields.io/badge/Status-P0--P4%20done%20%2F%20WIP-orange)
 
 ![Agent](https://img.shields.io/badge/Agent-LangGraph-green)
 
@@ -23,7 +23,7 @@
 
 
 
-> **当前进度**：P0–P3 已完成——**P3 最小闭环是平台第一个可运行里程碑**（LangGraph 四节点回边 + 规则 Planner + Teach/MCQ + 确定性评分，CLI 连跑 N 步，每步落 `events`），全量 46 项离线测试通过。`app.py`、P4 的 LLM 出题与主观题评分、P5 UI/Trace、P6 冻结接口、数据与实验脚本，以及 §9.4 中 Streamlit / 实验命令仍是**规划蓝图（Planned / To be implemented）**，用于指导实现与保证可复现性，不代表对应文件已经存在。
+> **当前进度**：P0–P4 已完成——P3 最小闭环是第一个可运行里程碑；P4 已**默认接入** OpenRouter **免费模型**（grounded 讲解、结构化 JSON 出题、Challenge / Review），并补齐本地 `.env` 密钥安全与缺 Key 明确提示，全量 **71 项离线测试通过**。平台启动即走 LLM，无需任何模式开关；把 Key 填进本地 `.env`（绝不入库）即可在线运行，缺 Key 会打印配置步骤并退出 2，不会静默降级。`app.py`、P5 UI/Trace、P6 冻结接口、数据与实验脚本，以及 §9.4 中 Streamlit / 实验命令仍是**规划蓝图（Planned / To be implemented）**，用于指导实现与保证可复现性，不代表对应文件已经存在。
 
 
 
@@ -193,7 +193,7 @@ def update_mastery(old_mastery, performance, alpha=0.7):
 
 ## 8. 项目结构
 
-以下为结构约定：P0–P3 的目录骨架、配置文件、知识库/状态模型/最小闭环代码与测试已创建；树中 `app.py`、`src/agent/session.py`、`src/ui/...` 等模块文件是 P4–P6 的规划目标，尚未创建：
+以下为结构约定：P0–P4 的目录骨架、配置文件、知识库/状态模型/最小闭环/LLM 内容生成代码与测试已创建；树中 `app.py`、`src/agent/session.py`、`src/ui/...` 等模块文件是 P5–P6 的规划目标，尚未创建：
 
 ```text
 Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
@@ -212,30 +212,30 @@ Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
 │   ├── ingestion/                  # pdf_parser.py / chunker.py / indexer.py（P1 已创建）
 │   ├── retrieval/                  # embeddings.py / vector_store.py（P1 已创建）
 │   ├── student_model/              # schema.sql / state.py / mastery.py（P2 已创建，含 events 表）
-│   ├── agent/                      # graph.py / planner.py / actions.py / evaluator.py / questions.py / run.py（P3 已创建）；prompts/ 待 P4
-│   ├── ui/                         # study.py / quiz.py / progress.py / trace.py
-│   └── utils/                      # config.py / llm_client.py（P0 已创建）、logging.py（后续）
+│   ├── agent/                      # graph.py / planner.py / actions.py / evaluator.py / questions.py / run.py（P3）；llm_content.py + prompts/{__init__,templates}.py（P4 已创建）；session.py 待 P6
+│   ├── ui/                         # study.py / quiz.py / progress.py / trace.py（P5）
+│   └── utils/                      # config.py / llm_client.py（P0）、secret_guard.py（P4）、logging.py（后续）
 ├── experiments/
 │   ├── run_experiment.py           # Pre-test → Session → Post-test 驱动
 │   ├── baselines/                  # llm_only.py / rag_tutor.py / fixed_strategy.py
 │   ├── metrics.py                  # Learning Gain / Final Mastery / Efficiency 等
 │   ├── plots.py                    # matplotlib 对比图
 │   └── results/                    # 结果 CSV / 图表（可入库，用于复现）
-├── tests/                          # 单元测试（P0–P3 共 46 项；后续: LLM 出题 / UI / 实验指标）
+├── tests/                          # 单元测试（P0–P4 共 71 项；后续: UI / 冻结契约 / 实验指标）
 └── report/                         # 课程报告与 Presentation 材料
 ```
 
 
 ## 9. 快速开始
 
-> §9.2 安装、§9.3 配置、§9.5 测试，以及 §9.4 中 P0 冒烟、P1 索引、P3 闭环 CLI 已可立即执行；Streamlit 与实验命令**需 P4–P6 代码实现完成后才可执行**。
+> §9.2 安装、§9.3 配置、§9.5 测试，以及 §9.4 中 P0 冒烟、P1 索引、P3/P4 闭环 CLI 与密钥检查命令已可立即执行；在线 LLM 调用需先在本地 `.env` 填入 Key，Streamlit 与实验命令**需 P5–P6 代码实现完成后才可执行**。
 
 ### 9.1 环境要求
 
 - Python 3.10 及以上、pip、Git
 - 可运行 sentence-transformers 的内存（建议 ≥ 4 GB 可用内存）
-- OpenRouter API Key（或兼容 OpenAI SDK 的本地/其他模型服务）
-- 目标课程的 Lecture Slides、Tutorial Materials 等 PDF 材料
+- OpenRouter API Key（**默认平台运行需要**，填在本地 `.env`；默认用免费 `google/gemma-4-31b-it:free`，无需信用卡）。仅 P1 索引、全部 71 项离线测试，以及显式 `--offline` 运行不需要 Key
+- 目标课程的 Lecture Slides、Tutorial Materials 等 PDF 材料（受版权保护，不入库）
 
 ### 9.2 安装
 
@@ -272,7 +272,7 @@ pytest
 
 ### 9.3 配置
 
-`.env` **只放密钥与服务端点**；`config.yaml` 是所有非敏感配置的唯一来源（模型名、`MASTERY_ALPHA`、阈值、`seed`、路径），P6 冻结后实验期间不得修改。模板 `.env.example`（**切勿把真实密钥提交到仓库**）：
+`.env` **只放密钥与服务端点**；`config.yaml` 是所有非敏感配置的唯一来源（模型名、`MASTERY_ALPHA`、阈值、`seed`、路径），P6 冻结后实验期间不得修改。模板 `.env.example`：
 
 ```dotenv
 # 复制为 .env 后填入真实值；.env 已被 .gitignore 忽略
@@ -280,30 +280,62 @@ OPENROUTER_API_KEY=sk-or-your-key-here
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 ```
 
-切换模型只需修改 `config.yaml` 的 `llm.model`；`planner.mode: rule` 用于可控实验，`llm` 用于消融对比。任何 OpenAI 兼容服务都可把 `OPENROUTER_BASE_URL` 指向它、密钥填入 `OPENROUTER_API_KEY`，Agent workflow 不变。生效配置可由 `config_for_log()` 读出并写入事件日志，供 P6 冻结与实验复现使用。
+> **密钥安全（P4 强制约定）**：真实 Key 只能存在于本地 `.env`，绝不写入 `config.yaml`、源代码、测试、README、聊天记录或 Issue；`.gitignore` 已忽略 `.env` 及所有 `.env.*` 变体（仅放行 `.env.example`）。提交前运行 `python -m src.utils.secret_guard` 扫描可提交文件；若曾泄露，立刻到 https://openrouter.ai/keys 撤销。未填 Key 时，平台默认路径与 P0 冒烟都会打印本地 `.env` 配置步骤并以退出码 2 结束，**不会静默降级**——避免一次「看起来用了 LLM」、实际跑的是离线模板的运行污染实验记录。仅显式 `--offline` 才允许无 Key 运行。
 
-`config.yaml` 中 P1/P2 相关项：`embedding.backend`（`auto` / `sentence_transformers` / `hashing`，P6 前必须固定为显式值）、`embedding.model`、`retrieval.{collection_name,chunk_size,chunk_overlap,top_k}`、`mastery.{alpha,initial,recent_errors_window}`。`hashing` 是确定性离线后端，用于无模型环境下的索引与测试；正式对比实验应使用 `sentence_transformers`。
+P4 默认走 OpenRouter **免费模型**（零 token 费用、无需信用卡）：
+
+```yaml
+llm:
+  model: google/gemma-4-31b-it:free      # 2026-11-11 经 /api/v1/models 核实
+  free_fallback_models:                  # 主模型下架时自动重试
+    - nvidia/nemotron-3.5-lightning:free
+    - liquid/lfm-2.5-2.6b:free
+  temperature: 0.0
+  max_tokens: 700
+```
+
+免费 ID 会轮换，随时用 `python -m src.utils.llm_client --list-free-models` 查看当前零价模型并只改 `llm.model` 即可；`:free` 变体为 50 次/天（20 次/分钟），一次性充值 $10 后为 1000 次/天。切换模型只改 `llm.model`；任何 OpenAI 兼容服务都可把 `OPENROUTER_BASE_URL` 指向它、密钥填入 `OPENROUTER_API_KEY`，Agent workflow 不变。生效配置可由 `config_for_log()` 读出并写入事件日志，供 P6 冻结与实验复现使用。
+
+`config.yaml` 中其余阶段相关项：P1 `embedding.backend`（`auto` / `sentence_transformers` / `hashing`，P6 前必须固定为显式值）、`embedding.model`、`retrieval.{collection_name,chunk_size,chunk_overlap,top_k}`；P2 `mastery.{alpha,initial,recent_errors_window}`；P4 `agent.llm_mode: "on"`（平台默认接入 LLM；`off` 仅由 CLI `--offline` 或测试显式指定，不作为可选模式暴露给用户）、`agent.max_json_retries`、`agent.teach_max_chars`、`agent.grounded_min_hits`。`hashing` 是确定性离线后端，用于无模型环境下的索引与测试；正式对比实验应使用 `sentence_transformers`。
 
 ### 9.4 运行
 
-P0 冒烟、P1 索引、P3 最小闭环均已可执行（`--check` 与 `--backend hashing` 均离线、无需 API Key）：
+平台**默认接入 LLM**，启动前只需配置一次：复制 `.env.example` 为 `.env`，把 `OPENROUTER_API_KEY` 换成 openrouter.ai/keys 生成的真实值（`.env` 已被忽略，不会入库）。
 
 ```bash
-python -m src.utils.llm_client --check   # 打印生效配置与密钥状态，不发网络请求
-python -m src.utils.llm_client           # 真实最小调用；需先在 .env 填入 OPENROUTER_API_KEY
+# 1) 在线冒烟（确认 Key 与免费模型连通）
+python -m src.utils.llm_client
+
+# 2) 平台主路径：LLM grounded 讲解 + 结构化 JSON 出题 + Challenge / Review
+python -m src.agent.run --student-id demo --topic "Bayes Theorem" \
+    --answers correct,wrong,correct --max-steps 12
+# 可选：--no-rag 跳过检索、--db 指定状态库、--no-reset 保留状态、--run-id 固定运行标识
+```
+
+缺 Key 时两条命令都会打印本地 `.env` 填写步骤并以退出码 2 结束，**不发网络请求、不静默降级**。
+
+**无需 API Key** 的命令（离线）：
+
+```bash
+python -m src.utils.llm_client --check              # 生效配置 + 密钥状态，不发网络请求
+python -m src.utils.llm_client --list-free-models   # 查询 OpenRouter 当前零价模型（公开接口，无需 Key）
+python -m src.utils.secret_guard                    # 提交前检查：.env 已忽略、无可提交的真实 Key
 
 # 将课程 PDF 放入 data/course_materials/ 后构建向量知识库（重复运行幂等）
 python -m src.ingestion.indexer --input data/course_materials --backend hashing
 # 可选：--rebuild 全量重建；--topic-map topics.json 把文件名映射为知识点
 
-# P3 最小闭环：CLI 连跑 N 步，输出每步 action / 评分 / mastery / citation
-python -m src.agent.run --student-id demo --topic "Bayes Theorem" --answers correct,wrong,correct --max-steps 10
-# 可选：--no-rag 跳过检索、--db 指定状态库、--no-reset 保留上次状态、--run-id 固定运行标识
+# 唯一的离线逃生口：显式 --offline，无 Key、无网络、完全可复现（测试与 P6 基线用）
+python -m src.agent.run --offline --answers correct,wrong,correct --max-steps 10
 ```
 
-> 讲义 PDF 受版权保护不入库；目录为空时索引命令安全返回 0 条并给出提示。`embedding.backend: auto` 在本机没有 sentence-transformers 模型时降级为 `hashing` 并警告，P6 前须固定为显式值。P2 的 SQLite 状态库（含 `events` 表）由 `StudentStateStore` 首次调用时自动创建，无需单独命令。P3 默认会尝试读取 P1 索引为 Teach 补上 `Source: Lecture 05, Page 14` 引用；索引为空时自动降级为离线讲解模板，闭环照常可跑。
+> **没有模式选择**：`config.yaml` 的 `agent.llm_mode: "on"` 是平台默认路径，启动即接 LLM；`--offline` 是唯一且显式的退出方式，其值写入 `events.config_snapshot` 供 P6 冻结与复现。缺 Key 直接失败而不是降级，保证任何一条 `events` 记录里「用了 LLM」的标注都真实。
+>
+> LLM **只生成**客观选择题，评分仍由 `evaluator.py` 代码确定性完成；`subjective_rubric_enabled` 保持 `false`，避免评分噪声污染 Learning Gain。讲解的 `Source: Lecture 05, Page 14` 由 P1 检索 metadata 追加，LLM 被明确禁止写引用（生成文本中若有 Source 行会被剥离）。检索为空、缺 Key、模型下架、网络失败或 JSON 不可解析时，都会安全降级到离线模板/静态题库，闭环不中断。每次 LLM 调用的 token、latency、实际回答模型与 cost 会写入 `events` 的既有列，P6 无需补埋点。
 
-以下命令需 P4–P6 完成后才可执行：
+> 讲义 PDF 受版权保护不入库；目录为空时索引命令安全返回 0 条并给出提示。`embedding.backend: auto` 在本机没有 sentence-transformers 模型时降级为 `hashing` 并警告，P6 前须固定为显式值。P2 的 SQLite 状态库（含 `events` 表）由 `StudentStateStore` 首次调用时自动创建，无需单独命令。
+
+以下命令需 P5–P6 完成后才可执行：
 
 ```bash
 # 2) 启动交互应用（Study / Quiz / Progress / Agent Trace）
@@ -322,7 +354,7 @@ python -m experiments.plots --input experiments/results/
 pytest tests/ -v
 ```
 
-现有 46 项离线测试，无需 API Key 即可全部通过：
+现有 **71 项离线测试**，无需 API Key、无需网络即可全部通过：
 
 | 测试文件 | 阶段 | 覆盖 |
 |---|---|---|
@@ -330,10 +362,11 @@ pytest tests/ -v
 | `tests/test_p1_rag.py` | P1（11 项） | 合成 PDF 的物理页码 / topic metadata、确定性 chunk id、按 topic 命中正确讲义页、幂等重建、同进程重开索引、`Source: Lecture 05, Page 14` 引用、空目录降级 |
 | `tests/test_p2_student_model.py` | P2（10 项） | mastery 公式边界与非法值、重复作答幂等、`recent_errors` 窗口、`events` 表 trace/latency/token/cost 字段、状态持久化与轨迹可复现 |
 | `tests/test_p3_loop.py` | P3（11 项） | 规则 Planner 阈值与 Teach→MCQ 转换、确定性评分、CLI 连跑 N 步、每步落 events、mastery 随答题升降、`max_steps` 与达标双退出、同初始状态轨迹一致、检索 citation 落库、空检索降级 |
+| `tests/test_p4_llm.py` | P4（25 项） | 默认接入 LLM 的配置快照、缺 Key 明确提示与 `.env`/`.gitignore` 密钥安全、真实 Key 扫描守卫、免费模型目录过滤与下架回退、结构化 JSON 出题（`evaluator` 可稳定解析）、grounded 引用只来自 P1 metadata、空检索/网络失败/坏 JSON 的内容层降级、四类活动路由、`--offline` 逃生口与旧模式参数拒绝、events 记录 token 与实际模型 |
 
-课程 PDF 不入库，P1 测试用 PyMuPDF 运行时生成合成讲义验证检索链路；P3 测试全程不调用 LLM、不启动 UI。
+课程 PDF 不入库，P1 测试用 PyMuPDF 运行时生成合成讲义验证检索链路；P3/P4 测试用注入的 LLM 桩客户端覆盖在线逻辑，**不调用真实 OpenRouter、不启动 UI**。真实在线冒烟只需：复制 `.env.example` 为 `.env` → 填入 Key → 运行 `python -m src.utils.llm_client`（或直接跑默认闭环 `python -m src.agent.run`）。
 
-后续阶段建议至少覆盖：P4 结构化出题可解析 / 讲解引用 / 检索为空降级、P5 刷新后状态不丢、P6 `run_session` 契约与同 profile 两次运行轨迹一致。
+后续阶段建议至少覆盖：P5 刷新后状态不丢、P6 `run_session` 契约与同 profile 两次运行轨迹一致。
 
 ## 10. 实验与评估
 
@@ -425,29 +458,32 @@ Pre-test（获得初始学习状态）
 - [x] P0 工程骨架（依赖可解析、`.env` 不入库、14 项离线测试通过；在线 LLM 冒烟待填 API Key 执行）
 - [x] P1 RAG 知识库 / P2 学生状态模型（可并行）（34 项离线测试通过；真实讲义 PDF 与在线 LLM 冒烟待补）
 - [x] P3 最小闭环可运行（平台第一个可用里程碑）（CLI 连跑 N 步、mastery 随答题变化、每步落 events、双退出与轨迹可复现均通过）
-- [ ] P4 LLM 内容生成 / P5 UI 与 Agent Trace
+- [x] P4 LLM 内容生成（**平台默认接入** OpenRouter 免费模型、grounded 讲解、结构化出题、Challenge / Review、缺 Key 明确提示不降级、`--offline` 唯一逃生口；71 项离线测试通过；在线调用待本地 `.env` 填 Key 后执行）
+- [ ] P5 UI 与 Agent Trace
 - [ ] P6 平台冻结，进入实验评估
 - [ ] E1–E3 实验与课程报告
 
 ## 13. 当前状态与局限
 
-**当前状态**：P0–P3 已完成，**P3 是平台第一个可运行里程碑**，前半段（知识库 ∥ 状态模型 → 最小闭环）已汇合。
+**当前状态**：P0–P4 已完成。P3 是第一个可运行里程碑，P4 在其上接入 OpenRouter 免费模型；**P6 冻结闸门之前的平台能力已基本齐备，仅差 P5 的 UI 与 Trace**。
 
 - **P0**：依赖清单、配置外置、`.gitignore`、`pytest.ini`、`src/utils/{config.py,llm_client.py}`、目录骨架与 14 项测试；`pip install --dry-run -r requirements.txt` 解析通过。
 - **P1**：`pdf_parser / chunker / indexer` + `embeddings / vector_store`；PyMuPDF 逐页保留 `lecture / page / topic`，ChromaDB 幂等 upsert 与全量重建，`Source: Lecture 05, Page 14` 引用可用；索引 CLI 在空目录与合成讲义两种情况下均已端到端跑通。
-- **P2**：SQLite `student_topic_state` + **`events` 日志表**（含 action / mastery_before-after / citation / latency / token / cost / config_snapshot）、mastery 公式、`get_state()`、`event_key` 幂等作答、`recent_errors` 窗口、`reset()` 可复现轨迹。
-- **P3**：`src/agent/{graph,planner,actions,evaluator,questions,run}.py`；LangGraph 四节点 `Planner → Action → Evaluate → State Update → Re-plan`，规则 Planner 只输出 `Teach / MCQ / Done`，Teach 不评分只记事件、讲解后强制练习防止死循环，回边由 `max_steps` 与 `mastery ≥ target_mastery` 双退出；CLI 用 `--answers` 模拟确定性作答。P1 检索命中时 Teach 的 citation 会写入 events，检索为空则安全降级。
-- 全量 `pytest tests/ -v`：**46 passed**，无需 API Key；真实端到端已验证「合成 PDF → P1 索引 → P3 Teach 引用 → P2 events」。
+- **P2**：SQLite `student_topic_state` + **`events` 日志表**（含 action / mastery_before-after / citation / latency / token / cost / model / config_snapshot）、mastery 公式、`get_state()`、`event_key` 幂等作答、`recent_errors` 窗口、`reset()` 可复现轨迹。
+- **P3**：`src/agent/{graph,planner,actions,evaluator,questions,run}.py`；LangGraph 四节点 `Planner → Action → Evaluate → State Update → Re-plan`，规则 Planner 只输出 `Teach / MCQ / Done`，双退出防死循环、每步落 events、同初始状态轨迹可复现。
+- **P4**：`src/agent/llm_content.py` + `src/agent/prompts/templates.py` + `src/utils/secret_guard.py`；默认免费模型 `google/gemma-4-31b-it:free`（官方目录核实）、模型下架自动回退、grounded 讲解、严格 JSON 出题与解析重试、`Challenge / Review` 两类活动；**平台默认接入 LLM**（`agent.llm_mode: "on"`），缺 Key 明确提示并退出 2 而不静默降级，唯一的离线逃生口是显式 `--offline`。LLM 只出题不评分，`subjective_rubric_enabled` 仍为 `false`；每次调用的真实 token/latency/模型写入 `events`。
+- 全量 `pytest tests/ -v`：**71 passed**，无需 API Key、无需网络；真实端到端已验证「合成 PDF → P1 索引 → P3/P4 Teach 引用 → P2 events」。
 
-**未完成**：在线 LLM 冒烟调用因本机未配置 `OPENROUTER_API_KEY` 尚未执行（复制 `.env.example` 为 `.env` 填 Key 后运行 `python -m src.utils.llm_client` 即可）；真实讲义 PDF 未入库，P1 的"按 topic 命中正确讲义页"用运行时生成的合成 PDF 验证；`embedding.backend` 目前为 `auto`，本机未安装 sentence-transformers 模型时会降级到确定性 `hashing` 后端，P6 冻结前须改为显式值。P4 的 LLM 出题与主观题评分、P5 UI/Trace、P6 冻结接口与实验脚本尚未创建，§8 树中相应文件与 §9.4 的 Streamlit / 实验命令仍为规划蓝图。
+**未完成**：在线 LLM 调用因本机未把 Key 填入本地 `.env` 尚未执行（复制 `.env.example` 为 `.env` → 填 Key → `python -m src.utils.llm_client`，或直接跑默认闭环 `python -m src.agent.run`）；真实讲义 PDF 未入库，P1 命中率仍用合成 PDF 验证；`embedding.backend` 为 `auto`，本机降级到 `hashing`，P6 冻结前须改为显式值。P5 UI/Trace、P6 冻结接口与实验脚本尚未创建，§8 树中相应文件与 §9.4 的 Streamlit / 实验命令仍为规划蓝图。**密钥从未写入仓库任何文件，`python -m src.utils.secret_guard` 检查通过。**
 
 **已知局限（也是 Discussion 章节的素材）**
 
 - Mastery 公式是指数加权的简化模型，未刻画遗忘曲线、知识点先修关系与题目难度差异。
-- 主观题依赖 LLM rubric 评分，存在评分波动；已通过「客观题确定性评分」降低对核心指标的影响。
+- 主观题 LLM rubric 评分仍未启用（`evaluation.subjective_rubric_enabled: false`）；P4 的 LLM 只负责生成客观题与讲解，评分完全由代码完成，避免评分波动污染核心指标。
 - 课程材料可能受版权保护，仓库只提交代码与配置，不提交原始 PDF；引用仅保留 `lecture / page` 定位信息。P1 的检索验收因此用合成 PDF 完成，真实讲义上的命中率需在拿到课程材料后复测。
 - 离线 `hashing` embedding 是确定性词袋哈希，不是语义嵌入，只用于无模型环境下的链路验证；正式实验必须使用 `sentence_transformers`，并在 P6 冻结 `embedding.backend`。
-- P3 用的是静态最小题库与 `--answers` 模拟作答，只服务于闭环验证；Challenge / Review 活动、LLM grounded 出题、主观题 rubric 评分留到 P4 之后，正式知识点 / 题目 / 学生 profile 由 E1 构造。**P6 冻结前不得用 P3 轨迹计算 Learning Gain 等实验指标。**
+- P3 静态题库与 P4 LLM 出题都只服务于平台验证；正式知识点 / 题目 / 学生 profile 由 E1 构造。LLM 生成题目存在措辞与难度波动，`temperature=0.0` 与解析校验只能降低、不能消除该波动。**P6 冻结前不得用 P3/P4 轨迹计算 Learning Gain 等实验指标。**
+- 免费 `:free` 模型有 50 次/天（20 次/分钟）限额、ID 会轮换、高峰可能排队，且部分提供方可能按隐私政策记录提示词；平台默认走 LLM，因此每次运行都会消耗额度，正式实验应在 P6 固定模型与额度预算（离线基线用 `--offline`）。
 - Adaptive Planning 引入额外 LLM 调用，可能带来延迟与成本上升，需结合 Efficiency 指标权衡。
 - 模拟学生状态与小规模用户测试的外推性有限，结论适用范围需在报告中说明。
 - `mastery ≥ 0.85` 之后的知识点推进策略、知识点依赖图尚未定义，实现阶段补充。
@@ -459,6 +495,8 @@ Pre-test（获得初始学习状态）
 
 ```gitignore
 .env
+.env.*
+!.env.example
 .venv/
 __pycache__/
 *.pyc
@@ -468,6 +506,7 @@ data/chroma_db/
 .ipynb_checkpoints/
 ```
 
+- **密钥三条铁律**：① 真实 `OPENROUTER_API_KEY` 只写本地 `.env`，绝不出现在 `config.yaml`、代码、测试、文档、日志或聊天中；② 每次提交前运行 `python -m src.utils.secret_guard`（扫描可提交文件 + 校验 `.env` 忽略规则，失败返回 1）；③ 一旦疑似泄露立即到 https://openrouter.ai/keys 撤销并换新 Key。`.env` 不入库，所以换 Key 无需改代码。
 - 阈值、模型名、`seed`、路径统一放在 `config.yaml`（唯一配置源），`.env` 只放密钥与服务端点，不在业务代码中硬编码。
 - 每次实验运行产出独立结果文件（含方法名、模型名、随机种子与时间），保证可复现。
 - 提交信息建议格式：`feat: ...` / `fix: ...` / `exp: ...` / `docs: ...`。
@@ -485,10 +524,16 @@ A：可以。OpenRouter 只是统一网关；也可直接用 OpenAI SDK 修改 `
 A：阈值规则可解释、可复现，便于把「自适应规划」这一变量独立出来做消融实验；LLM Planner 作为后续对比模式。
 
 **Q：引用（citation）怎么实现？**  
-A：PyMuPDF 解析时把 `lecture / page / topic` 写入 ChromaDB metadata，检索结果随上下文一起传给 LLM，输出 `Source: Lecture 05, Page 14`。
+A：PyMuPDF 解析时把 `lecture / page / topic` 写入 ChromaDB metadata；P4 把检索片段连同标签喂给 LLM，但**禁止 LLM 自己写引用**——平台在生成文本之后从命中 chunk 追加 `Source: Lecture 05, Page 14`，并剥离模型可能编造的 Source 行，因此 trace 里的引用始终可核验。
 
 **Q：没有 API Key 能运行吗？**  
-A：知识库构建、mastery 计算、确定性评分与实验分析不依赖 LLM；但 Teach / 出题 / 主观题评估需要 LLM 服务，可用兼容 OpenAI 接口的本地模型替代。
+A：平台默认接入 LLM，所以**跑闭环需要 Key**；缺 Key 会打印本地 `.env` 填写步骤并以退出码 2 结束，不会自动降级（避免把离线运行误记成 LLM 运行）。不需要 Key 的有：P1 索引、全部 71 项离线测试、`--list-free-models`、`--check`、`secret_guard`，以及显式 `python -m src.agent.run --offline` 的离线闭环。
+
+**Q：为什么默认用免费模型，会不会影响实验？**  
+A：默认 `google/gemma-4-31b-it:free` 是为了零成本跑通链路；`:free` 模型有 50 次/天限额且 ID 会轮换，所以提供 `--list-free-models` 查询、模型下架自动回退，并把实际回答模型写进 `events`。**P6 冻结时必须固定模型与额度预算**；离线基线由显式 `--offline` 提供，其取值写入 `events.config_snapshot`，因此在线/离线两组轨迹仍可区分且各自可复现。
+
+**Q：API Key 放在哪里最安全？**  
+A：只在本地 `.env`（已被 `.gitignore` 忽略）。`config.yaml` 只记录非敏感的模型名与参数；提交前跑 `python -m src.utils.secret_guard`。不要把 Key 粘贴到代码、README、测试、聊天窗口或 Issue；若曾泄露立即在 OpenRouter Keys 页面撤销。
 
 ## 16. 许可证与致谢
 

@@ -30,6 +30,7 @@ def _run(tmp_path: Path, name: str, **kwargs):
         answers="correct",
         use_rag=False,
         db_path=tmp_path / f"{name}.db",
+        llm_mode="off",   # P3 baseline: explicit offline opt-out, no key needed
     )
     defaults.update(kwargs)
     return run_cli_session(**defaults)
@@ -185,7 +186,7 @@ def test_cli_main_prints_json_summary(tmp_path, capsys):
         "--student-id", "cli", "--topic", "MDP",
         "--answers", "correct,wrong", "--max-steps", "5",
         "--db", str(tmp_path / "cli.db"), "--no-rag",
-        "--run-id", "cli-test",
+        "--run-id", "cli-test", "--offline",
     ])
     assert code == 0
     payload = json.loads(capsys.readouterr().out)
@@ -197,5 +198,5 @@ def test_cli_main_prints_json_summary(tmp_path, capsys):
 
 def test_cli_rejects_empty_answers(tmp_path):
     assert main([
-        "--answers", "", "--db", str(tmp_path / "bad.db"), "--no-rag",
+        "--answers", "", "--db", str(tmp_path / "bad.db"), "--no-rag", "--offline",
     ]) == 2

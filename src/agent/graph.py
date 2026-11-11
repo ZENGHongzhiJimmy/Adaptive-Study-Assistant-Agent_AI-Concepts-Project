@@ -46,6 +46,8 @@ class AgentState(TypedDict, total=False):
     answer_sequence: list[str]
     student_answer: str
     evaluation: dict[str, Any]
+    llm_usage: dict[str, Any]      # P4: tokens / latency / actual model
+    content_source: str            # P4: llm | template | bank | fallback
     started_at: float
     event_id: int
     idempotent: bool
@@ -60,6 +62,8 @@ class AgentRuntime:
     config: dict[str, Any]
     questions: list[MCQ] = field(default_factory=list)
     retriever: Retriever | None = None
+    generator: Any | None = None   # P4: injectable LLMContentGenerator
+    extended: bool = False         # P4: enable Challenge / Review activities
 
 
 def build_graph(runtime: AgentRuntime) -> Any:
@@ -75,6 +79,8 @@ def build_graph(runtime: AgentRuntime) -> Any:
             recent_errors=state.get("recent_errors"),
             last_action=state.get("last_action"),
             config=cfg,
+            extended=runtime.extended,
+            last_was_correct=(state.get("evaluation") or {}).get("correct"),
         )
         return {
             "action": decision.action,
@@ -90,6 +96,9 @@ def build_graph(runtime: AgentRuntime) -> Any:
             mcq_index=int(state.get("mcq_index", 0)),
             questions=runtime.questions,
             retriever=runtime.retriever,
+            generator=runtime.generator,
+            extended=runtime.extended,
+            recent_errors=state.get("recent_errors"),
         )
         return {**result.as_state_update(), "started_at": time.perf_counter()}
 
@@ -104,7 +113,10 @@ def build_graph(runtime: AgentRuntime) -> Any:
     def state_update_node(state: AgentState) -> dict[str, Any]:
         step = int(state["step"]) + 1
         evaluation = state["evaluation"]
+        # Wall-clock step latency already includes any LLM call. Token/cost
+        # values come from the P4 usage accumulator; P3 keeps them at zero.
         latency_ms = round((time.perf_counter() - float(state["started_at"])) * 1000.0, 3)
+        usage = state.get("llm_usage") or {}
         common = {
             "run_id": state["run_id"],
             "step": step,
@@ -114,11 +126,14 @@ def build_graph(runtime: AgentRuntime) -> Any:
             "lecture": state.get("lecture"),
             "page": state.get("page"),
             "latency_ms": latency_ms,
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "total_tokens": 0,
-            "cost_usd": 0.0,
+            "prompt_tokens": int(usage.get("prompt_tokens", 0) or 0),
+            "completion_tokens": int(usage.get("completion_tokens", 0) or 0),
+            "total_tokens": int(usage.get("total_tokens", 0) or 0),
+            "cost_usd": float(usage.get("cost_usd", 0.0) or 0.0),
         }
+        if usage.get("model"):
+            # Report the model that ACTUALLY answered (free-ID fallback).
+            common["model"] = usage["model"]
         event_key = f"{state['run_id']}:{step}"
 
         if evaluation["skipped"]:

@@ -1,7 +1,11 @@
 # --- Secrets & local environment ---
+# The OpenRouter key lives ONLY in the local .env. NEVER commit it.
+# Guard: python -m src.utils.secret_guard  (scans files before commit)
 .env
 .env.*
 !.env.example
+.envrc
+*.pem
 .venv/
 venv/
 env/

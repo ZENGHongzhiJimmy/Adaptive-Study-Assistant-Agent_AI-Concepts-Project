@@ -48,7 +48,7 @@ def test_config_for_log_is_secret_free_and_stable():
     snapshot = config_for_log(load_config())
     assert set(snapshot) == {
         "platform_version", "model", "embedding_model", "embedding_backend",
-        "retrieval_top_k", "mastery_alpha", "planner_mode",
+        "retrieval_top_k", "mastery_alpha", "planner_mode", "llm_mode",
         "planner_thresholds", "target_mastery", "max_steps",
         "subjective_rubric_enabled", "seed",
     }

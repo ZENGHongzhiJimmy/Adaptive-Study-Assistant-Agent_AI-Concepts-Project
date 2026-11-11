@@ -2,19 +2,29 @@
 #
 # This file is the SINGLE source of truth for experiment-relevant knobs.
 # Secrets / endpoints are the only things allowed in .env (see .env.example).
+# NEVER put a real API key here: this file is committed to GitHub.
 # P6 freeze: do not modify this file during E1-E3; every run logs
 # config_for_log() (version, model, alpha, thresholds, seed) into events.
 
 platform:
-  version: "0.1.0-p0"
+  version: "0.1.0-p4"
 
 llm:
-  model: openai/gpt-4o-mini
+  # P4 default: a zero-cost OpenRouter model, verified against the live
+  # /api/v1/models catalog on 2026-11-11. Free IDs rotate, so check with
+  #   python -m src.utils.llm_client --list-free-models
+  # and change ONLY this value if the ID is retired. A :free variant costs
+  # $0 per token (50 requests/day, 20/min; 1000/day after a $10 top-up).
+  model: google/gemma-4-31b-it:free
+  # Tried in order only when the primary model is retired / not found (404).
+  free_fallback_models:
+    - nvidia/nemotron-3.5-lightning:free
+    - liquid/lfm-2.5-2.6b:free
   api_key_env: OPENROUTER_API_KEY
   base_url_env: OPENROUTER_BASE_URL
   default_base_url: https://openrouter.ai/api/v1
-  temperature: 0.0
-  max_tokens: 256
+  temperature: 0.0              # deterministic content generation for P6
+  max_tokens: 700               # grounded Teach + one structured question
   timeout_s: 30
   max_retries: 2
 
@@ -44,8 +54,7 @@ mastery:
   initial: 0.0
   recent_errors_window: 3
 
-# Reserved for P3 (minimal loop) and P4 (LLM planner); declared up front so the
-# frozen config surface does not change between P6 and E1-E3.
+# P3 minimal loop thresholds; P4 reuses them for Challenge / Review routing.
 planner:
   mode: rule                 # rule | llm
   thresholds:
@@ -56,8 +65,22 @@ planner:
   review_trigger_errors: 2
   max_steps: 10              # hard stop for the State Update -> Re-planning back-edge
 
+# P4 LLM content generation.
+# The platform connects to the LLM by default: "on" means a missing/placeholder
+# key fails fast with .env setup instructions (exit code 2), never a silent
+# downgrade that would make a run look LLM-powered when it was not.
+# The ONLY opt-out is the explicit CLI flag --offline (offline templates +
+# static bank, no key/network); it is recorded in the events config snapshot.
+agent:
+  # Quote the mode: YAML 1.1 would otherwise parse `off` / `on` as booleans.
+  llm_mode: "on"
+  max_json_retries: 2        # retry structured question generation on bad JSON
+  teach_max_chars: 900       # cap the LLM explanation stored in the trace
+  grounded_min_hits: 1       # Teach needs >=1 retrieved chunk for a citation
+
 evaluation:
-  # Keep objective MCQ-only scoring until P4; protects Learning Gain from rubric noise.
+  # P4 still scores ONLY objective MCQs deterministically; LLM rubric scoring
+  # stays off so Learning Gain is not polluted by scoring noise.
   subjective_rubric_enabled: false
 
 experiment:
