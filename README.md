@@ -23,7 +23,7 @@
 
 
 
-> **当前进度**：P0 工程骨架已完成（`requirements.txt`、`.env.example`、`config.yaml`、`.gitignore`、`pytest.ini`、`src/utils/`、目录骨架与 P0 离线测试）。§8 中 P1–P6 对应的源代码、`app.py`、数据与实验脚本，以及 §9.4 的应用运行命令仍是**规划蓝图（Planned / To be implemented）**，用于指导实现与保证可复现性，不代表对应文件已经存在。
+> **当前进度**：P0 工程骨架、P1 RAG 知识库、P2 学生状态模型已完成（含 `events` 日志表与 34 项离线测试）。`app.py`、P3–P6 的 Agent 闭环代码、数据与实验脚本，以及 §9.4 中 Streamlit / 实验命令仍是**规划蓝图（Planned / To be implemented）**，用于指导实现与保证可复现性，不代表对应文件已经存在。
 
 
 
@@ -193,7 +193,7 @@ def update_mastery(old_mastery, performance, alpha=0.7):
 
 ## 8. 项目结构
 
-以下为结构约定：P0 的目录骨架、配置文件与测试已创建；树中 `app.py`、`src/ingestion/...` 等模块文件是 P1–P5 的规划目标，尚未创建：
+以下为结构约定：P0–P2 的目录骨架、配置文件、知识库/状态模型代码与测试已创建；树中 `app.py`、`src/agent/...`、`src/ui/...` 等模块文件是 P3–P5 的规划目标，尚未创建：
 
 ```text
 Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
@@ -209,9 +209,9 @@ Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
 │   ├── chroma_db/                  # ChromaDB 持久化目录（不入库）
 │   └── student_state.db            # SQLite 学生状态（不入库）
 ├── src/
-│   ├── ingestion/                  # pdf_parser.py / chunker.py / indexer.py
-│   ├── retrieval/                  # embeddings.py / vector_store.py
-│   ├── student_model/              # schema.sql / state.py / mastery.py
+│   ├── ingestion/                  # pdf_parser.py / chunker.py / indexer.py（P1 已创建）
+│   ├── retrieval/                  # embeddings.py / vector_store.py（P1 已创建）
+│   ├── student_model/              # schema.sql / state.py / mastery.py（P2 已创建，含 events 表）
 │   ├── agent/                      # graph.py / planner.py / actions.py / evaluator.py / prompts/
 │   ├── ui/                         # study.py / quiz.py / progress.py / trace.py
 │   └── utils/                      # config.py / llm_client.py（P0 已创建）、logging.py（后续）
@@ -221,14 +221,14 @@ Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
 │   ├── metrics.py                  # Learning Gain / Final Mastery / Efficiency 等
 │   ├── plots.py                    # matplotlib 对比图
 │   └── results/                    # 结果 CSV / 图表（可入库，用于复现）
-├── tests/                          # 单元测试（P0: test_p0_smoke.py；后续: mastery / 评分 / Planner 路由）
+├── tests/                          # 单元测试（P0 / P1 / P2 共 34 项；后续: 评分 / Planner 路由 / 回边）
 └── report/                         # 课程报告与 Presentation 材料
 ```
 
 
 ## 9. 快速开始
 
-> §9.2 安装、§9.3 配置与 §9.5 测试命令在 P0 已可立即执行；§9.4 的应用与实验命令**需 P1–P6 代码实现完成后才可执行**。
+> §9.2 安装、§9.3 配置、§9.5 测试，以及 §9.4 中的 P0 冒烟与 P1 索引命令已可立即执行；Streamlit 与实验命令**需 P3–P6 代码实现完成后才可执行**。
 
 ### 9.1 环境要求
 
@@ -282,21 +282,26 @@ OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 
 切换模型只需修改 `config.yaml` 的 `llm.model`；`planner.mode: rule` 用于可控实验，`llm` 用于消融对比。任何 OpenAI 兼容服务都可把 `OPENROUTER_BASE_URL` 指向它、密钥填入 `OPENROUTER_API_KEY`，Agent workflow 不变。生效配置可由 `config_for_log()` 读出并写入事件日志，供 P6 冻结与实验复现使用。
 
+`config.yaml` 中 P1/P2 相关项：`embedding.backend`（`auto` / `sentence_transformers` / `hashing`，P6 前必须固定为显式值）、`embedding.model`、`retrieval.{collection_name,chunk_size,chunk_overlap,top_k}`、`mastery.{alpha,initial,recent_errors_window}`。`hashing` 是确定性离线后端，用于无模型环境下的索引与测试；正式对比实验应使用 `sentence_transformers`。
+
 ### 9.4 运行
 
-P0 已可执行的冒烟检查（`--check` 离线、无需 API Key）：
+P0 冒烟检查与 P1 知识库构建已可执行（`--check` 与 `--backend hashing` 均离线、无需 API Key）：
 
 ```bash
 python -m src.utils.llm_client --check   # 打印生效配置与密钥状态，不发网络请求
 python -m src.utils.llm_client           # 真实最小调用；需先在 .env 填入 OPENROUTER_API_KEY
+
+# 将课程 PDF 放入 data/course_materials/ 后构建向量知识库（重复运行幂等）
+python -m src.ingestion.indexer --input data/course_materials --backend hashing
+# 可选：--rebuild 全量重建；--topic-map topics.json 把文件名映射为知识点
 ```
 
-以下命令需 P1–P6 完成后才可执行：
+> 讲义 PDF 受版权保护不入库；目录为空时索引命令安全返回 0 条并给出提示。`embedding.backend: auto` 在本机没有 sentence-transformers 模型时降级为 `hashing` 并警告，P6 前须固定为显式值。P2 的 SQLite 状态库（含 `events` 表）由 `StudentStateStore` 首次调用时自动创建，无需单独命令。
+
+以下命令需 P3–P6 完成后才可执行：
 
 ```bash
-# 1) 将课程 PDF 放入 data/course_materials/ 后构建向量知识库
-python -m src.ingestion.indexer --input data/course_materials
-
 # 2) 启动交互应用（Study / Quiz / Progress / Agent Trace）
 streamlit run app.py
 
@@ -313,9 +318,17 @@ python -m experiments.plots --input experiments/results/
 pytest tests/ -v
 ```
 
-P0 已提供 `tests/test_p0_smoke.py`（14 项离线测试：配置加载、`.env` 模板、`.gitignore`、依赖清单、目录骨架与 LLM 客户端桩调用），无需 API Key 即可全部通过。
+现有 34 项离线测试，无需 API Key 即可全部通过：
 
-后续建议至少覆盖：mastery 更新边界、客观题确定性评分、Planner 各阈值路由、`State Update → Re-planning` 回边。
+| 测试文件 | 阶段 | 覆盖 |
+|---|---|---|
+| `tests/test_p0_smoke.py` | P0（14 项） | 配置加载、`.env` 模板、`.gitignore`、依赖清单、目录骨架、LLM 客户端桩调用 |
+| `tests/test_p1_rag.py` | P1（10 项） | 合成 PDF 的物理页码 / topic metadata、确定性 chunk id、按 topic 命中正确讲义页、幂等重建、`Source: Lecture 05, Page 14` 引用、空目录降级 |
+| `tests/test_p2_student_model.py` | P2（10 项） | mastery 公式边界与非法值、重复作答幂等、`recent_errors` 窗口、`events` 表 trace/latency/token/cost 字段、状态持久化与轨迹可复现 |
+
+课程 PDF 不入库，P1 测试用 PyMuPDF 运行时生成合成讲义验证检索链路。
+
+后续建议至少覆盖：客观题确定性评分、Planner 各阈值路由、`State Update → Re-planning` 回边与 `max_steps` 终止。
 
 ## 10. 实验与评估
 
@@ -405,7 +418,7 @@ Pre-test（获得初始学习状态）
 - [x] 完成 Project Proposal，明确研究问题与评估方案
 - [x] 完成 README 项目说明与技术设计文档
 - [x] P0 工程骨架（依赖可解析、`.env` 不入库、14 项离线测试通过；在线 LLM 冒烟待填 API Key 执行）
-- [ ] P1 RAG 知识库 / P2 学生状态模型（可并行）
+- [x] P1 RAG 知识库 / P2 学生状态模型（可并行）（34 项离线测试通过；真实讲义 PDF 与在线 LLM 冒烟待补）
 - [ ] P3 最小闭环可运行（平台第一个可用里程碑）
 - [ ] P4 LLM 内容生成 / P5 UI 与 Agent Trace
 - [ ] P6 平台冻结，进入实验评估
@@ -413,13 +426,21 @@ Pre-test（获得初始学习状态）
 
 ## 13. 当前状态与局限
 
-**当前状态**：P0 工程骨架已完成——依赖清单、配置外置（`config.yaml` + `.env.example`）、`.gitignore`、`pytest.ini`、`src/utils/{config.py,llm_client.py}`、目录骨架与 14 项离线测试；`pip install --dry-run -r requirements.txt` 依赖解析通过，`pytest tests/ -v` 全部通过。在线 LLM 冒烟调用因本机未配置 `OPENROUTER_API_KEY` 尚未执行：复制 `.env.example` 为 `.env` 并填入真实 Key 后运行 `python -m src.utils.llm_client` 即可。P1–P6 的源代码、数据、UI 与实验脚本尚未创建，§8 树中相应文件与 §9.4 命令仍为规划蓝图。
+**当前状态**：P0–P2 已完成，`P3` 的前置条件已就绪。
+
+- **P0**：依赖清单、配置外置、`.gitignore`、`pytest.ini`、`src/utils/{config.py,llm_client.py}`、目录骨架与 14 项测试；`pip install --dry-run -r requirements.txt` 解析通过。
+- **P1**：`pdf_parser / chunker / indexer` + `embeddings / vector_store`；PyMuPDF 逐页保留 `lecture / page / topic`，ChromaDB 幂等 upsert 与全量重建，`Source: Lecture 05, Page 14` 引用可用；索引 CLI 在空目录与合成讲义两种情况下均已端到端跑通。
+- **P2**：SQLite `student_topic_state` + **`events` 日志表**（含 action / mastery_before-after / citation / latency / token / cost / config_snapshot）、mastery 公式、`get_state()`、`event_key` 幂等作答、`recent_errors` 窗口、`reset()` 可复现轨迹。
+- 全量 `pytest tests/ -v`：**34 passed**，无需 API Key。
+
+**未完成**：在线 LLM 冒烟调用因本机未配置 `OPENROUTER_API_KEY` 尚未执行（复制 `.env.example` 为 `.env` 填 Key 后运行 `python -m src.utils.llm_client` 即可）；真实讲义 PDF 未入库，P1 的"按 topic 命中正确讲义页"用运行时生成的合成 PDF 验证；`embedding.backend` 目前为 `auto`，本机未安装 sentence-transformers 模型时会降级到确定性 `hashing` 后端，P6 冻结前须改为显式值。P3–P6 的 Agent 闭环、UI 与实验脚本尚未创建，§8 树中相应文件与 §9.4 的 Streamlit / 实验命令仍为规划蓝图。
 
 **已知局限（也是 Discussion 章节的素材）**
 
 - Mastery 公式是指数加权的简化模型，未刻画遗忘曲线、知识点先修关系与题目难度差异。
 - 主观题依赖 LLM rubric 评分，存在评分波动；已通过「客观题确定性评分」降低对核心指标的影响。
-- 课程材料可能受版权保护，仓库只提交代码与配置，不提交原始 PDF；引用仅保留 `lecture / page` 定位信息。
+- 课程材料可能受版权保护，仓库只提交代码与配置，不提交原始 PDF；引用仅保留 `lecture / page` 定位信息。P1 的检索验收因此用合成 PDF 完成，真实讲义上的命中率需在拿到课程材料后复测。
+- 离线 `hashing` embedding 是确定性词袋哈希，不是语义嵌入，只用于无模型环境下的链路验证；正式实验必须使用 `sentence_transformers`，并在 P6 冻结 `embedding.backend`。
 - Adaptive Planning 引入额外 LLM 调用，可能带来延迟与成本上升，需结合 Efficiency 指标权衡。
 - 模拟学生状态与小规模用户测试的外推性有限，结论适用范围需在报告中说明。
 - `mastery ≥ 0.85` 之后的知识点推进策略、知识点依赖图尚未定义，实现阶段补充。

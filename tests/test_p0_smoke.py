@@ -47,8 +47,9 @@ def test_config_loads_required_sections():
 def test_config_for_log_is_secret_free_and_stable():
     snapshot = config_for_log(load_config())
     assert set(snapshot) == {
-        "platform_version", "model", "embedding_model", "mastery_alpha",
-        "planner_mode", "planner_thresholds", "target_mastery", "max_steps",
+        "platform_version", "model", "embedding_model", "embedding_backend",
+        "retrieval_top_k", "mastery_alpha", "planner_mode",
+        "planner_thresholds", "target_mastery", "max_steps",
         "subjective_rubric_enabled", "seed",
     }
     assert not any("key" in str(v).lower() for v in snapshot.values())

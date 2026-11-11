@@ -84,6 +84,8 @@ def config_for_log(config: dict[str, Any] | None = None) -> dict[str, Any]:
         "platform_version": cfg["platform"]["version"],
         "model": cfg["llm"]["model"],
         "embedding_model": cfg.get("embedding", {}).get("model"),
+        "embedding_backend": cfg.get("embedding", {}).get("backend"),
+        "retrieval_top_k": cfg.get("retrieval", {}).get("top_k"),
         "mastery_alpha": cfg["mastery"]["alpha"],
         "planner_mode": planner["mode"],
         "planner_thresholds": dict(planner["thresholds"]),

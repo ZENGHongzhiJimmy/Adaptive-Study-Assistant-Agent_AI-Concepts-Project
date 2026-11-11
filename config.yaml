@@ -19,7 +19,11 @@ llm:
   max_retries: 2
 
 embedding:
+  # auto = prefer sentence-transformers, fall back to offline hashing if the
+  # model/deps are unavailable. P6 must freeze an explicit backend.
+  backend: auto
   model: sentence-transformers/all-MiniLM-L6-v2
+  hashing_dimension: 256
 
 paths:
   course_materials: ./data/course_materials
@@ -27,19 +31,21 @@ paths:
   sqlite_path: ./data/student_state.db
   results_dir: ./experiments/results
 
-# Reserved for P1 (RAG); declared now so the config surface stays stable.
+# P1 RAG indexing / retrieval.
 retrieval:
+  collection_name: course_chunks
   chunk_size: 800
   chunk_overlap: 100
   top_k: 3
 
-# Reserved for P2 (student state model): new = alpha*old + (1-alpha)*performance.
+# P2 student state model: new = alpha*old + (1-alpha)*performance.
 mastery:
   alpha: 0.7
   initial: 0.0
   recent_errors_window: 3
 
-# Reserved for P3 (minimal loop) and P4 (LLM planner).
+# Reserved for P3 (minimal loop) and P4 (LLM planner); declared up front so the
+# frozen config surface does not change between P6 and E1-E3.
 planner:
   mode: rule                 # rule | llm
   thresholds:
