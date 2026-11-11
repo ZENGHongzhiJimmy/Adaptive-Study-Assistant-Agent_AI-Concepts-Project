@@ -1,0 +1,41 @@
+# --- Secrets & local environment ---
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+env/
+
+# --- Python build/cache artifacts ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Course PDFs, vector store and SQLite state (keep directory skeleton) ---
+# Contents are ignored, .gitkeep files are tracked so a fresh clone has the layout.
+data/course_materials/*
+!data/course_materials/.gitkeep
+data/chroma_db/*
+!data/chroma_db/.gitkeep
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/*.log
+
+# NOTE: experiments/results/ is intentionally NOT ignored - result CSV/plots
+# are committed for reproducibility (see README section 8).
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.ipynb_checkpoints/

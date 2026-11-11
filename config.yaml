@@ -1,0 +1,61 @@
+# Adaptive Study Assistant Agent - canonical non-sensitive configuration.
+#
+# This file is the SINGLE source of truth for experiment-relevant knobs.
+# Secrets / endpoints are the only things allowed in .env (see .env.example).
+# P6 freeze: do not modify this file during E1-E3; every run logs
+# config_for_log() (version, model, alpha, thresholds, seed) into events.
+
+platform:
+  version: "0.1.0-p0"
+
+llm:
+  model: openai/gpt-4o-mini
+  api_key_env: OPENROUTER_API_KEY
+  base_url_env: OPENROUTER_BASE_URL
+  default_base_url: https://openrouter.ai/api/v1
+  temperature: 0.0
+  max_tokens: 256
+  timeout_s: 30
+  max_retries: 2
+
+embedding:
+  model: sentence-transformers/all-MiniLM-L6-v2
+
+paths:
+  course_materials: ./data/course_materials
+  chroma_persist_dir: ./data/chroma_db
+  sqlite_path: ./data/student_state.db
+  results_dir: ./experiments/results
+
+# Reserved for P1 (RAG); declared now so the config surface stays stable.
+retrieval:
+  chunk_size: 800
+  chunk_overlap: 100
+  top_k: 3
+
+# Reserved for P2 (student state model): new = alpha*old + (1-alpha)*performance.
+mastery:
+  alpha: 0.7
+  initial: 0.0
+  recent_errors_window: 3
+
+# Reserved for P3 (minimal loop) and P4 (LLM planner).
+planner:
+  mode: rule                 # rule | llm
+  thresholds:
+    teach_below: 0.4
+    practice_below: 0.7
+    challenge_below: 0.85
+  target_mastery: 0.85
+  review_trigger_errors: 2
+  max_steps: 10              # hard stop for the State Update -> Re-planning back-edge
+
+evaluation:
+  # Keep objective MCQ-only scoring until P4; protects Learning Gain from rubric noise.
+  subjective_rubric_enabled: false
+
+experiment:
+  seed: 42
+
+logging:
+  level: INFO
