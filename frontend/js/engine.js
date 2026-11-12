@@ -2,12 +2,14 @@
    engine.js — 学生端知识模型 + 自适应规划 Agent（前端状态）
    本版本为「学生端」专用：
    - 学生自主上传课程资料，后端（LLM + RAG）解析并生成 quiz
-   - 学习主页提示自主学习路径（依据上传资料解析出的知识点）
+   - 学习主页按「上传的课程资料文件」分类，每份资料是一个独立学习模块
+   - 选中资料后，才展示该资料的自主学习路径（Pre-test → 推荐活动 → 进度）
    - 课程资料 · AI 问答：上传资料 + AI 解析问答（带引用出处）
-   - 学习进度：各知识点掌握度与学习轨迹
+   - 学习进度：各知识点掌握度与学习轨迹，可切换资料维度
 
    知识点来源：学生上传的资料经后端解析后生成的知识点
    （后端 /api/materials/parse 返回 topics，其中包含讲解与 quiz）。
+   每个知识点通过 _materialId 绑定所属资料，学习状态按资料彼此隔离。
    自适应规划沿用 Plan → Act → Observe → Update → Re-plan 闭环。
    ============================================================ */
 
@@ -22,14 +24,15 @@ const Engine = (() => {
     return {
       role: 'student',
       studentName: 'student1',
-      hasPreTest: false,
-      topics: [],                   // 当前生效的知识点（学生知识模型）
+      hasPreTest: false,           // 兼容字段：所有资料是否都已完成起点评估
+      topics: [],                   // 全部知识点（跨资料），各自带 _materialId
       trace: [],
       loopStage: 'plan',
       lastActivity: null,
       completed: 0,
       streak: 5,
       uploads: [],                  // 学生自主上传的资料（含后端解析结果）
+      activeMaterialId: null,       // 当前选中的资料（uploads[].id）
     };
   }
 
@@ -43,10 +46,30 @@ const Engine = (() => {
         Object.keys(parsed).forEach(k => { state[k] = parsed[k]; });
         if (!Array.isArray(state.uploads)) state.uploads = [];
         if (!Array.isArray(state.topics)) state.topics = [];
+        if (!Array.isArray(state.trace)) state.trace = [];
+        if (typeof state.activeMaterialId === 'undefined') state.activeMaterialId = null;
+        migrateLinks();
         return;
       } catch (e) { /* 忽略损坏数据 */ }
     }
     reset();
+  }
+
+  /* 兼容旧数据：早期版本的知识点可能只有 src（文件名）而没有 _materialId，
+     这里按文件名回填关联，保证历史进度仍归属到对应资料模块。 */
+  function migrateLinks() {
+    state.topics.forEach(t => {
+      if (t._materialId) return;
+      const rec = state.uploads.find(u => u.name && u.name === t.src);
+      if (rec) t._materialId = rec.materialId || rec.id;
+    });
+    if (state.activeMaterialId && !findMaterial(state.activeMaterialId)) {
+      state.activeMaterialId = null;
+    }
+    /* 旧版本把 LLM 生成的「材料解读/摘要」写进了资料记录，界面已不再展示，
+       统一清掉，保证所有资料（PDF / TXT / MD）的记录结构与显示完全一致。 */
+    state.uploads.forEach(u => { if (u && 'summary' in u) delete u.summary; });
+    save();
   }
 
   function reset() {
@@ -60,20 +83,89 @@ const Engine = (() => {
   }
 
   /* =========================================================
+     资料文件（学习模块）
+     rec = { id, name, kind, size, pages, status, materialId,
+             topicCount, ... }
+     ========================================================= */
+
+  function uploads() { return state.uploads; }
+
+  function materialKey(rec) { return rec ? (rec.materialId || rec.id) : null; }
+
+  function findMaterial(ref) {
+    if (!ref) return null;
+    if (typeof ref === 'object') return ref;
+    return state.uploads.find(u => u.id === ref || u.materialId === ref) || null;
+  }
+
+  function activeMaterial() { return findMaterial(state.activeMaterialId); }
+
+  function selectMaterial(ref) {
+    const rec = findMaterial(ref);
+    state.activeMaterialId = rec ? rec.id : null;
+    save();
+    return rec;
+  }
+
+  /* 知识点归属于哪个资料（返回 upload rec，用于详情页/活动页返回模块） */
+  function materialOfTopic(t) {
+    if (!t) return null;
+    if (t._materialId) return findMaterial(t._materialId);
+    return state.uploads.find(u => u.name && u.name === t.src) || null;
+  }
+
+  /* 按资料取知识点：优先 _materialId；旧数据按文件名兜底 */
+  function topicsOf(ref) {
+    const rec = findMaterial(ref);
+    if (!rec) return [];
+    const keys = [rec.materialId, rec.id].filter(Boolean);
+    return state.topics.filter(t => {
+      if (t._materialId) return keys.indexOf(t._materialId) !== -1;
+      return !!rec.name && (t.src === rec.name || t.src === materialKey(rec));
+    });
+  }
+
+  /* 一份资料的概览统计（供主页卡片与资料模块复用） */
+  function materialStats(ref) {
+    const rec = findMaterial(ref);
+    const ts = rec ? topicsOf(rec) : [];
+    const avg = ts.length ? Math.round(ts.reduce((s, t) => s + t.mastery, 0) / ts.length) : 0;
+    const quizCount = ts.reduce((n, t) => n + (((t.content || {}).quiz) || []).length, 0);
+    const explainCount = ts.reduce((n, t) => n + (((t.content || {}).explain) || []).length, 0);
+    const pending = ts.filter(t => !t.pretested).length;
+    const ids = ts.map(t => t.id);
+    const trace = state.trace.filter(x => ids.indexOf(x.topicId) !== -1);
+    return {
+      rec, topics: ts, count: ts.length, avg,
+      quizCount, explainCount, pending,
+      pretestDone: ts.length > 0 && pending === 0,
+      parsed: !!rec && (rec.status === 'parsed' || rec.status === 'indexed'),
+      trace,
+    };
+  }
+
+  /* =========================================================
      知识点形态（由后端解析资料生成）
      { id, name, icon, desc, mastery, attempts, errors, src,
+       _materialId,
        content: { explain:[{t,items,tip}], quiz:[{q,opts,a,why}], pretest:{...} } }
      ========================================================= */
 
   function topics() { return state.topics; }
   function topic(id) { return state.topics.find(t => t.id === id); }
 
-  function overallMastery() {
-    if (!state.topics.length) return 0;
-    return Math.round(state.topics.reduce((s, t) => s + t.mastery, 0) / state.topics.length);
+  function overallMastery(list) {
+    const arr = Array.isArray(list) ? list : state.topics;
+    if (!arr.length) return 0;
+    return Math.round(arr.reduce((s, t) => s + t.mastery, 0) / arr.length);
   }
 
-  function pathTopics() { return state.topics; }
+  /* 不传 = 全部知识点；传资料 rec/id 或知识点数组 = 该范围 */
+  function pathTopics(arg) {
+    if (Array.isArray(arg)) return arg;
+    if (arg) return topicsOf(arg);
+    return state.topics;
+  }
 
   function topicContent(topicId) {
     const t = topic(topicId);
@@ -112,16 +204,18 @@ const Engine = (() => {
     return { topic: t, activity: DATA.activities[actId], reason, rule };
   }
 
-  function nextTopic() {
-    const sorted = [...state.topics].sort((a, b) => {
+  function nextTopic(list) {
+    const arr = pathTopics(list);
+    const sorted = [...arr].sort((a, b) => {
       if (b.errors !== a.errors) return b.errors - a.errors;
       return a.mastery - b.mastery;
     });
     return sorted[0];
   }
 
-  function nextPlan() {
-    const t = nextTopic();
+  /* 传入资料 rec/id 时，只在该资料范围内推荐下一步 */
+  function nextPlan(arg) {
+    const t = nextTopic(arg);
     return t ? plan(t.id) : null;
   }
 
@@ -173,7 +267,7 @@ const Engine = (() => {
     return { topic: t, before, after, delta, re };
   }
 
-  /* ---------------- Pre-test ---------------- */
+  /* ---------------- Pre-test（按资料独立评估） ---------------- */
   function applyPreTest(answers) {
     (answers || []).forEach(a => {
       const t = topic(a.topicId);
@@ -183,12 +277,22 @@ const Engine = (() => {
       t.errors = a.correct ? 0 : 1;
       t.pretested = true;
     });
+    // 兼容字段：仅当全部资料的知识点都评估完才为 true
     state.hasPreTest = state.topics.length > 0 && state.topics.every(t => t.pretested);
     state.loopStage = 'plan';
     save();
   }
 
-  function pendingTopics() { return state.topics.filter(t => !t.pretested); }
+  function pretestDone(ref) {
+    const ts = topicsOf(ref);
+    return ts.length > 0 && ts.every(t => t.pretested);
+  }
+
+  /* 不传 = 全部待评估知识点；传资料 = 仅该资料 */
+  function pendingTopics(ref) {
+    const ts = ref ? topicsOf(ref) : state.topics;
+    return ts.filter(t => !t.pretested);
+  }
 
   /* ---------------- 循环阶段 / 角色 ---------------- */
   function setStage(s) { state.loopStage = s; save(); }
@@ -199,11 +303,10 @@ const Engine = (() => {
   /* =========================================================
      学生自主上传资料（经后端解析生成知识点与 quiz）
      ========================================================= */
-  function uploads() { return state.uploads; }
 
   /* 把后端解析结果合并进本地知识点模型：
-     - 后端返回 { topics: [{ name, desc, explain, quiz, ... }] }
-     - 每个知识点带 id、初始 mastery 30，pretested=false */
+     - 后端返回 { topics: [{ name, desc, explain, quiz, ... }], summary }
+     - 每个知识点带 id、初始 mastery 30，pretested=false，并绑定资料 id */
   function ingestParsed(parsed) {
     const tlist = (parsed && parsed.topics) || [];
     const materialId = parsed && (parsed.material_id || parsed.materialId);
@@ -237,6 +340,7 @@ const Engine = (() => {
         ts: Date.now(),
         count: added.length,
         courseTitle: parsed.source || '我的上传资料',
+        materialId: materialId || null,
         names: added.slice(0, 5).map(t => t.icon + ' ' + t.name),
       };
     }
@@ -294,10 +398,11 @@ const Engine = (() => {
   function removeUpload(id) {
     // 找到该资料对应的知识点来源，一并清除，避免残留
     const rec = state.uploads.find(x => x.id === id);
-    if (rec && rec.materialId) {
-      // 后端解析结果的 topic.src 是「我的上传资料」或文件名，
-      // 这里按 materialId 关联移除（见 ingestParsed 里对 src 的标记）。
-      state.topics = state.topics.filter(t => t._materialId !== rec.materialId);
+    if (rec) {
+      const keys = [rec.materialId, rec.id].filter(Boolean);
+      state.topics = state.topics.filter(t =>
+        !t._materialId || keys.indexOf(t._materialId) === -1);
+      if (state.activeMaterialId === rec.id) state.activeMaterialId = null;
     }
     state.uploads = state.uploads.filter(x => x.id !== id);
     save();
@@ -313,21 +418,22 @@ const Engine = (() => {
   }
 
   /* =========================================================
-     已发布/学习路径信息（学生端语义简化为「我的知识点」）
+     路径信息（学生端语义：按资料出处分组）
      ========================================================= */
   function published() {
     return {
       count: state.topics.length,
       courses: [],
       latest: null,
-      note: '上传课程资料后，AI 会解析出知识点并加入你的学习路径；已有知识点与进度不会被覆盖。',
+      note: '',
     };
   }
 
-  function pathGroups() {
-    // 学生端按「资料出处」分组
+  /* 接受资料 rec/id 或知识点数组；不传 = 全部资料 */
+  function pathGroups(arg) {
+    const list = Array.isArray(arg) ? arg : (arg ? topicsOf(arg) : state.topics);
     const groups = {};
-    state.topics.forEach(t => {
+    list.forEach(t => {
       const key = t.src || '我的上传资料';
       if (!groups[key]) groups[key] = [];
       groups[key].push(t);
@@ -340,10 +446,13 @@ const Engine = (() => {
   return {
     state, init, reset, save,
     topics, topic, overallMastery, topicContent,
-    plan, nextTopic, nextPlan, applyResult, applyPreTest,
+    plan, nextTopic, nextPlan, applyResult, applyPreTest, pretestDone,
     setStage, stage, setRole, role,
     published, pathTopics, pathGroups, pendingTopics,
     dismissAppend,
     uploads, addUpload, markUpload, removeUpload, ingestParsed,
+    // 资料维度
+    materialKey, findMaterial, activeMaterial, selectMaterial,
+    topicsOf, materialStats, materialOfTopic,
   };
 })();
