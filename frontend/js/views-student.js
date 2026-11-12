@@ -880,10 +880,18 @@ const Student = (() => {
         <div class="stat-delta up">${delta}</div>
       </div>`;
   }
-  function reset() {
+  async function reset() {
+    // 先清后端（ChromaDB 索引 + 上传文件），否则 AI 问答仍会命中旧资料并给出过时引用
+    let backendOk = false;
+    try {
+      const r = await API.resetMaterials();
+      backendOk = !!(r && r.ok);
+    } catch (e) {
+      backendOk = false;
+    }
     Engine.reset();
     M = null; A = null; P = null;
-    UI.toast('演示数据已重置', 'ok');
+    UI.toast(backendOk ? '演示数据已重置（含后端索引）' : '演示数据已重置（后端未连接，索引可能未清除）', backendOk ? 'ok' : 'warn');
     App.go('#/student/dashboard');
   }
 

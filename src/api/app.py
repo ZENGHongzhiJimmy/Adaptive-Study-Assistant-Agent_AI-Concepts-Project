@@ -128,6 +128,12 @@ def delete_material(material_id: str) -> dict[str, Any]:
         raise HTTPException(status_code=404, detail=str(exc))
 
 
+@app.post("/api/materials/reset")
+def reset_materials() -> dict[str, Any]:
+    """清除全部演示数据（含 ChromaDB 索引与上传文件），供前端"重置演示数据"调用。"""
+    return get_material_service().reset()
+
+
 @app.post("/api/quiz/generate")
 def generate_quiz(req: QuizRequest) -> dict[str, Any]:
     svc = get_material_service()

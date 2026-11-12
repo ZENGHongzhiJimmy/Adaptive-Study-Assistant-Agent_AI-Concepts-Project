@@ -352,6 +352,49 @@ class MaterialService:
     def list_materials(self) -> list[dict[str, Any]]:
         return list(self._materials.values())
 
+    def reset(self) -> dict[str, Any]:
+        """清除全部演示数据：内存记录、解析出的知识点、ChromaDB 索引与磁盘文件。
+
+        这是"重置演示数据"的后端落地路径，确保之后 RAG 问答不再引用任何
+        已被重置的资料（否则向量库残留会导致 AI 仍能命中旧内容并给出
+        "Source: ..." 的过时引用）。
+
+        关键点：不能只按内存 ``_materials`` 里记录的 chunk_ids 删除 —— 后端
+        重启后该字典是空的，之前会话上传的资料会残留向量库，导致 reset 之后
+        问答仍能命中旧内容。因此这里对 ``student_uploads`` collection 做整体
+        clear，并清空整个 uploads 目录，彻底消除残留。
+        """
+        # 1) 清空整个学生上传向量库（含后端重启前索引的残留 chunk）
+        chunk_removed = 0
+        try:
+            chunk_removed = self.store.clear()
+        except Exception:
+            pass
+
+        # 2) 删除 uploads 目录下所有上传文件（不依赖内存记录，避免残留）
+        files_removed = 0
+        try:
+            for path in self.upload_dir.iterdir():
+                try:
+                    if path.is_file():
+                        path.unlink()
+                        files_removed += 1
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        # 3) 清空内存状态
+        material_ids = list(self._materials.keys())
+        self._topics.clear()
+        self._materials.clear()
+        return {
+            "reset": True,
+            "materials_removed": len(material_ids),
+            "chunks_removed": chunk_removed,
+            "files_removed": files_removed,
+        }
+
     def delete_material(self, material_id: str) -> dict[str, Any]:
         """Remove an uploaded material everywhere it lives.
 

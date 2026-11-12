@@ -70,6 +70,11 @@ const API = (() => {
     });
   }
 
+  /* 清除全部演示数据：后端会一并清理 ChromaDB 索引与上传文件 */
+  async function resetMaterials() {
+    return request('/api/materials/reset', { method: 'POST' });
+  }
+
   /* 基于资料生成 quiz（可作为独立入口） */
   async function generateQuiz(payload) {
     return request('/api/quiz/generate', {
@@ -86,5 +91,5 @@ const API = (() => {
     });
   }
 
-  return { base, health, uploadMaterial, parseMaterial, deleteMaterial, generateQuiz, ask };
+  return { base, health, uploadMaterial, parseMaterial, deleteMaterial, resetMaterials, generateQuiz, ask };
 })();

@@ -128,6 +128,26 @@ class ChromaVectorStore:
         self._collection.delete(ids=ids)
         return len(ids)
 
+    def clear(self) -> int:
+        """Delete every chunk in the collection, returning how many were removed.
+
+        Used by ``MaterialService.reset()`` to purge the entire ``student_uploads``
+        index. Unlike ``delete_by_ids`` (which relies on ids tracked in memory),
+        this operates directly on the persisted collection, so it also removes
+        chunks that were indexed before a backend restart — the reason stale
+        ``Source: ...`` citations could survive a reset.
+        """
+        removed = self.count()
+        if removed <= 0:
+            return 0
+        try:
+            # ChromaDB supports deleting all records via an empty ``where`` filter.
+            self._collection.delete(where={})
+        except Exception:
+            # Fallback for older ChromaDB: drop and recreate the collection.
+            self.rebuild()
+        return removed
+
     def search_by_vector(
         self,
         vector: Sequence[float],
