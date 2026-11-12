@@ -7,11 +7,13 @@
 # config_for_log() (version, model, alpha, thresholds, seed) into events.
 
 platform:
-  version: "0.1.0-p4"
+  version: "0.1.0"
 
 llm:
+  # Primary model (OpenRouter id). Change this to switch models.
   model: baidu/ernie-5.5-flash-preview:free
 
+  # Tried in order when the primary model is unavailable (404 / 429).
   free_fallback_models:
     - cohere/north-mini-code:free
     - nvidia/nemotron-3-ultra-550b-a55b:free
@@ -19,6 +21,7 @@ llm:
     - nvidia/nemotron-3.5-lightning:free
     - recursive/flint-v1.0:free
 
+  # Key / endpoint env var names (values live in .env, never here).
   api_key_env: OPENROUTER_API_KEY
   base_url_env: OPENROUTER_BASE_URL
   default_base_url: https://openrouter.ai/api/v1

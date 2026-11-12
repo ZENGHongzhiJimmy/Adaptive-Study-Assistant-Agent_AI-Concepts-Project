@@ -22,6 +22,8 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Sequence
@@ -353,30 +355,33 @@ class MaterialService:
         return list(self._materials.values())
 
     def reset(self) -> dict[str, Any]:
-        """清除全部演示数据：内存记录、解析出的知识点、ChromaDB 索引与磁盘文件。
+        """彻底清空全部相关数据，回到初始状态，供平台重新开始使用。
 
-        这是"重置演示数据"的后端落地路径，确保之后 RAG 问答不再引用任何
-        已被重置的资料（否则向量库残留会导致 AI 仍能命中旧内容并给出
-        "Source: ..." 的过时引用）。
+        清空范围（"重置数据" = 全部清空、从头开始）：
+          1) 学生上传资料对应的 ChromaDB 集合（student_uploads）；
+          2) data/uploads/ 目录下所有上传文件；
+          3) data/course_materials/ 目录下所有课程材料文件；
+          4) 整个 ChromaDB 持久化目录（含 course_chunks 课程索引），
+             确保向量库物理数据也一并删除；
+          5) 内存中的资料与知识点记录。
 
-        关键点：不能只按内存 ``_materials`` 里记录的 chunk_ids 删除 —— 后端
-        重启后该字典是空的，之前会话上传的资料会残留向量库，导致 reset 之后
-        问答仍能命中旧内容。因此这里对 ``student_uploads`` collection 做整体
-        clear，并清空整个 uploads 目录，彻底消除残留。
+        实现要点：Windows 上 ChromaDB 会缓存 SQLite 句柄，直接删目录会
+        失败或留下脏状态，因此必须先 close() 释放句柄，再删除目录并重建
+        一个全新的空 store（重建后 student_uploads 集合仍可正常写入）。
         """
-        # 1) 清空整个学生上传向量库（含后端重启前索引的残留 chunk）
+        # 1) 清空学生上传集合（尽力而为，后续会整体删除目录）
         chunk_removed = 0
         try:
             chunk_removed = self.store.clear()
         except Exception:
             pass
 
-        # 2) 删除 uploads 目录下所有上传文件（不依赖内存记录，避免残留）
+        # 2) 删除 uploads 目录下所有上传文件（跳过 .gitkeep 占位文件）
         files_removed = 0
         try:
             for path in self.upload_dir.iterdir():
                 try:
-                    if path.is_file():
+                    if path.is_file() and path.name != ".gitkeep":
                         path.unlink()
                         files_removed += 1
                 except Exception:
@@ -384,7 +389,50 @@ class MaterialService:
         except Exception:
             pass
 
-        # 3) 清空内存状态
+        # 3) 删除 course_materials 目录下所有课程材料文件（跳过 .gitkeep）
+        course_files_removed = 0
+        course_dir = resolve_path(
+            self.config.get("paths", {}).get("course_materials", "./data/course_materials")
+        )
+        try:
+            if course_dir.exists():
+                for path in course_dir.iterdir():
+                    try:
+                        if path.is_file() and path.name != ".gitkeep":
+                            path.unlink()
+                            course_files_removed += 1
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
+        # 4) 关闭句柄 -> 删除整个 chroma_db 持久化目录 -> 重建空 store
+        db_removed = False
+        persist_dir = resolve_path(self.config["paths"]["chroma_persist_dir"])
+        try:
+            self.store.close()
+        except Exception:
+            pass
+        # 重试几次，应对 Windows 句柄释放的短暂延迟
+        for _ in range(5):
+            try:
+                if persist_dir.exists():
+                    shutil.rmtree(persist_dir)
+                db_removed = True
+                break
+            except OSError:
+                time.sleep(0.1)
+        # 重建全新的空 store（student_uploads 集合按需重建），并恢复 .gitkeep 占位
+        collection = self.config.get("retrieval", {}).get(
+            "upload_collection", "student_uploads"
+        )
+        self.store = ChromaVectorStore(persist_dir, collection_name=collection)
+        try:
+            (persist_dir / ".gitkeep").touch(exist_ok=True)
+        except Exception:
+            pass
+
+        # 5) 清空内存状态
         material_ids = list(self._materials.keys())
         self._topics.clear()
         self._materials.clear()
@@ -393,6 +441,8 @@ class MaterialService:
             "materials_removed": len(material_ids),
             "chunks_removed": chunk_removed,
             "files_removed": files_removed,
+            "course_files_removed": course_files_removed,
+            "chroma_db_removed": db_removed,
         }
 
     def delete_material(self, material_id: str) -> dict[str, Any]:

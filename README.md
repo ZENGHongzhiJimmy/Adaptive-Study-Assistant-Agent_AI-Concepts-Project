@@ -1,7 +1,7 @@
 # Adaptive Study Assistant Agent — 学生端
 
-> **面向自主学习的自适应学习助手（学生端）**  
-> 复用 `dev/ZengHongzhi` 分支的前端界面，仅保留学生端视图；后端由本项目 Python（LangGraph + ChromaDB + LLM）提供 HTTP API。
+> **面向自主学习的自适应学习助手**  
+> 学生自主上传课程资料，系统基于 LLM 与 RAG 自动解析并生成讲解与 quiz，提供自主学习路径推荐与 AI 问答。
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Frontend](https://img.shields.io/badge/Frontend-原生%20HTML%2FCSS%2FJS-orange)
@@ -30,13 +30,12 @@
 - [8. API 接口](#8-api-接口)
 - [9. 已知限制](#9-已知限制)
 - [10. 开发约定](#10-开发约定)
-- [11. 许可证与致谢](#11-许可证与致谢)
 
 ---
 
 ## 1. 项目简介
 
-本项目把自适应学习助手聚焦为**纯学生端**体验：学生自主学习，无需教师/管理员参与。系统围绕「学生自主上传课程资料」这一入口，形成完整闭环：
+系统围绕「学生自主上传课程资料」这一入口，形成完整闭环：
 
 ```
 学生上传课程资料
@@ -47,8 +46,6 @@
 ```
 
 同时，学生可在「课程资料 · AI 问答」中就上传的资料向 AI 提问，系统基于 RAG（检索增强生成）作答并给出**可核对的引用出处**，而不是凭空编造。
-
-**与 `dev/ZengHongzhi` 分支的关系**：本项目复用了该分支的前端界面（原生 HTML/CSS/JS 学生端视图），但**只截取学生端**，去掉了教师端（AI 生成课程、审核发布）与管理员端（平台监控、用户管理）；知识点来源从「教师发布」改为「学生自主上传资料经 LLM 解析生成」。
 
 ---
 
@@ -126,8 +123,6 @@ js/views-student.js   # 学生端三大页面视图
 js/app.js             # 应用外壳 + hash 路由
 ```
 
-> 与参考项目 `dev/ZengHongzhi` 相比，本版本去掉了 `views-instructor.js`、`views-admin.js`、角色切换逻辑，并新增 `js/api.js` 用于对接后端；`engine.js` 的问答与上传逻辑从「前端 mock」改为「调用后端 LLM + RAG」。
-
 ---
 
 ## 5. 后端技术栈
@@ -139,7 +134,7 @@ js/app.js             # 应用外壳 + hash 路由
 | 向量检索 | **ChromaDB** | 上传资料的切片向量存储与语义检索 |
 | 文本向量化 | **sentence-transformers / Hashing** | 语义嵌入（正式）/ 确定性离线嵌入（测试） |
 | 资料解析 | **PyMuPDF** + 纯文本 | PDF / TXT / MD 提取正文 |
-| Agent 编排 | **LangGraph**（复用） | 自适应规划闭环（本学生端版本由前端 `engine.js` 承担规划，后端专注内容生成） |
+| Agent 编排 | **LangGraph** | 自适应规划闭环（由前端 `engine.js` 承担规划，后端专注内容生成） |
 
 ---
 
@@ -169,7 +164,7 @@ Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
 │   │   ├── app.py                  # FastAPI 应用与路由
 │   │   ├── services.py             # 资料解析 / quiz 生成 / RAG 问答
 │   │   └── run.py                  # 启动入口
-│   ├── agent/                      # Agent 编排（复用）
+│   ├── agent/                      # Agent 编排
 │   ├── ingestion/                  # PDF/TXT 解析与切片
 │   ├── retrieval/                  # 向量库与嵌入
 │   ├── student_model/              # 学生状态模型
@@ -249,9 +244,11 @@ npm start        # 或 node server.js
 | GET | `/api/health` | 健康检查，返回 LLM 配置状态 |
 | POST | `/api/materials/upload` | 上传资料（multipart，PDF/TXT/MD） |
 | POST | `/api/materials/parse` | LLM 解析资料 → 抽取知识点 + 生成讲解与 quiz |
+| DELETE | `/api/materials/{material_id}` | 删除指定资料 |
+| POST | `/api/materials/reset` | 重置全部数据（上传资料、课程材料、ChromaDB 索引与向量库文件），平台回到初始状态 |
 | POST | `/api/quiz/generate` | 基于资料生成 quiz（可选独立入口） |
 | POST | `/api/qa/ask` | RAG + LLM 问答，返回 `{ answer, sources }` |
-| GET | `/api/progress` | 学习进度（后端占位，前端本地状态为主） |
+| GET | `/api/progress` | 学习进度，返回 `{ topics, overall_mastery }` |
 
 示例（解析资料）：
 
@@ -265,8 +262,8 @@ curl -X POST http://127.0.0.1:8000/api/materials/parse \
 
 ## 9. 已知限制
 
-- **LLM 免费额度限流**：默认使用 OpenRouter 免费模型（`google/gemma-4-31b-it:free`），有 50 次/天限额且可能被提供方限流（HTTP 429）。此时「解析生成 quiz」与「AI 问答」会返回明确的 503 提示；上传与 RAG 检索不受影响。免费模型 ID 会轮换，可用 `python -m src.utils.llm_client --list-free-models` 查询后只改 `config.yaml -> llm.model`。
-- **学习状态存于前端**：掌握度与学习轨迹由前端 `localStorage` 维护，后端不持久化学生作答状态（`/api/progress` 为占位）。
+- **LLM 免费额度限流**：目前测试开发使用 OpenRouter 免费模型（默认 `baidu/ernie-5.5-flash-preview:free` 模型），可根据自己需求更改模型。免费模型有每日/每分钟请求额度限制，可能被提供方限流（HTTP 429）。此时「解析生成 quiz」与「AI 问答」会返回明确的 503 提示；上传与 RAG 检索不受影响。免费模型 ID 会轮换，可用 `python -m src.utils.llm_client --list-free-models` 查询后修改 `config.yaml -> llm.model`。
+- **学习状态存于前端**：掌握度与学习轨迹由前端 `localStorage` 维护，后端不持久化学生作答状态。
 - **嵌入后端**：默认 `auto`，本机未安装 sentence-transformers 时降级为 hashing（确定性词袋哈希，非语义嵌入）。正式语义检索需安装并固定为 `sentence_transformers`。
 - **资料格式**：支持 PDF / TXT / MD；PPT 暂不支持（可先导出为 PDF）。
 - **单用户**：当前为课程原型，未实现多用户认证与数据隔离。
@@ -279,11 +276,3 @@ curl -X POST http://127.0.0.1:8000/api/materials/parse \
 - 敏感信息（`OPENROUTER_API_KEY`）只放在本地 `.env`，绝不写入代码 / README / 前端；提交前运行 `python -m src.utils.secret_guard`。
 - 阈值、模型、路径统一在 `config.yaml` 维护，`.env` 只放密钥与端点。
 - 提交信息建议格式：`feat:` / `fix:` / `docs:` / `exp:`。
-
----
-
-## 11. 许可证与致谢
-
-- **License**：本仓库为课程作业项目，暂未指定开源许可证。
-- **前端来源**：学生端界面复用自 `Wenbin-Feng/software_group_proj` 的 `dev/ZengHongzhi` 分支（MIT License），仅保留学生端视图并改造为对接本项目后端。
-- **致谢**：感谢参考项目提供的设计系统与前端实现；技术实现参考 LangGraph、ChromaDB、FastAPI、sentence-transformers、PyMuPDF 与 OpenRouter 官方文档。
