@@ -593,13 +593,40 @@ const Student = (() => {
   /* ================= 课程资料上传 + AI 问答助手 ================= */
   let M = null;
 
+  /* AI 问答历史记录持久化（localStorage），刷新页面后仍保留 */
+  const CHAT_KEY = 'asa_student_chat_v1';
+
+  function loadChat() {
+    try {
+      const raw = localStorage.getItem(CHAT_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.msgs)) {
+          M = { msgs: parsed.msgs };
+          return;
+        }
+      }
+    } catch (e) { /* 忽略损坏数据 */ }
+    M = { msgs: [] };
+  }
+
+  function saveChat() {
+    if (!M) return;
+    try { localStorage.setItem(CHAT_KEY, JSON.stringify(M)); } catch (e) {}
+  }
+
+  function clearChat() {
+    try { localStorage.removeItem(CHAT_KEY); } catch (e) {}
+    M = { msgs: [] };
+  }
+
   function materials() {
-    if (!M) M = { msgs: [] };
+    if (!M) loadChat();
     App.go('#/student/materials');
   }
 
   function materialsView() {
-    if (!M) M = { msgs: [] };
+    if (!M) loadChat();
 
     const mine = Engine.uploads();
     const indexed = mine.filter(m => m.status === 'parsed').length;
@@ -779,20 +806,24 @@ const Student = (() => {
     if (!el || !el.value.trim()) return;
     const q = el.value.trim();
     el.value = '';
+    if (!M) loadChat();
     M.msgs.push({ who: 'me', text: q });
+    saveChat();
     App.render();
     doAsk(q);
   }
 
   function askExample(q) {
-    if (!M) M = { msgs: [] };
+    if (!M) loadChat();
     M.msgs.push({ who: 'me', text: q });
+    saveChat();
     App.render();
     doAsk(q);
   }
 
   async function doAsk(q) {
     // 优先走真实后端 RAG + LLM；后端不可用时给出明确提示
+    if (!M) loadChat();
     const r = await API.ask(q);
     if (r.ok && r.data) {
       M.msgs.push({ who: 'ai', text: r.data.answer || '', sources: r.data.sources || [] });
@@ -804,6 +835,7 @@ const Student = (() => {
         sources: [],
       });
     }
+    saveChat();
     App.render();
     const sc = document.getElementById('qa-scroll');
     if (sc) sc.scrollTop = sc.scrollHeight;
@@ -826,7 +858,6 @@ const Student = (() => {
       <div class="section-head">
         <span class="h-section">学习进度与掌握度</span>
         <span class="spacer"></span>
-        <button class="btn btn-ghost btn-sm" onclick="Student.reset()">${I('refresh',14)} 重置演示数据</button>
       </div>
 
       <div class="grid g-4 mb-16">
@@ -890,7 +921,8 @@ const Student = (() => {
       backendOk = false;
     }
     Engine.reset();
-    M = null; A = null; P = null;
+    clearChat();
+    A = null; P = null;
     UI.toast(backendOk ? '演示数据已重置（含后端索引）' : '演示数据已重置（后端未连接，索引可能未清除）', backendOk ? 'ok' : 'warn');
     App.go('#/student/dashboard');
   }

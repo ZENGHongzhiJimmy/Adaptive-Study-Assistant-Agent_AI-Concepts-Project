@@ -22,7 +22,7 @@ const App = (() => {
     '#/student/pretest':   ['Pre-test', '建立你的初始知识状态'],
   };
 
-  const USER = { name: 'student1', initial: 'S', role: '学生' };
+  const USER = { name: 'Student', initial: 'S', role: '学生' };
 
   /* ---------------- 路由 ---------------- */
   function view() {
@@ -68,11 +68,19 @@ const App = (() => {
           <div class="topbar-sub">${title[1]}</div>
         </div>
         <div class="topbar-right">
-          <div class="row" style="gap:8px">
-            <span class="avatar">${u.initial}</span>
-            <div>
-              <div class="u-name">${u.name}</div>
-              <div class="text-xs" style="color:var(--text-3)">${u.role}</div>
+          <div class="user-menu">
+            <button class="user-menu-trigger" onclick="App.toggleUserMenu(event)">
+              <div class="row" style="gap:8px">
+                <span class="avatar">${u.initial}</span>
+                <div style="text-align:left">
+                  <div class="u-name">${u.name}</div>
+                  <div class="text-xs" style="color:var(--text-3)">${u.role}</div>
+                </div>
+              </div>
+              <span class="user-caret"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+            </button>
+            <div class="user-menu-panel" id="user-menu-panel">
+              <button class="user-menu-item" onclick="Student.reset()">${I('refresh', 14)} 重置数据</button>
             </div>
           </div>
         </div>
@@ -88,6 +96,28 @@ const App = (() => {
       </main>`;
   }
 
+  /* ---------------- 用户菜单 ---------------- */
+  function toggleUserMenu(event) {
+    const panel = document.getElementById('user-menu-panel');
+    if (!panel) return;
+    const menu = panel.closest('.user-menu');
+    const isOpen = panel.classList.contains('open');
+    closeUserMenu();
+    if (!isOpen) {
+      panel.classList.add('open');
+      if (menu) menu.classList.add('open');
+      event && event.stopPropagation();
+    }
+  }
+
+  function closeUserMenu() {
+    const panel = document.getElementById('user-menu-panel');
+    if (!panel) return;
+    panel.classList.remove('open');
+    const menu = panel.closest('.user-menu');
+    if (menu) menu.classList.remove('open');
+  }
+
   /* ---------------- 导航 ---------------- */
   function go(hash) {
     if (location.hash === hash) { render(); return; }
@@ -98,10 +128,12 @@ const App = (() => {
   function boot() {
     if (!location.hash) location.hash = '#/student/dashboard';
     window.addEventListener('hashchange', render);
+    // 点击页面其他区域关闭用户菜单
+    document.addEventListener('click', closeUserMenu);
     render();
   }
 
   document.addEventListener('DOMContentLoaded', boot);
 
-  return { render, go, view };
+  return { render, go, view, toggleUserMenu, closeUserMenu };
 })();

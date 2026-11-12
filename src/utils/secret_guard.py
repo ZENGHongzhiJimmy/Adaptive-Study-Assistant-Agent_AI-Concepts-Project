@@ -32,7 +32,11 @@ PLACEHOLDER_VALUES = frozenset({
     "sk-or-your-key-here", "your-key-here", "changeme", "your-api-key",
     "your_api_key_here", "<your-key>", "xxx", "none", "null",
 })
-PLACEHOLDER_MARKERS = ("your-key", "your_key", "your-api", "changeme", "<", "example")
+PLACEHOLDER_MARKERS = (
+    "your-key", "your_key", "your-api", "changeme", "<", "example",
+    # Chinese / localized placeholder hints (README, docs)
+    "你的", "你的真实", "真实key", "真实密钥", "替换", "占位", "示例",
+)
 
 KEY_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("OpenRouter key", re.compile(r"sk-or-v1-[A-Za-z0-9]{20,}")),

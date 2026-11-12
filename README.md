@@ -210,7 +210,7 @@ cp .env.example .env        # Windows PowerShell: Copy-Item .env.example .env
 在 `.env` 中填入真实 Key（`.env` 已被 `.gitignore` 忽略，绝不入库）：
 
 ```dotenv
-OPENROUTER_API_KEY=sk-or-你的真实key
+OPENROUTER_API_KEY=sk-or-your-key-here
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 ```
 

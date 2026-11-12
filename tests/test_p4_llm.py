@@ -1,6 +1,6 @@
 """P4 acceptance tests: OpenRouter free model wiring, key safety, LLM content.
 
-Everything is offline: no API key, no network, no Streamlit. All LLM calls go
+Everything is offline: no API key and no network access. All LLM calls go
 through an injected stub client, so the tests verify parsing / grounding /
 degradation / trace logging without touching a real provider.
 """

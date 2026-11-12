@@ -18,13 +18,13 @@ from src.utils import llm_client as lc
 
 EXPECTED_PACKAGES = {
     "langgraph", "langchain-openrouter", "openai", "pymupdf",
-    "sentence-transformers", "chromadb", "streamlit", "pandas",
+    "sentence-transformers", "chromadb", "pandas",
     "scikit-learn", "matplotlib", "python-dotenv", "PyYAML", "pytest",
 }
 
 SKELETON_DIRS = (
     "src/utils", "src/ingestion", "src/retrieval", "src/student_model",
-    "src/agent/prompts", "src/ui", "experiments/baselines",
+    "src/agent/prompts", "experiments/baselines",
     "experiments/results", "tests", "report",
     "data/course_materials", "data/chroma_db",
 )

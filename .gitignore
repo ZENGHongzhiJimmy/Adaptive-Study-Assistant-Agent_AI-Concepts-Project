@@ -39,6 +39,12 @@ data/*.log
 # NOTE: experiments/results/ is intentionally NOT ignored - result CSV/plots
 # are committed for reproducibility (see README section 8).
 
+# --- Frontend local state (browser localStorage backups / chat history) ---
+# AI 问答历史等仅存于浏览器 localStorage，不应有任何本地文件进入版本库。
+*.localstorage
+*chat*.json
+*_history*.json
+
 # --- OS / editor ---
 .DS_Store
 Thumbs.db
