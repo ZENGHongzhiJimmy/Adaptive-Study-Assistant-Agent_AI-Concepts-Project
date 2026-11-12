@@ -93,14 +93,14 @@ def _generator(client, **overrides) -> LLMContentGenerator:
     return LLMContentGenerator(cfg, client=client)
 
 
-# --- free model & configuration ---------------------------------------------
+# --- model & configuration --------------------------------------------------
 
-def test_config_defaults_to_a_free_openrouter_model():
+def test_config_defaults_to_the_configured_model():
     cfg = load_config()
-    assert cfg["llm"]["model"].endswith(":free")
+    assert cfg["llm"]["model"]  # a model is configured (paid model; not :free)
     assert "openrouter.ai" in cfg["llm"]["default_base_url"]
-    assert cfg["llm"]["free_fallback_models"]
-    assert all(m.endswith(":free") for m in cfg["llm"]["free_fallback_models"])
+    # fallback list may be empty when a paid model is used
+    assert isinstance(cfg["llm"]["free_fallback_models"], list)
     assert cfg["agent"]["llm_mode"] == "on"           # platform uses the LLM by default
     assert cfg["evaluation"]["subjective_rubric_enabled"] is False
     assert config_for_log(cfg)["llm_mode"] == "on"     # frozen snapshot matches config
@@ -177,15 +177,17 @@ def test_list_free_models_filters_the_public_catalog():
     assert urls == ["https://openrouter.ai/api/v1/models"]
 
 
-def test_retired_free_model_falls_back_and_logs_actual_model():
+def test_retired_primary_model_falls_back_and_logs_actual_model():
     cfg = load_config()
+    # 注入一个临时兜底列表，验证「主模型失效 -> 回退 -> 记录实际模型」机制
+    cfg["llm"]["free_fallback_models"] = ["test/fallback-model"]
     seen: list[str] = []
 
     class _Completions:
         def create(self, **kwargs):
             seen.append(kwargs["model"])
             if len(seen) == 1:
-                raise RuntimeError("404: model not found (free ID retired)")
+                raise RuntimeError("404: model not found (ID retired)")
             return SimpleNamespace(
                 id="gen-2", model=kwargs["model"],
                 choices=[SimpleNamespace(message=SimpleNamespace(content="OK"))],
@@ -404,9 +406,9 @@ def test_removed_mode_flags_are_rejected():
     assert exc.value.code == 2
 
 
-def test_cli_check_reports_free_model_without_network(capsys):
+def test_cli_check_reports_configured_model_without_network(capsys):
     assert lc.main(["--check"]) == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload["model"].endswith(":free")
+    assert payload["model"]  # a model is configured (paid model; not :free)
     assert payload["api_key"] in ("configured", "missing/placeholder")
     assert payload["effective_config"]["llm_mode"] == "on"

@@ -665,7 +665,9 @@ const Student = (() => {
     const msgs = M.msgs.map(m => `
       <div class="msg ${m.who === 'ai' ? 'ai' : 'me'}">
         ${m.who === 'ai' ? `<div class="msg-who">${I('sparkles',12)} AI 问答助手</div>` : ''}
-        ${m.text.replace(/\n/g, '<br>')}
+        ${m.pending
+          ? `<span class="msg-pending">正在思考<span class="dots"></span></span>`
+          : m.text.replace(/\n/g, '<br>')}
         ${m.sources && m.sources.length ? `
           <div class="qa-src">
             <span class="text-xs" style="color:var(--text-3)">引用出处：</span>
@@ -824,21 +826,29 @@ const Student = (() => {
   async function doAsk(q) {
     // 优先走真实后端 RAG + LLM；后端不可用时给出明确提示
     if (!M) loadChat();
-    const r = await API.ask(q);
-    if (r.ok && r.data) {
-      M.msgs.push({ who: 'ai', text: r.data.answer || '', sources: r.data.sources || [] });
-    } else {
-      M.msgs.push({
-        who: 'ai',
-        text: (r.error ? '（' + r.error + '）\n\n' : '')
-          + '暂时无法连接 AI 问答后端。请确认已启动后端服务（FastAPI，默认 http://localhost:8000），并已配置 LLM API Key。',
-        sources: [],
-      });
-    }
-    saveChat();
+    // 先插入「正在思考」占位，避免用户误以为卡死
+    const pending = { who: 'ai', text: '', pending: true, sources: [] };
+    M.msgs.push(pending);
     App.render();
     const sc = document.getElementById('qa-scroll');
     if (sc) sc.scrollTop = sc.scrollHeight;
+
+    const r = await API.ask(q);
+    // 用真实结果替换占位消息
+    if (r.ok && r.data) {
+      pending.pending = false;
+      pending.text = r.data.answer || '';
+      pending.sources = r.data.sources || [];
+    } else {
+      pending.pending = false;
+      pending.text = (r.error ? '（' + r.error + '）\n\n' : '')
+        + '暂时无法连接 AI 问答后端。请确认已启动后端服务（FastAPI，默认 http://localhost:8000），并已配置 LLM API Key。';
+      pending.sources = [];
+    }
+    saveChat();
+    App.render();
+    const sc2 = document.getElementById('qa-scroll');
+    if (sc2) sc2.scrollTop = sc2.scrollHeight;
   }
 
   /* ================= 学习进度 ================= */

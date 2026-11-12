@@ -63,16 +63,19 @@ Required schema:
 }
 
 Rules:
-- Extract 3-6 topics; each topic needs 1-2 explain pages and 1-2 quizzes.
+- Extract ALL important knowledge points in the provided text. Do NOT fix the
+  count to a small range: if the text has 10 key points, return 10. The number
+  of topics must scale with the amount of content.
+- Each topic needs 1-2 explain pages and 1-2 quizzes.
 - Each quiz has 2-4 options; "a" is the 0-based index of the correct option.
 - KEEP IT CONCISE: short bullet items (<= 12 words each), short quiz options,
-  and a one-line "why". Do NOT write long paragraphs - the whole JSON must stay
-  well under the token limit or it will be truncated.
+  and a one-line "why". Do NOT write long paragraphs.
 - Base EVERYTHING strictly on the material text; do not invent facts.
 - Use the same language as the material.
 - Output valid JSON: double quotes only, no trailing commas, no comments.
 - MOST IMPORTANT: always close every brace and bracket so the JSON is complete.
-  It is better to return fewer topics than to return truncated JSON."""
+  If you are about to run out of room, close the current topic cleanly instead
+  of leaving it truncated — a complete JSON is more important than one extra topic."""
 
 EXTRACT_USER = """Material name: {name}
 
@@ -498,19 +501,17 @@ class MaterialService:
             raise ValueError("资料不存在")
 
         text = self._material_text(material_id)
-        # 控制 prompt 长度：超出部分截断
-        max_chars = 16000
-        excerpt = text[:max_chars]
 
+        # 完整优先、不受限：使用付费模型，将整份资料一次性交给 LLM 提取
+        # 全部知识点，不做分片、不截断、不限制知识点数量。max_tokens 给足，
+        # 保证长资料的完整 JSON 也能一次生成。
         messages = [
             {"role": "system", "content": EXTRACT_SYSTEM},
             {"role": "user", "content": EXTRACT_USER.format(
-                name=rec["name"], text=excerpt,
+                name=rec["name"], text=text,
             )},
         ]
-        # 知识点 + 讲解 + quiz 的完整 JSON 较长（英文资料尤其），
-        # 4000 token 会被截断导致 JSON 不完整；提高到 8000。
-        response = self.llm.chat(messages, max_tokens=8000)
+        response = self.llm.chat(messages, max_tokens=16000)
 
         # 仅在「空响应/限流」这类瞬时错误时重试一次；JSON 截断/格式错误
         # 重试通常无益（模型行为一致），直接报错，避免浪费调用额度。
@@ -519,7 +520,7 @@ class MaterialService:
         for _ in range(2):
             if not (response.text or "").strip():
                 last_err = "LLM 返回空响应（可能被限流，请稍后重试）"
-                response = self.llm.chat(messages, max_tokens=8000)
+                response = self.llm.chat(messages, max_tokens=16000)
                 continue
             try:
                 payload = _extract_json(response.text)
@@ -534,16 +535,23 @@ class MaterialService:
         if not isinstance(topics, list) or not topics:
             raise ValueError("LLM 未返回有效知识点")
 
+        # 合并去重：按知识点名称归一化去重，保留首次出现顺序
+        seen: set[str] = set()
         normalized: list[dict[str, Any]] = []
-        for i, t in enumerate(topics[:8]):
+        for t in topics:
             if not isinstance(t, dict):
                 continue
+            name = str(t.get("name") or "").strip()
+            key = name.lower()
+            if not name or key in seen:
+                continue
+            seen.add(key)
             quiz = self._normalize_quiz(t.get("quiz") or [])
             explain = self._normalize_explain(t.get("explain") or [])
             normalized.append({
-                "name": str(t.get("name") or f"知识点 {i + 1}"),
+                "name": name,
                 "desc": str(t.get("desc") or ""),
-                "icon": self._icon_for(i),
+                "icon": self._icon_for(len(normalized)),
                 "explain": explain,
                 "quiz": quiz,
                 "src": rec["name"],

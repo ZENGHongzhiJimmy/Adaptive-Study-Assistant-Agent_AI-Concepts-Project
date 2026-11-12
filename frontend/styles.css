@@ -519,6 +519,9 @@ input, textarea, select { font: inherit; color: inherit; }
 .msg { max-width: 84%; }
 .qa-src { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
 .qa-src .chip { font-size: 11.5px; padding: 3px 9px; background: var(--surface); }
+.msg-pending { color: var(--text-3); font-style: italic; }
+.msg-pending .dots::after { content: ''; animation: dots 1.2s steps(4, end) infinite; }
+@keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } 100% { content: '...'; } }
 
 /* 资料上传 */
 .dropzone {
