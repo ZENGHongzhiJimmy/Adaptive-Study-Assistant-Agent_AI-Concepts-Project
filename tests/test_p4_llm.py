@@ -100,7 +100,7 @@ def test_config_defaults_to_the_configured_model():
     assert cfg["llm"]["model"]  # a model is configured (paid model; not :free)
     assert "openrouter.ai" in cfg["llm"]["default_base_url"]
     # fallback list may be empty when a paid model is used
-    assert isinstance(cfg["llm"]["free_fallback_models"], list)
+    assert isinstance(cfg["llm"]["fallback_models"], list)
     assert cfg["agent"]["llm_mode"] == "on"           # platform uses the LLM by default
     assert cfg["evaluation"]["subjective_rubric_enabled"] is False
     assert config_for_log(cfg)["llm_mode"] == "on"     # frozen snapshot matches config
@@ -180,7 +180,7 @@ def test_list_free_models_filters_the_public_catalog():
 def test_retired_primary_model_falls_back_and_logs_actual_model():
     cfg = load_config()
     # 注入一个临时兜底列表，验证「主模型失效 -> 回退 -> 记录实际模型」机制
-    cfg["llm"]["free_fallback_models"] = ["test/fallback-model"]
+    cfg["llm"]["fallback_models"] = ["test/fallback-model"]
     seen: list[str] = []
 
     class _Completions:
@@ -197,8 +197,8 @@ def test_retired_primary_model_falls_back_and_logs_actual_model():
     fake = SimpleNamespace(chat=SimpleNamespace(completions=_Completions()))
     client = LLMClient(cfg, api_key="test-key", client=fake)
     result = client.smoke()
-    assert seen == [cfg["llm"]["model"], cfg["llm"]["free_fallback_models"][0]]
-    assert result.model == cfg["llm"]["free_fallback_models"][0]
+    assert seen == [cfg["llm"]["model"], cfg["llm"]["fallback_models"][0]]
+    assert result.model == cfg["llm"]["fallback_models"][0]
     assert result.text == "OK"
 
 

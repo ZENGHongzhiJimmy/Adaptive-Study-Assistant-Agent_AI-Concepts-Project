@@ -164,7 +164,7 @@ class LLMClient:
         self.config = cfg
         self.model = llm["model"]
         self.fallback_models = [
-            str(m) for m in llm.get("free_fallback_models", []) if str(m) != self.model
+            str(m) for m in llm.get("fallback_models", []) if str(m) != self.model
         ]
         self.temperature = float(llm.get("temperature", 0.0))
         self.max_tokens = int(llm.get("max_tokens", 256))
@@ -219,8 +219,8 @@ class LLMClient:
     ) -> LLMResponse:
         """Send one chat request and return text + latency + token usage.
 
-        If the configured free model has been retired, retry the same request on
-        ``llm.free_fallback_models`` (free IDs rotate). ``LLMResponse.model``
+        If the configured primary model has been retired, retry the same request on
+        ``llm.fallback_models``. ``LLMResponse.model``
         always reports the model that actually answered, so P6 logs are honest.
         """
         self.require_key()
@@ -330,7 +330,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "base_url": client.base_url,
                 "api_key": "configured" if client.is_configured else "missing/placeholder",
                 "model": client.model,
-                "free_fallback_models": client.fallback_models,
+                "fallback_models": client.fallback_models,
                 "key_setup_hint": None if client.is_configured else key_setup_message(),
             },
             ensure_ascii=False,

@@ -262,7 +262,7 @@ curl -X POST http://127.0.0.1:8000/api/materials/parse \
 
 ## 9. 已知限制
 
-- **LLM 模型配置与限流**：默认主模型为 OpenRouter 免费模型 `baidu/ernie-5.5-flash-preview:free`，并在 `free_fallback_models` 中配置付费模型 `deepseek/deepseek-v4.1-flash` 作为兜底。主模型正常时只调用免费模型、不额外消耗付费额度；当主模型不可用（如被下架或限流返回 404/429）时，自动按序切换到付费兜底模型完成解析与问答。模型均可根据个人需求在 `config.yaml -> llm` 段自由更换（改 `model` 与 `free_fallback_models`）。
+- **LLM 模型配置与限流**：默认主模型为 OpenRouter 免费模型 `(baidu/ernie-5.5-flash-preview:free)`，并在 `fallback_models` 中配置付费模型 `(deepseek/deepseek-v4.1-flash)` 作为兜底。主模型正常时只调用免费模型、不额外消耗付费额度；当主模型不可用（如被下架或限流返回 404/429）时，自动按序切换到付费兜底模型完成解析与问答。模型均可根据个人需求在 `config.yaml -> llm` 段自由更换（改 `model` 与 `fallback_models`）。
 - **学习状态存于前端**：掌握度与学习轨迹由前端 `localStorage` 维护，后端不持久化学生作答状态。
 - **嵌入后端**：默认 `auto`，本机未安装 sentence-transformers 时降级为 hashing（确定性词袋哈希，非语义嵌入）。正式语义检索需安装并固定为 `sentence_transformers`。
 - **资料格式**：支持 PDF / TXT / MD；PPT 暂不支持（可先导出为 PDF）。

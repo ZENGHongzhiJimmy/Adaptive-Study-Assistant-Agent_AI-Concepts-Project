@@ -14,8 +14,8 @@ llm:
   model: baidu/ernie-5.5-flash-preview:free
 
   # Fallback models tried in order when the primary model is unavailable.
-  free_fallback_models: 
-  - deepseek/deepseek-v4.1-flash
+  fallback_models:
+    - deepseek/deepseek-v4.1-flash
 
   # Key / endpoint env var names (values live in .env, never here).
   api_key_env: OPENROUTER_API_KEY
