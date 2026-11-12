@@ -116,6 +116,18 @@ class ChromaVectorStore:
     def count(self) -> int:
         return int(self._collection.count())
 
+    def delete_by_ids(self, ids: Sequence[str]) -> int:
+        """Delete chunks by id, returning the number of ids passed.
+
+        Used to remove a single uploaded material's chunks from the index
+        without touching unrelated chunks (idempotent: missing ids are fine).
+        """
+        ids = [str(i) for i in ids]
+        if not ids:
+            return 0
+        self._collection.delete(ids=ids)
+        return len(ids)
+
     def search_by_vector(
         self,
         vector: Sequence[float],

@@ -132,6 +132,22 @@ def _model_unavailable(exc: Exception) -> bool:
     return any(marker in text for marker in markers)
 
 
+def _is_rate_limited(exc: Exception) -> bool:
+    """True when the provider throttled the request (429) or we hit a quota.
+
+    Free OpenRouter models are rate-limited intermittently (e.g. 50 req/day,
+    20 req/min). We treat these as retryable / fallback-able rather than fatal.
+    """
+    if type(exc).__name__ in {"RateLimitError", "APIConnectionError", "APITimeoutError"}:
+        return True
+    text = str(exc).lower()
+    markers = (
+        "429", "rate limit", "rate_limit", "too many requests", "quota",
+        "overloaded", "timed out", "timeout", "connection error",
+    )
+    return any(marker in text for marker in markers)
+
+
 class LLMClient:
     """Thin wrapper over the OpenAI-compatible chat completions endpoint."""
 
@@ -219,21 +235,50 @@ class LLMClient:
         }
         candidates = [request["model"], *self.fallback_models]
         started = time.perf_counter()
+        response = None
+        last_exc: Exception | None = None
 
+        # Iterate candidates; for each, retry on transient rate-limit / network
+        # errors (with a short backoff) before moving on to the next model.
         for index, candidate in enumerate(candidates):
             request["model"] = candidate
-            try:
-                response = self._client().chat.completions.create(**request)
+            for attempt in range(self.max_retries + 1):
+                try:
+                    response = self._client().chat.completions.create(**request)
+                    break
+                except Exception as exc:
+                    last_exc = exc
+                    # 404 (retired model) -> skip to next candidate immediately.
+                    if _model_unavailable(exc):
+                        break
+                    # Transient 429 / network -> retry same model, then fall back.
+                    if _is_rate_limited(exc) and attempt < self.max_retries:
+                        time.sleep(min(2 ** attempt, 4))  # 1s, 2s, 4s backoff
+                        continue
+                    if _is_rate_limited(exc) and index + 1 < len(candidates):
+                        # exhausted retries on this model -> try the next one.
+                        break
+                    # Non-retryable error (auth, bad request, ...) -> raise now.
+                    raise
+            if response is not None:
                 break
-            except Exception as exc:
-                if index + 1 < len(candidates) and _model_unavailable(exc):
-                    continue
-                raise
+
+        if response is None:
+            if last_exc is not None:
+                raise last_exc
+            raise RuntimeError("LLM 调用失败：所有候选模型均不可用")
 
         latency_ms = (time.perf_counter() - started) * 1000.0
         usage = getattr(response, "usage", None)
+        message = response.choices[0].message
+        # Some free "reasoning" models put the answer in reasoning_content and
+        # leave content empty; fall back to that field so they remain usable.
+        text = (getattr(message, "content", None) or "").strip()
+        if not text:
+            text = (getattr(message, "reasoning_content", None)
+                    or getattr(message, "reasoning", None) or "").strip()
         return LLMResponse(
-            text=(response.choices[0].message.content or "").strip(),
+            text=text,
             model=getattr(response, "model", None) or request["model"],
             latency_ms=round(latency_ms, 2),
             prompt_tokens=getattr(usage, "prompt_tokens", None),
