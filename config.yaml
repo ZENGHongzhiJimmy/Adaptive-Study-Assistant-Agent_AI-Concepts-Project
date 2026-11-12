@@ -1,0 +1,81 @@
+# Adaptive Study Assistant Agent - canonical non-sensitive configuration.
+#
+# This file is the SINGLE source of truth for experiment-relevant knobs.
+# Secrets / endpoints are the only things allowed in .env (see .env.example).
+# NEVER put a real API key here: this file is committed to GitHub.
+# P6 freeze: do not modify this file during E1-E3; every run logs
+# config_for_log() (version, model, alpha, thresholds, seed) into events.
+
+platform:
+  version: "0.1.0"
+
+llm:
+  # Primary model (OpenRouter id). Change this to switch models.
+  model: baidu/ernie-5.5-flash-preview:free
+
+  # Fallback models tried in order when the primary model is unavailable.
+  fallback_models:
+    - deepseek/deepseek-v4.1-flash
+
+  # Key / endpoint env var names (values live in .env, never here).
+  api_key_env: OPENROUTER_API_KEY
+  base_url_env: OPENROUTER_BASE_URL
+  default_base_url: https://openrouter.ai/api/v1
+  temperature: 0.0              # deterministic content generation for P6
+  max_tokens: 700               # grounded Teach + one structured question
+  timeout_s: 30
+  max_retries: 3
+
+embedding:
+  backend: auto
+  model: sentence-transformers/all-MiniLM-L6-v2
+  hashing_dimension: 256
+
+paths:
+  course_materials: ./data/course_materials
+  chroma_persist_dir: ./data/chroma_db
+  sqlite_path: ./data/student_state.db
+  results_dir: ./experiments/results
+  uploads_dir: ./data/uploads
+
+# P1 RAG indexing / retrieval.
+retrieval:
+  collection_name: course_chunks
+  upload_collection: student_uploads
+  chunk_size: 800
+  chunk_overlap: 100
+  top_k: 3
+
+# P2 student state model: new = alpha*old + (1-alpha)*performance.
+mastery:
+  alpha: 0.7
+  initial: 0.0
+  recent_errors_window: 3
+
+# P3 minimal loop thresholds; P4 reuses them for Challenge / Review routing.
+planner:
+  mode: rule                 # rule | llm
+  thresholds:
+    teach_below: 0.4
+    practice_below: 0.7
+    challenge_below: 0.85
+  target_mastery: 0.85
+  review_trigger_errors: 2
+  max_steps: 10              # hard stop for the State Update -> Re-planning back-edge
+
+# P4 LLM content generation.
+agent:
+  # Quote the mode: YAML 1.1 would otherwise parse `off` / `on` as booleans.
+  llm_mode: "on"
+  max_json_retries: 2        # retry structured question generation on bad JSON
+  teach_max_chars: 900       # cap the LLM explanation stored in the trace
+  grounded_min_hits: 1       # Teach needs >=1 retrieved chunk for a citation
+
+evaluation:
+  subjective_rubric_enabled: false
+
+experiment:
+  seed: 42
+
+logging:
+  level: INFO

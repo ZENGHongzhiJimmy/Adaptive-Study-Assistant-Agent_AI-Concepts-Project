@@ -1,0 +1,33 @@
+# Adaptive Study Assistant Agent - Python dependencies (P0)
+#
+# Strategy: lower bound + upper bound on the major version.
+#   - pip picks the newest release compatible with the running Python (project supports 3.10+).
+#   - upper bounds prevent an untested major upgrade from silently changing behaviour.
+#   - P6 freeze: run `python -m pip freeze > requirements.lock.txt` and commit the exact lock.
+#
+# Note: PyYAML is required by src/utils/config.py to read config.yaml.
+
+# --- Agent orchestration & LLM access ---
+langgraph>=1.0,<2
+langchain-openrouter>=0.2,<0.3
+openai>=1.60,<4
+
+# --- RAG knowledge base ---
+pymupdf>=1.24,<3
+sentence-transformers>=3.0,<7
+chromadb>=0.5,<2
+
+# --- Student HTTP API (P5-b) ---
+fastapi>=0.110,<1
+uvicorn>=0.30,<1
+python-multipart>=0.0.9,<1
+
+# --- Experiment analysis (E1-E3) ---
+pandas>=2.2,<4
+scikit-learn>=1.5,<2
+matplotlib>=3.9,<4
+
+# --- Configuration & tests ---
+python-dotenv>=1.0,<2
+PyYAML>=6.0,<7
+pytest>=8.0,<10
