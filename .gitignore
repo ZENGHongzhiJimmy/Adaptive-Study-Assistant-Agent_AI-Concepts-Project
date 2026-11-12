@@ -28,6 +28,8 @@ data/course_materials/*
 !data/course_materials/.gitkeep
 data/chroma_db/*
 !data/chroma_db/.gitkeep
+data/uploads/*
+!data/uploads/.gitkeep
 *.db
 *.db-journal
 *.sqlite
