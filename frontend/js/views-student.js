@@ -937,21 +937,58 @@ const Student = (() => {
 
   /* ================= 课程资料上传 + AI 问答助手 ================= */
 
-  /* AI 问答历史记录持久化（localStorage），刷新页面后仍保留 */
-  const CHAT_KEY = 'asa_student_chat_v1';
+  /* ================= AI 问答记录（按课程资料分别存储） =================
+     每份上传的资料拥有独立的问答记录桶，key 用上传记录 id —— 它在上传瞬间
+     即确定，后续回填 materialId 也不会变化。刷新页面后仍保留。 */
+  const CHAT_KEY = 'asa_student_chat_v2';    // { [rec.id]: { msgs: [] } }
+  const CHAT_KEY_V1 = 'asa_student_chat_v1'; // 旧版单一记录，读取时自动迁移
+  const QA_KEY = 'asa_qa_active_v1';         // 当前问答资料 id
+  const GLOBAL_KEY = '__global__';           // 尚未上传任何资料时的兜底桶
+
+  let Q = null;   // 当前问答资料 id（对应 Engine.uploads() 的 rec.id）
+
+  /* 问答记录桶的 key：用上传记录 id，保证 materialId 回填后 key 不变 */
+  function chatKey(rec) { return rec ? rec.id : GLOBAL_KEY; }
+
+  function loadQ() {
+    try { Q = localStorage.getItem(QA_KEY) || null; } catch (e) { Q = null; }
+  }
+
+  function saveQ() {
+    try {
+      if (Q) localStorage.setItem(QA_KEY, Q);
+      else localStorage.removeItem(QA_KEY);
+    } catch (e) {}
+  }
 
   function loadChat() {
+    let loaded = false;
     try {
       const raw = localStorage.getItem(CHAT_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed && Array.isArray(parsed.msgs)) {
-          M = { msgs: parsed.msgs };
-          return;
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          M = parsed;
+          loaded = true;
         }
       }
     } catch (e) { /* 忽略损坏数据 */ }
-    M = { msgs: [] };
+    if (!loaded) {
+      M = {};
+      // 兼容旧版单一问答记录：迁移到第一份资料的桶，避免历史记录丢失
+      try {
+        const old = localStorage.getItem(CHAT_KEY_V1);
+        if (old) {
+          const p = JSON.parse(old);
+          if (p && Array.isArray(p.msgs) && p.msgs.length) {
+            M[chatKey(Engine.uploads()[0])] = { msgs: p.msgs };
+          }
+        }
+      } catch (e) {}
+      try { localStorage.removeItem(CHAT_KEY_V1); } catch (e) {}
+      saveChat();
+    }
+    loadQ();
   }
 
   function saveChat() {
@@ -960,8 +997,40 @@ const Student = (() => {
   }
 
   function clearChat() {
-    try { localStorage.removeItem(CHAT_KEY); } catch (e) {}
-    M = { msgs: [] };
+    try {
+      localStorage.removeItem(CHAT_KEY);
+      localStorage.removeItem(CHAT_KEY_V1);
+      localStorage.removeItem(QA_KEY);
+    } catch (e) {}
+    M = {}; Q = null;
+  }
+
+  /* 当前问答资料：优先使用用户点选的资料；未选或已失效时回退到第一份 */
+  function qaRec() {
+    const mine = Engine.uploads();
+    if (!mine.length) return null;
+    const rec = Q ? Engine.findMaterial(Q) : null;
+    return rec || mine[0];
+  }
+
+  /* 当前资料对应的问答记录（不存在则创建） */
+  function currentChat() {
+    if (!M) loadChat();
+    const key = chatKey(qaRec());
+    if (!M[key] || !Array.isArray(M[key].msgs)) M[key] = { msgs: [] };
+    return M[key];
+  }
+
+  /* 点击右侧资料行 → 切换为该资料对应的问答记录 */
+  function selectQA(id) {
+    if (!M) loadChat();
+    const rec = Engine.findMaterial(id);
+    if (!rec) return;
+    Q = rec.id;
+    saveQ();
+    const y = window.scrollY;
+    App.render();
+    window.scrollTo(0, y);
   }
 
   function materials() {
@@ -974,10 +1043,13 @@ const Student = (() => {
 
     const mine = Engine.uploads();
     const indexed = mine.filter(m => m.status === 'parsed' || m.status === 'indexed').length;
+    const cur = qaRec();          // 当前问答资料
+    const chat = currentChat();   // 该资料对应的问答记录
 
-    /* 资料列表 */
+    /* 资料列表（整行可点选，切换到该资料对应的问答记录） */
     const rowOf = (m, removable) => `
-      <div class="topic-row">
+      <div class="topic-row qa-pick${cur && cur.id === m.id ? ' is-active' : ''}"
+           onclick="Student.selectQA('${m.id}')" title="点击切换到该资料的问答记录">
         <div class="topic-emoji">${fileIcon(m.kind)}</div>
         <div class="topic-main">
           <div class="topic-name">${escapeHtml(m.name)}</div>
@@ -985,9 +1057,9 @@ const Student = (() => {
         </div>
         ${statusBadge(m)}
         ${Engine.materialStats(m).count > 0
-          ? `<button class="btn btn-soft btn-sm" onclick="Student.openMaterial('${m.id}')">${I('arrowRight',13)} 进入模块</button>`
+          ? `<button class="btn btn-soft btn-sm" onclick="event.stopPropagation();Student.openMaterial('${m.id}')">${I('arrowRight',13)} 进入模块</button>`
           : ''}
-        ${removable ? `<button class="btn btn-ghost btn-sm" onclick="Student.rmUpload('${m.id}')">移除</button>` : ''}
+        ${removable ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();Student.rmUpload('${m.id}')">移除</button>` : ''}
       </div>`;
 
     /* 解析失败的资料，额外展示错误原因与重试 */
@@ -1000,8 +1072,8 @@ const Student = (() => {
       ? mine.map(m => rowOf(m, true)).join('')
       : `<div class="empty" style="padding:22px">还没有上传资料 · 上传后 AI 会解析并生成知识点与测验</div>`;
 
-    /* 问答消息 */
-    const msgs = M.msgs.map(m => `
+    /* 问答消息（只渲染当前选中资料的记录） */
+    const msgs = chat.msgs.map(m => `
       <div class="msg ${m.who === 'ai' ? 'ai' : 'me'}">
         ${m.who === 'ai' ? `<div class="msg-who">${I('sparkles',12)} AI 问答助手</div>` : ''}
         ${m.pending
@@ -1026,7 +1098,9 @@ const Student = (() => {
             <span class="h-section">AI 问答助手</span>
             <span class="badge badge-info">${indexed} 份资料可检索</span>
             <span class="spacer"></span>
-            <span class="text-xs" style="color:var(--text-3)">只依据你的资料作答，并给出引用</span>
+            <span class="text-xs" style="color:var(--text-3)">${cur
+              ? '当前问答资料：' + escapeHtml(cur.name) + ' · 只依据该资料作答'
+              : '只依据你的资料作答，并给出引用'}</span>
           </div>
           <div class="chat-wrap" style="height:460px">
             <div class="chat-scroll" id="qa-scroll">${msgs}</div>
@@ -1094,6 +1168,14 @@ const Student = (() => {
   /* 上传资料 → 后端解析 → 生成知识点与 quiz */
   async function uploadAndParse(file) {
     const rec = Engine.addUpload(file);
+    // 每份新资料立即拥有独立的问答记录桶，并自动成为当前问答资料
+    if (!M) loadChat();
+    Q = rec.id;
+    saveQ();
+    if (!M[chatKey(rec)] || !Array.isArray(M[chatKey(rec)].msgs)) {
+      M[chatKey(rec)] = { msgs: [] };
+    }
+    saveChat();
     App.render();
 
     // 1) 上传
@@ -1138,6 +1220,15 @@ const Student = (() => {
       } catch (e) { /* 后端删除失败也继续删本地，避免卡住 */ }
     }
     Engine.removeUpload(id);
+    // 同步删除该资料的独立问答记录；若正选中它，切到剩余的第一份资料
+    if (!M) loadChat();
+    delete M[id];
+    saveChat();
+    if (Q === id) {
+      const next = Engine.uploads()[0];
+      Q = next ? next.id : null;
+      saveQ();
+    }
     UI.toast('已移除该资料（含索引与知识点）', 'warn');
     App.render();
   }
@@ -1147,32 +1238,38 @@ const Student = (() => {
     if (!el || !el.value.trim()) return;
     const q = el.value.trim();
     el.value = '';
-    if (!M) loadChat();
-    M.msgs.push({ who: 'me', text: q });
+    const chat = currentChat();
+    chat.msgs.push({ who: 'me', text: q });
     saveChat();
     App.render();
-    doAsk(q);
+    doAsk(q, chat);
   }
 
   function askExample(q) {
-    if (!M) loadChat();
-    M.msgs.push({ who: 'me', text: q });
+    const chat = currentChat();
+    chat.msgs.push({ who: 'me', text: q });
     saveChat();
     App.render();
-    doAsk(q);
+    doAsk(q, chat);
   }
 
-  async function doAsk(q) {
+  async function doAsk(q, chat) {
     // 优先走真实后端 RAG + LLM；后端不可用时给出明确提示
-    if (!M) loadChat();
+    if (!chat) chat = currentChat();
+    // 发起请求时就锁定当前资料，避免等待期间切换资料导致串味
+    const rec = qaRec();
     // 先插入「正在思考」占位，避免用户误以为卡死
     const pending = { who: 'ai', text: '', pending: true, sources: [] };
-    M.msgs.push(pending);
+    chat.msgs.push(pending);
     App.render();
     const sc = document.getElementById('qa-scroll');
     if (sc) sc.scrollTop = sc.scrollHeight;
 
-    const r = await API.ask(q);
+    const r = await API.ask(
+      q,
+      rec ? (rec.materialId || rec.id) : null,
+      rec ? rec.name : null
+    );
     // 用真实结果替换占位消息
     if (r.ok && r.data) {
       pending.pending = false;
@@ -1327,7 +1424,7 @@ const Student = (() => {
     topicDetail, openTopic, activity, start, quit,
     pretest, pretestView, pickPretest, nextPretest, commitPretest,
     slide, ask, pick, nextQ, finishPractice, flip, card, finish,
-    materials, materialsView, onFiles, drop, rmUpload, askAI, askExample,
+    materials, materialsView, onFiles, drop, rmUpload, selectQA, askAI, askExample,
     progress, reset, dismissAppend,
   };
 })();

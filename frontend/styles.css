@@ -402,6 +402,13 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 .topic-row:last-child { border-bottom: none; }
 .topic-row:hover { background: var(--surface-2); }
+/* 课程资料问答：右侧资料行可点选；仅新增选中态，不改变布局与位置 */
+.topic-row.qa-pick { cursor: pointer; }
+.topic-row.qa-pick.is-active {
+  background: var(--primary-soft);
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+.topic-row.qa-pick.is-active .topic-name { color: var(--primary-600); }
 .topic-emoji {
   width: 36px; height: 36px; border-radius: 10px; flex: 0 0 36px;
   background: var(--surface-3);

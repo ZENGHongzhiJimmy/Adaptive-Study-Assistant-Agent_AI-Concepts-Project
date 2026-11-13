@@ -640,9 +640,16 @@ class MaterialService:
         return {"material_id": material_id, "count": len(all_quiz), "quiz": all_quiz[:count]}
 
     # ---- RAG 问答 ----
-    def ask(self, question: str) -> dict[str, Any]:
+    def ask(
+        self,
+        question: str,
+        material_id: str | None = None,
+        material_name: str | None = None,
+    ) -> dict[str, Any]:
         self._require_key()
-        hits = self._retrieve(question)
+        hits = self._retrieve(
+            question, material_id=material_id, material_name=material_name
+        )
         if not hits:
             return {
                 "answer": "我在你上传的资料中没有找到直接依据。请换用资料中的原词再问，或上传包含该内容的资料后重试。我不会凭空编造答案。",
@@ -664,13 +671,42 @@ class MaterialService:
             "model": response.model,
         }
 
-    def _retrieve(self, question: str) -> list[RetrievedChunk]:
+    def _topic_for_material(
+        self, material_id: str | None, material_name: str | None
+    ) -> str | None:
+        """把「当前问答资料」映射到索引里的 topic 标签。
+
+        ``save_upload()`` 索引时把每个 chunk 的 ``topic`` 设为
+        ``lecture_name(原始文件名)``。这里复用同一规则即可定位该资料的
+        chunk，因此旧索引无需重建；后端重启后内存记录丢失时，前端传来的
+        原始文件名同样能完成映射。
+        """
+        name = material_name
+        if not name and material_id:
+            rec = self._materials.get(material_id)
+            if rec:
+                name = rec.get("name")
+        if not name:
+            return None
+        return lecture_name(name)
+
+    def _retrieve(
+        self,
+        question: str,
+        material_id: str | None = None,
+        material_name: str | None = None,
+    ) -> list[RetrievedChunk]:
         if self.store.count() == 0:
             return []
         vector = self.embedder.embed([question])[0]
-        return self.store.search_by_vector(
-            vector, top_k=int(self.retrieval_cfg.get("top_k", 3))
-        )
+        top_k = int(self.retrieval_cfg.get("top_k", 3))
+        topic = self._topic_for_material(material_id, material_name)
+        hits = self.store.search_by_vector(vector, top_k=top_k, topic=topic)
+        if not hits and topic:
+            # 安全兜底：若旧索引无法按该标签命中（例如文件名与索引标签不一致），
+            # 退回全局检索，避免误报「未找到依据」。
+            hits = self.store.search_by_vector(vector, top_k=top_k)
+        return hits
 
     @staticmethod
     def _format_context(hits: Sequence[RetrievedChunk], limit: int = 700) -> str:

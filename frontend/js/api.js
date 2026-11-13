@@ -83,11 +83,15 @@ const API = (() => {
     });
   }
 
-  /* RAG + LLM 问答，返回 { answer, sources } */
-  async function ask(question) {
+  /* RAG + LLM 问答，返回 { answer, sources }
+     可选传入当前选中的课程资料，后端会把检索限定在该资料范围内。 */
+  async function ask(question, materialId, materialName) {
+    const body = { question };
+    if (materialId) body.material_id = materialId;
+    if (materialName) body.material_name = materialName;
     return request('/api/qa/ask', {
       method: 'POST',
-      body: JSON.stringify({ question }),
+      body: JSON.stringify(body),
     });
   }
 

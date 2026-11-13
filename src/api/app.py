@@ -81,6 +81,10 @@ class QuizRequest(BaseModel):
 
 class AskRequest(BaseModel):
     question: str
+    # 可选的「当前问答资料」：带上后 RAG 检索会限定在该资料范围内，
+    # 不带时保持全局检索（兼容旧调用与 CLI 路径）。
+    material_id: str | None = None
+    material_name: str | None = None
 
 
 @app.get("/api/health")
@@ -153,7 +157,11 @@ def ask(req: AskRequest) -> dict[str, Any]:
         raise HTTPException(status_code=400, detail="问题不能为空")
     svc = get_material_service()
     try:
-        return svc.ask(question)
+        return svc.ask(
+            question,
+            material_id=req.material_id,
+            material_name=req.material_name,
+        )
     except svc.MissingKey as exc:
         raise HTTPException(status_code=503, detail=str(exc))
     except Exception as exc:  # noqa: BLE001
