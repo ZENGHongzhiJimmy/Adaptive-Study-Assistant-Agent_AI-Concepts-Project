@@ -33,6 +33,7 @@ const Engine = (() => {
       streak: 5,
       uploads: [],                  // 学生自主上传的资料（含后端解析结果）
       activeMaterialId: null,       // 当前选中的资料（uploads[].id）
+      rolls: {},                    // 各资料的滚动学习轮次：{ [materialKey]: { round, visited[] } }
     };
   }
 
@@ -69,8 +70,23 @@ const Engine = (() => {
     state.topics.forEach(t => {
       if (t && t.icon && !/^[a-zA-Z]+$/.test(String(t.icon))) t.icon = 'bookOpen';
     });
+    /* 新规则用 explainDone / mistakes 判断进度。旧数据补齐字段；
+       旧的 errors 是「答错次数」但没有对应错题卡，留着会让复习页无卡可翻，
+       因此没有错题卡时把 errors 归零（掌握度本身仍保留）。 */
+    state.topics.forEach(t => {
+      if (!Array.isArray(t.mistakes)) t.mistakes = [];
+      if (typeof t.explainDone !== 'boolean') t.explainDone = false;
+      if (typeof t.failStreak !== 'number') t.failStreak = 0;
+      if (typeof t.explainRuns !== 'number') t.explainRuns = t.explainDone ? 1 : 0;
+      if (typeof t.needHelp !== 'boolean') t.needHelp = false;
+      if (!t.mistakes.length) t.errors = 0;
+    });
     if (state.activeMaterialId && !findMaterial(state.activeMaterialId)) {
       state.activeMaterialId = null;
+    }
+    /* 滚动学习的轮次状态：按资料分别记录，旧数据补一个空表 */
+    if (!state.rolls || typeof state.rolls !== 'object' || Array.isArray(state.rolls)) {
+      state.rolls = {};
     }
     /* 旧版本把 LLM 生成的「材料解读/摘要」写进了资料记录，界面已不再展示，
        统一清掉，保证所有资料（PDF / TXT / MD）的记录结构与显示完全一致。 */
@@ -150,7 +166,7 @@ const Engine = (() => {
     const rec = findMaterial(ref);
     const ts = rec ? topicsOf(rec) : [];
     const avg = ts.length ? Math.round(ts.reduce((s, t) => s + t.mastery, 0) / ts.length) : 0;
-    const quizCount = ts.reduce((n, t) => n + (((t.content || {}).quiz) || []).length, 0);
+    const quizCount = ts.reduce((n, t) => n + quizBank(t).length, 0);
     const explainCount = ts.reduce((n, t) => n + (((t.content || {}).explain) || []).length, 0);
     const pending = ts.filter(t => !t.pretested).length;
     const ids = ts.map(t => t.id);
@@ -193,44 +209,126 @@ const Engine = (() => {
     return t.content || { explain: [], quiz: [], pretest: null };
   }
 
+  /* ---------------- 掌握判定 ----------------
+     MASTERED：达到 80% 且没有未纠正的错题，才算「学会了」。到这一步就不再推荐活动。
+     EXPLAIN_CAP：只看讲解最多到 55%。讲解没有任何检核，不能单独把掌握度刷满。 */
+  const MASTERED = 80;
+  const EXPLAIN_CAP = 55;
+
+  /* 可作答的题目：必须有题干、至少 2 个选项、且正确答案下标合法。
+     解析结果偶尔会缺 a（-1）或选项不足，这类题「怎么选都判错」，
+     必须在进入学习前剔除，否则学生会一直被认为答错。 */
+  function quizBank(t) {
+    const list = (t && t.content && t.content.quiz) || [];
+    return list.filter(q => q && q.q && Array.isArray(q.opts) && q.opts.length >= 2 &&
+      Number.isInteger(q.a) && q.a >= 0 && q.a < q.opts.length);
+  }
+
+  function explainPages(t) { return (t && t.content && t.content.explain) || []; }
+  function mistakesOf(t) { return (t && Array.isArray(t.mistakes)) ? t.mistakes : []; }
+
+  function isMastered(t) {
+    return !!t && t.mastery >= MASTERED && mistakesOf(t).length === 0 && !(t.errors > 0);
+  }
+
+  /* 复习卡片来自「错题本」，而不是讲解页的 tip */
+  function reviewCards(topicId) {
+    const t = topic(topicId);
+    return mistakesOf(t).map(m => ({
+      q: m.q || '',
+      a: (m.opts && m.opts[m.a]) || '',
+      why: m.why || '',
+    }));
+  }
+
   /* =========================================================
      自适应规划（学生端 3 种活动）
      ========================================================= */
 
+  /* 规划一条真正有终点的路径：
+       连续失败 → 重学讲解（explain）
+       错题 ≥ 2 道 → 错题复习（review）
+       没看过讲解 → 学讲解（explain，一次）
+       有题可做 → 练习（practice，按正确率结算）
+       已掌握 / 没有可学内容 → 不再推荐（activity 为 null）
+     不再用「mastery < 45 / < 80」这种只看分数的阈值来决定活动类型。 */
   function plan(topicId) {
     const t = topic(topicId);
     if (!t) return null;
 
-    let actId, reason, rule;
+    const wrong = mistakesOf(t).length;
+    const pages = explainPages(t);
+    const bank = quizBank(t);
 
-    if (t.errors >= 2 && t.mastery < 75) {
-      actId = 'review';
-      rule = `errors >= 2 且 mastery < 75`;
-      reason = `该知识点已累计 <b>${t.errors} 次错误</b>，且掌握度仅 ${t.mastery}%，先通过复习纠正错误概念再继续。`;
-    } else if (t.mastery < 45) {
-      actId = 'explain';
-      rule = `mastery < 45`;
-      reason = `掌握度 ${t.mastery}% 属于薄弱区，先学习资料生成的知识点讲解。`;
-    } else if (t.mastery < 80) {
-      actId = 'practice';
-      rule = `45 <= mastery < 80`;
-      reason = `掌握度 ${t.mastery}% 已有基础但仍不稳定，通过练习巩固应用。`;
-    } else {
-      actId = 'review';
-      rule = `mastery >= 80`;
-      reason = `掌握度 ${t.mastery}% 已达熟练，安排间隔复习以维持长期记忆。`;
+    if (isMastered(t)) {
+      return {
+        topic: t, activity: null, mastered: true,
+        rule: `≥ ${MASTERED}% 且无错题`,
+        reason: `掌握度 ${t.mastery}%，错题已全部纠正，这个知识点已经完成。`,
+      };
     }
 
-    return { topic: t, activity: DATA.activities[actId], reason, rule };
+    /* 连续两次练习正确率不足一半：说明讲解没吃透，先重学再看错题，
+       否则会在「练习→错题复习→再练习」之间原地打转。 */
+    if (t.needHelp && pages.length) {
+      return {
+        topic: t,
+        activity: DATA.activities.explain,
+        rule: `连续 ${t.failStreak} 次练习未达标`,
+        reason: `最近 ${t.failStreak} 次练习正确率都不足一半，先回到讲解把概念重新过一遍，再回来做题。`,
+      };
+    }
+
+    if (wrong >= 2) {
+      return {
+        topic: t,
+        activity: DATA.activities.review,
+        rule: `错题本还有 ${wrong} 道题`,
+        reason: `练习中有 <b>${wrong} 道题</b>还没答对，先用错题复习纠正概念，再回到练习。`,
+      };
+    }
+
+    if (!t.explainDone && pages.length) {
+      return {
+        topic: t,
+        activity: DATA.activities.explain,
+        rule: '尚未学习讲解',
+        reason: `还没看过这个知识点的讲解（${pages.length} 页），先建立概念再练习。`,
+      };
+    }
+
+    if (bank.length) {
+      return {
+        topic: t,
+        activity: DATA.activities.practice,
+        rule: `掌握度 ${t.mastery}% < ${MASTERED}%`,
+        reason: `掌握度 ${t.mastery}%，用练习检验是否真的掌握：答对越多提升越快，答错会回落。`,
+      };
+    }
+
+    return {
+      topic: t, activity: null, blocked: true,
+      rule: '没有可评估的内容',
+      reason: pages.length
+        ? `这份资料只为它生成了讲解、没有测验题，读完讲解后无法继续评估掌握度。`
+        : `解析结果里既没有讲解也没有测验题，这个知识点暂时无法学习。`,
+    };
   }
 
+  /* 只在「已完成 Pre-test 且尚未掌握」的知识点里选：先补最薄弱的
+     （mastery 升序），同分时错题多的优先。不能让 95% 但有 1 道旧错题
+     的知识点压过 30% 的新知识点。
+     连续失败 3 次的知识点会被排到后面（暂时换一个知识点），
+     避免整条路径卡在同一个学不会的知识点上。 */
   function nextTopic(list) {
-    const arr = pathTopics(list);
+    const arr = pathTopics(list).filter(t => t && t.pretested && !isMastered(t));
+    const key = t => t.mastery + ((t.failStreak || 0) >= 3 ? 100 : 0);
     const sorted = [...arr].sort((a, b) => {
-      if (b.errors !== a.errors) return b.errors - a.errors;
-      return a.mastery - b.mastery;
+      const d = key(a) - key(b);
+      if (d !== 0) return d;
+      return mistakesOf(b).length - mistakesOf(a).length;
     });
-    return sorted[0];
+    return sorted[0] || null;
   }
 
   /* 传入资料 rec/id 时，只在该资料范围内推荐下一步 */
@@ -239,62 +337,308 @@ const Engine = (() => {
     return t ? plan(t.id) : null;
   }
 
-  /* ---------------- 活动完成 → 状态更新 ---------------- */
+  /* =========================================================
+     滚动学习（Rolling Plan）—— 一份资料的默认路径
+     ---------------------------------------------------------
+     不再「一个知识点学到掌握再换下一个」，而是按轮次把整份资料的
+     知识点一起推进：
+       第 r 轮 = 所有「已评估且未掌握」的知识点，每个各安排 1 个活动
+       一轮里某个知识点只出现一次（做完就记入 visited）
+       本轮全部走过 → 轮次 +1，按最新掌握度重新排下一轮
+     活动类型仍由 plan(topicId) 决定：连续失败→重学讲解、错题≥2→复习、
+     没学讲解→讲解、其余→练习。
+
+     这是「默认」路径：界面只暴露 rollPlan().next 一个动作，
+     不列本轮队列、不让学生在多个知识点之间挑先后（那属于学生自主决策，
+     由下面的单知识点路径承担）。
+     单知识点路径保留：知识点详情页 / 知识点卡片里的「开始学习」
+     仍然直接调用 plan() + start()，随时可以只学一个知识点。
+     ========================================================= */
+
+  const STAGE_ORDER = { help: 0, review: 1, explain: 2, practice: 3 };
+
+  /* 这个知识点此刻处在哪一步（用于排序与展示） */
+  function stageOf(t) {
+    if (!t) return 'none';
+    if (!t.pretested) return 'pretest';
+    if (isMastered(t)) return 'done';
+    const p = plan(t.id);
+    if (!p) return 'none';
+    if (p.blocked) return 'blocked';
+    if (!p.activity) return 'done';
+    if (p.activity.id === 'explain' && t.needHelp) return 'help';
+    return p.activity.id;
+  }
+
+  function rollKey(ref) {
+    const rec = findMaterial(ref);
+    if (rec) return String(rec.materialId || rec.id);
+    return typeof ref === 'string' ? ref : 'all';
+  }
+
+  /* 取（并按需初始化）某份资料的轮次状态 */
+  function rollOf(ref) {
+    if (!state.rolls || typeof state.rolls !== 'object') state.rolls = {};
+    const key = rollKey(ref);
+    let r = state.rolls[key];
+    if (!r || typeof r !== 'object') {
+      r = state.rolls[key] = { round: 1, visited: [], startedAt: Date.now() };
+    }
+    if (!Number.isFinite(r.round) || r.round < 1) r.round = 1;
+    if (!Array.isArray(r.visited)) r.visited = [];
+    return r;
+  }
+
+  /* 只返回「能被推荐」的知识点（已评估、未掌握、有下一步活动） */
+  function rollCandidates(ts) {
+    return ts.filter(t => t.pretested && !isMastered(t));
+  }
+
+  /* 一份资料的滚动计划：
+       { round, total, mastered, remaining, pendingPretest,
+         steps: [{ topic, activity, rule, reason, stage, nextRound, order }],
+         next, blocked, done }
+     steps 已按「本轮还没轮到的 → 阶段 → 掌握度」排好序。 */
+  function rollPlan(arg, opts) {
+    const ts = pathTopics(arg);
+    const rs = rollOf(arg);
+    const visited = rs.visited || [];
+
+    const pendingPretest = ts.filter(t => !t.pretested).length;
+    const cands = rollCandidates(ts);
+
+    const steps = [];
+    cands.forEach(t => {
+      const p = plan(t.id);
+      if (!p || !p.activity) return;
+      const stage = stageOf(t);
+      steps.push({
+        topic: t,
+        activity: p.activity,
+        rule: p.rule,
+        reason: p.reason,
+        stage: stage,
+        nextRound: visited.indexOf(t.id) !== -1,
+        order: [
+          STAGE_ORDER[stage] == null ? 9 : STAGE_ORDER[stage],
+          t.mastery,
+          -mistakesOf(t).length,
+          ts.indexOf(t),          // 最终按资料里的原始顺序，读起来符合解析顺序
+        ],
+      });
+    });
+
+    steps.sort((a, b) => {
+      /* 本轮还没轮到的优先；同组内先处理最紧急（重学 > 错题 > 讲解 > 练习） */
+      if (a.nextRound !== b.nextRound) return a.nextRound ? 1 : -1;
+      for (let i = 0; i < a.order.length; i++) {
+        if (a.order[i] !== b.order[i]) return a.order[i] - b.order[i];
+      }
+      return 0;
+    });
+
+    const limit = opts && opts.limit;
+    const listed = limit ? steps.slice(0, limit) : steps;
+
+    return {
+      round: rs.round,
+      total: ts.length,
+      mastered: ts.filter(t => isMastered(t)).length,
+      remaining: cands.length,
+      pendingPretest,
+      visited: visited.filter(id => cands.some(t => t.id === id)).length,
+      steps: listed,
+      more: Math.max(0, steps.length - listed.length),
+      next: steps[0] || null,
+      lastRoundDone: steps.length > 0 && steps.every(s => s.nextRound),
+      blocked: ts.filter(t => stageOf(t) === 'blocked'),
+      done: ts.length > 0 && pendingPretest === 0 && cands.length === 0,
+    };
+  }
+
+  /* 一次活动完成后推进轮次：本轮每个知识点只排一次，全部走过就进入下一轮 */
+  function noteRoll(t) {
+    const rec = materialOfTopic(t);
+    if (!rec) return;
+    const rs = rollOf(rec);
+    if (rs.visited.indexOf(t.id) === -1) rs.visited.push(t.id);
+    const cands = rollCandidates(topicsOf(rec));
+    if (!cands.length) {
+      rs.visited = [];              // 全部掌握：轮次停在当前，不再累加
+      return;
+    }
+    const allVisited = cands.every(x => rs.visited.indexOf(x.id) !== -1);
+    if (allVisited) {
+      rs.round = (rs.round || 1) + 1;
+      rs.visited = [];
+    }
+  }
+
+  /* ---------------- 活动完成 → 状态更新 ----------------
+     分数跟着「表现」走，不跟着「次数」走：
+       explain  首次完成 +10（最高到 55%）；重学 +2；再往后 0
+       practice delta = round((正确率 × 100 − 当前掌握度) × 0.6)，限制在 [−10, +25]
+                —— 全对会快速上升，半对停在 50% 附近，全错会掉分
+       review   只清错题、不涨分（翻看错题不等于学会，由练习判定）
+     没有内容可学的活动一律 0 分，不再出现「点一下完成就加分」。 */
   function applyResult(topicId, actId, outcome) {
     const t = topic(topicId);
     if (!t) return null;
 
     const before = t.mastery;
     let delta = 0;
+    let note = '';
 
     switch (actId) {
-      case 'explain':
-        delta = 9;
-        break;
-      case 'practice': {
-        const quizOk = outcome.quizCorrect !== false;
-        delta = quizOk ? 12 : 4;
-        if (!quizOk) t.errors += 1;
+      case 'explain': {
+        const pages = explainPages(t);
+        if (!pages.length) {
+          delta = 0;
+          note = '该知识点没有讲解内容，未计分';
+          break;
+        }
+        /* 讲解只给一次学分：首次 +10，重学 +2，再往后 0 分。
+           否则「反复点完成讲解」就能把掌握度一点点堆上去。 */
+        const runs = Number.isFinite(t.explainRuns) ? t.explainRuns : (t.explainDone ? 1 : 0);
+        delta = runs === 0 ? 10 : (runs === 1 ? 2 : 0);
+        note = runs === 0 ? '完成首次讲解学习'
+          : (runs === 1 ? '重看讲解，只做少量巩固' : '再次重学讲解，不再计分');
+        t.explainRuns = runs + 1;
+        t.explainDone = true;
+        t.needHelp = false;          // 已经重学过，把下一次机会还给练习
         break;
       }
-      case 'review':
-        delta = 7;
-        t.errors = 0;
+      case 'practice': {
+        const answers = Array.isArray(outcome.answers) ? outcome.answers : null;
+        const total = Number.isFinite(outcome.total) ? outcome.total
+          : (answers ? answers.length : quizBank(t).length);
+        const correct = Number.isFinite(outcome.correct) ? outcome.correct
+          : (outcome.quizCorrect === true ? total : 0);
+
+        if (!total) {
+          delta = 0;
+          note = '没有可作答的题目，未计分';
+          break;
+        }
+
+        const score = correct / total;
+        /* 掌握度向「本次正确率」靠近：答对越多涨得越快，正确率低于当前
+           掌握度时反而回落（例如一直答错不会涨到 100%）。 */
+        const raw = Math.round((score * 100 - before) * 0.6);
+        delta = Math.max(-10, Math.min(25, raw));
+
+        if (score >= 0.6) {
+          t.failStreak = 0;
+          t.needHelp = false;
+        } else if (score < 0.5) {
+          t.failStreak = (t.failStreak || 0) + 1;
+          if (t.failStreak >= 2) t.needHelp = true;
+        }
+
+        /* 错题本：答错的进、答对的出。这样「复习」纠正的正是练错的题，
+           而不是讲解页里的 tip。 */
+        if (answers) {
+          const list = quizBank(t);
+          const bucket = mistakesOf(t).slice();
+          answers.forEach(a => {
+            const q = list[a && a.i];
+            if (!q || !q.q) return;
+            const key = String(q.q).slice(0, 160);
+            const at = bucket.findIndex(m => m.q === key);
+            if (a.ok && at !== -1) bucket.splice(at, 1);
+            if (!a.ok && at === -1) {
+              bucket.push({ q: key, opts: q.opts || [], a: q.a, why: q.why || '' });
+            }
+          });
+          t.mistakes = bucket;
+        } else if (score < 0.8) {
+          /* 旧调用方没传逐题结果时，至少保证有错题信号可复习 */
+          const bucket = mistakesOf(t).slice();
+          quizBank(t).forEach(q => {
+            const key = String(q.q).slice(0, 160);
+            if (!bucket.some(m => m.q === key)) {
+              bucket.push({ q: key, opts: q.opts || [], a: q.a, why: q.why || '' });
+            }
+          });
+          t.mistakes = bucket;
+        } else {
+          t.mistakes = [];
+        }
+
+        note = `答对 ${correct} / ${total} 题`;
         break;
+      }
+      case 'review': {
+        const cards = mistakesOf(t);
+        if (!cards.length) {
+          delta = 0;
+          note = '没有待纠正的错题，未计分';
+          break;
+        }
+        /* 复习不计掌握度：翻看错题不等于学会，是否真的掌握由随后的练习判定。
+           它只负责把错题清掉，让路径回到练习。 */
+        delta = 0;
+        t.mistakes = [];
+        note = `已重新讲解 ${cards.length} 道错题，回到练习验证`;
+        break;
+      }
       default:
-        delta = 5;
+        delta = 0;
+        note = '未知活动，未计分';
     }
 
-    t.mastery = Math.max(0, Math.min(100, t.mastery + delta));
+    /* 讲解没有检核，不能把掌握度推高过 55%；但也不能把已掌握的知识点往下拉 */
+    const capped = actId === 'explain'
+      ? Math.max(before, Math.min(EXPLAIN_CAP, before + delta))
+      : before + delta;
+    t.mastery = Math.max(0, Math.min(100, capped));
+
+    const after = t.mastery;
+    const realDelta = after - before;      // 以真实变化为准：100% 时不再显示 +7
+
+    t.errors = mistakesOf(t).length;
     t.attempts += 1;
-    t.lastActivity = DATA.activities[actId].name;
+    t.lastActivity = DATA.activities[actId] ? DATA.activities[actId].name : actId;
 
     state.completed += 1;
-    state.lastActivity = { topicId, actId, delta, ts: Date.now() };
+    state.lastActivity = { topicId, actId, delta: realDelta, ts: Date.now() };
 
     state.trace.unshift({
       ts: Date.now(),
       topicId, topicName: t.name,
-      actId, actName: DATA.activities[actId].name,
-      delta, before, after: t.mastery,
-      ok: outcome.correct !== false,
+      actId, actName: DATA.activities[actId] ? DATA.activities[actId].name : actId,
+      delta: realDelta, before, after,
+      ok: realDelta >= 0,
     });
     if (state.trace.length > 30) state.trace.pop();
 
-    const after = t.mastery;
+    /* 滚动学习：本次活动的知识点记入本轮；本轮走完自动进入下一轮 */
+    noteRoll(t);
+
     const re = plan(topicId);
     save();
-    return { topic: t, before, after, delta, re };
+    return { topic: t, before, after, delta: realDelta, note, re };
   }
 
-  /* ---------------- Pre-test（按资料独立评估） ---------------- */
+  /* ---------------- Pre-test（按资料独立评估） ----------------
+     answers: [{ topicId, correct: true | false | null }]
+     correct === null 表示该知识点没有评估题、学生跳过了：只标记「已评估」，
+     **不改掌握度**——否则「没考过」会被当成「答错」打成 20%，而跳过的题
+     不标记则会让 pretestDone 永远为 false，整条学习路径卡在第一步。
+     Pre-test 只确定起点，不算「错题」：答错记的是 20% 的起点分，
+     不应该让学生一进来就被要求去复习错题本（那时还没有错题卡）。 */
   function applyPreTest(answers) {
     (answers || []).forEach(a => {
       const t = topic(a.topicId);
       if (!t) return;
+      if (a.correct === null || typeof a.correct === 'undefined') {
+        t.pretested = true;          // 保留解析初值（30%），只是不再挡路
+        return;
+      }
       t.mastery = a.correct ? 45 : 20;
       t.attempts += 1;
-      t.errors = a.correct ? 0 : 1;
+      t.errors = 0;
+      t.mistakes = [];
       t.pretested = true;
     });
     // 兼容字段：仅当全部资料的知识点都评估完才为 true
@@ -354,6 +698,11 @@ const Engine = (() => {
         attempts: 0,
         errors: 0,
         pretested: false,
+        explainDone: false,
+        explainRuns: 0,
+        mistakes: [],
+        failStreak: 0,
+        needHelp: false,
         src: p.src || (parsed.source || '我的上传资料'),
         _materialId: materialId || null,
         content: {
@@ -379,18 +728,31 @@ const Engine = (() => {
     return added;
   }
 
+  /* 归一化题库：丢弃「无法作答」的题（没有题干 / 选项不足 2 个 / 正确答案下标非法）。
+     以前这类题会原样进入界面，学生怎么选都判错，掌握度也被判成「一直答错」。 */
   function normalizeQuiz(list) {
-    return (list || []).map((q, i) => {
-      if (typeof q === 'string') {
-        return { q, opts: [], a: -1, why: '' };
+    return (list || []).map(q => {
+      if (!q || typeof q === 'string') return null;
+      const raw = q.opts || q.options || q.choices || [];
+      const opts = Array.isArray(raw)
+        ? raw.slice()
+        : 'ABCD'.split('').map(k => raw[k]).filter(v => v !== undefined && v !== null);
+      let a = -1;
+      if (typeof q.a === 'number') a = q.a;
+      else if (typeof q.a === 'string') {
+        const s = q.a.trim().toUpperCase();
+        a = /^\d+$/.test(s) ? Number(s) : 'ABCD'.indexOf(s);
+      } else if (q.correct_option !== undefined && q.correct_option !== null) {
+        const s = String(q.correct_option).trim().toUpperCase();
+        a = /^\d+$/.test(s) ? Number(s) : 'ABCD'.indexOf(s);
       }
       return {
-        q: q.q || q.question || q.prompt || ('题目 ' + (i + 1)),
-        opts: q.opts || q.options || q.choices || [],
-        a: typeof q.a === 'string' ? 'ABCD'.indexOf(q.a.toUpperCase()) : (typeof q.a === 'number' ? q.a : (q.correct_option !== undefined ? 'ABCD'.indexOf(String(q.correct_option).toUpperCase()) : -1)),
+        q: q.q || q.question || q.prompt || '',
+        opts: opts.map(o => String(o)),
+        a,
         why: q.why || q.explanation || '',
       };
-    });
+    }).filter(q => q && q.q && q.opts.length >= 2 && q.a >= 0 && q.a < q.opts.length);
   }
 
   function normalizeExplain(list) {
@@ -478,6 +840,9 @@ const Engine = (() => {
     state, init, reset, save,
     topics, topic, overallMastery, topicContent,
     plan, nextTopic, nextPlan, applyResult, applyPreTest, pretestDone,
+    rollPlan, rollOf, stageOf,
+    isMastered, quizBank, explainPages, reviewCards, mistakesOf,
+    MASTERED, EXPLAIN_CAP,
     setStage, stage, setRole, role,
     published, pathTopics, pathGroups, pendingTopics,
     dismissAppend,

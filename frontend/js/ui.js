@@ -36,6 +36,7 @@ const UI = (() => {
     download:  '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     file:      '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>',
     clipboard: '<rect x="5" y="4" width="14" height="17" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M9 4V2.5h6V4M9 10h6M9 14h4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
+    eye:       '<path d="M1.8 12S5.2 5.8 12 5.8 22.2 12 22.2 12 18.8 18.2 12 18.2 1.8 12 1.8 12z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8" fill="none"/>',
     inbox:     '<path d="M3 13h5l1.5 2.5h5L16 13h5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M4.5 5h15L21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>',
     /* 下面 3 个是描边式线性图标，放大/缩小时轮廓清晰，不会糊成实心色块 */
     bookOpen:  '<path d="M12 6.5C9.8 4.9 6.8 4.2 3.5 4.5v13c3.3-.3 6.3.4 8.5 2 2.2-1.6 5.2-2.3 8.5-2v-13c-3.3-.3-6.3.4-8.5 2z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="M12 6.5v13" stroke="currentColor" stroke-width="1.7" fill="none"/>',
@@ -172,7 +173,7 @@ const UI = (() => {
 
   /* ---------- 掌握度 → 等级 ---------- */
   function level(m) {
-    if (m >= 75) return { key: 'ok',  label: '已掌握', badge: 'badge-success' };
+    if (m >= 80) return { key: 'ok',  label: '已掌握', badge: 'badge-success' };
     if (m >= 45) return { key: 'mid', label: '学习中', badge: 'badge-warning' };
     return            { key: 'low', label: '薄弱',   badge: 'badge-danger'  };
   }
@@ -199,7 +200,7 @@ const UI = (() => {
     const r = size / 2 - 8;
     const c = 2 * Math.PI * r;
     const off = c - (m / 100) * c;
-    const col = m >= 75 ? '#16a34a' : m >= 45 ? '#d97706' : '#dc2626';
+    const col = m >= 80 ? '#16a34a' : m >= 45 ? '#d97706' : '#dc2626';
     return `
       <div class="ring" style="width:${size}px;height:${size}px">
         <svg width="${size}" height="${size}">

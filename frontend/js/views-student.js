@@ -34,10 +34,11 @@ const Student = (() => {
       A.slides = Engine.topicContent(topicId).explain || [];
       A.i = 0; A.ask = null;
     } else if (type === 'practice') {
-      A.qs = Engine.topicContent(topicId).quiz || [];
+      A.qs = Engine.quizBank(Engine.topic(topicId));
       A.i = 0; A.sel = null; A.correct = 0;
+      A.answers = [];                 // 逐题结果，用于「答错的进错题本」
     } else if (type === 'review') {
-      A.cards = (Engine.topicContent(topicId).explain || []).map(s => ({ q: s.t, a: s.tip }));
+      A.cards = Engine.reviewCards(topicId);
       A.i = 0; A.flip = false;
     }
 
@@ -117,12 +118,16 @@ const Student = (() => {
     const planSteps = [
       ['选择课程资料', '进入对应学习模块'],
       ['完成 Pre-test', '建立该资料的起点'],
-      ['完成推荐活动', '讲解 / 练习 / 复习'],
+      ['滚动学习', '按轮次推进全部知识点'],
       ['查看学习进度', '掌握度持续更新'],
     ];
+    const activeAllMastered = !!(activeStats && activeStats.count > 0 &&
+      activeStats.topics.every(t => Engine.isMastered(t)));
     const cur = !active ? 0
       : !activeStats.pretestDone ? 1
-      : (activeStats.trace.length ? 3 : 2);
+      : (activeAllMastered ? 3 : 2);
+    const activeRoll = active && activeStats.count && activeStats.pretestDone
+      ? Engine.rollPlan(active) : null;
 
     const activeHint = active
       ? `<div class="plan-current">
@@ -130,7 +135,9 @@ const Student = (() => {
              <div class="text-xs" style="color:var(--primary-600);font-weight:700">${I('check', 12)} 已选中 · 当前资料</div>
              <div style="font-weight:700;font-size:13.5px">${I('file', 14)} ${escapeHtml(active.name)}</div>
              <div class="text-xs" style="color:var(--text-3)">
-               ${activeStats.count} 个知识点 · ${activeStats.pretestDone ? 'Pre-test 已完成' : `还有 ${activeStats.pending} 个知识点待 Pre-test`}
+               ${activeStats.count} 个知识点 · ${activeStats.pretestDone
+                 ? (activeRoll ? `第 ${activeRoll.round} 轮 · 已掌握 ${activeRoll.mastered}/${activeRoll.total}` : 'Pre-test 已完成')
+                 : `还有 ${activeStats.pending} 个知识点待 Pre-test`}
              </div>
            </div>
            <span class="spacer"></span>
@@ -359,13 +366,16 @@ const Student = (() => {
         </div>
       </div>`;
 
-    /* ② 该资料的自主学习路径（选择资料后才显示 Pre-test 等步骤） */
+    /* ② 该资料的自主学习路径（选择资料后才显示 Pre-test 等步骤）
+       默认是「滚动学习」：按轮次把这份资料的所有知识点一起推进，
+       而不是把一个知识点学到 80% 再换下一个。 */
     const pathSteps = [
       ['完成 Pre-test', '建立该资料的初始掌握度'],
-      ['完成推荐活动', '讲解 / 练习 / 复习'],
+      ['滚动学习', '按轮次推进全部知识点'],
       ['查看学习进度', '掌握度持续更新'],
     ];
-    const cur = !s.pretestDone ? 0 : (s.trace.length ? 2 : 1);
+    const allMastered = s.count > 0 && s.topics.every(t => Engine.isMastered(t));
+    const cur = !s.pretestDone ? 0 : (allMastered ? 2 : 1);
     const pretestNotice = !s.pretestDone ? `
       <div class="notice">
         <span class="notice-ico">${I('clipboard', 17)}</span>
@@ -378,39 +388,70 @@ const Student = (() => {
       <div class="notice notice-ok">
         <span class="notice-ico">${I('check', 17)}</span>
         <div style="flex:1">
-          <div class="notice-t">Pre-test 已完成</div>
-          <div class="notice-d">Agent 已为这 ${s.count} 个知识点建立起点，下面推荐下一步学习活动。</div>
+          <div class="notice-t">Pre-test 已完成 ${allMastered ? '· 全部知识点已掌握' : ''}</div>
+          <div class="notice-d">${allMastered
+            ? `这 ${s.count} 个知识点都达到了 ${Engine.MASTERED}% 且错题已纠正，本资料的学习路径已完成。`
+            : `${s.count} 个知识点的起点已建立。下面由 Agent 按掌握度自动排定下一步，跟着走即可。`}</div>
         </div>
       </div>`;
 
-    const plan = s.pretestDone ? Engine.nextPlan(rec) : null;
-    const focus = plan ? `
+    const roll = s.pretestDone && !allMastered ? Engine.rollPlan(rec) : null;
+    const next = roll && roll.next;
+    const focus = next ? `
       <div class="focus-card mt-16">
         <div class="focus-top">
-          <div class="focus-ico">${I(plan.activity.icon, 23)}</div>
+          <div class="focus-ico">${I(next.activity.icon, 23)}</div>
           <div class="focus-main">
-            <div class="focus-label">ADAPTIVE PLANNING AGENT · 推荐下一步</div>
-            <div class="focus-title">${plan.activity.name}</div>
-            <div class="focus-meta">${escapeHtml(plan.topic.name)} · 当前掌握度 ${plan.topic.mastery}%</div>
+            <div class="focus-label">ADAPTIVE PLANNING AGENT · 第 ${roll.round} 轮 · 下一步</div>
+            <div class="focus-title">${next.activity.name}</div>
+            <div class="focus-meta">${escapeHtml(next.topic.name)} · 当前掌握度 ${next.topic.mastery}% · 本资料已掌握 ${roll.mastered}/${roll.total}</div>
           </div>
-          ${UI.ring(plan.topic.mastery, 68)}
+          ${UI.ring(next.topic.mastery, 68)}
         </div>
         <div class="focus-body">
-          <div class="reason-line">${plan.reason}　规则 <span class="reason-rule">${plan.rule}</span></div>
+          <div class="reason-line">${next.reason}　规则 <span class="reason-rule">${next.rule}</span></div>
           <div class="row mt-16">
-            <button class="btn btn-primary" onclick="Student.start('${plan.activity.id}','${plan.topic.id}')">${I('play',15)} 开始学习</button>
-            <button class="btn btn-ghost" onclick="Student.openTopic('${plan.topic.id}')">选择其他活动</button>
+            <button class="btn btn-primary" onclick="Student.start('${next.activity.id}','${next.topic.id}')">${I('play',15)} 开始这一步</button>
             <span class="spacer"></span>
             <button class="btn btn-ghost btn-sm" onclick="App.go('#/student/progress/${rec.id}')">查看本资料进度</button>
           </div>
         </div>
-      </div>` : '';
+      </div>` : (allMastered ? `
+      <div class="focus-card mt-16">
+        <div class="focus-top">
+          <div class="focus-ico">${I('check', 23)}</div>
+          <div class="focus-main">
+            <div class="focus-label">ADAPTIVE PLANNING AGENT · 路径已完成</div>
+            <div class="focus-title">本资料的知识点已全部掌握</div>
+            <div class="focus-meta">${s.count} 个知识点 · 平均掌握度 ${s.avg}%</div>
+          </div>
+          ${UI.ring(s.avg, 68)}
+        </div>
+        <div class="focus-body">
+          <div class="reason-line">所有知识点都达到 ${Engine.MASTERED}% 且没有待纠正的错题，Agent 不再安排新的活动。</div>
+          <div class="row mt-16">
+            <button class="btn btn-primary" onclick="App.go('#/student/progress/${rec.id}')">查看学习进度</button>
+            <button class="btn btn-ghost" onclick="Student.openTopic('${s.topics[0] ? s.topics[0].id : ''}')">回看知识点</button>
+          </div>
+        </div>
+      </div>` : (roll && roll.blocked.length ? `
+      <div class="notice mt-16">
+        <span class="notice-ico">${I('bug', 17)}</span>
+        <div style="flex:1">
+          <div class="notice-t">还有知识点暂时无法继续</div>
+          <div class="notice-d">${escapeHtml(roll.blocked[0].name)}：解析结果里缺少可评估的内容，无法安排活动。</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="Student.openTopic('${roll.blocked[0].id}')">查看</button>
+      </div>` : ''));
 
+    /* 不展示本轮队列：路径由 Agent 默认排定，学生只看「下一步」一个动作，
+       不需要从多个知识点里挑谁先谁后。 */
     const pathCard = `
       <div class="card mb-16">
         <div class="card-head">
           <span class="h-section">自主学习路径 · ${escapeHtml(rec.name)}</span>
           <span class="spacer"></span>
+          ${roll ? `<span class="badge badge-muted">第 ${roll.round} 轮</span>` : ''}
           <span class="badge badge-primary">${s.count} 个知识点</span>
         </div>
         <div class="card-body">
@@ -428,7 +469,7 @@ const Student = (() => {
           <span class="h-section">课件解析后的知识点</span>
           <span class="badge badge-info">${s.count} 个</span>
           <span class="spacer"></span>
-          <span class="text-xs" style="color:var(--text-3)">点击展开查看讲解要点与生成测验</span>
+          <span class="text-xs" style="color:var(--text-3)">自主路径之外的单独学习入口 · 点击展开讲解与测验</span>
         </div>
         <div class="card-body kp-list">${kpList}</div>
       </div>`;
@@ -441,7 +482,7 @@ const Student = (() => {
           <div class="topic-name">${escapeHtml(x.topicName)} · ${x.actName}</div>
           <div class="topic-meta">掌握度 ${x.before}% → ${x.after}%</div>
         </div>
-        <span class="badge badge-success">+${x.delta}%</span>
+        <span class="badge ${x.delta > 0 ? 'badge-success' : (x.delta < 0 ? 'badge-danger' : 'badge-muted')}">${x.delta > 0 ? '+' : ''}${x.delta}%</span>
       </div>`).join('') || UI.empty('这份资料还没有学习记录，完成一个活动试试', 'sparkles');
 
     const recordCard = `
@@ -469,8 +510,9 @@ const Student = (() => {
   /* 单个知识点：折叠面板展示解析内容 */
   function knowledgeItem(t, i) {
     const c = t.content || { explain: [], quiz: [], pretest: null };
-    const recAct = Engine.plan(t.id);
-    const actId = recAct ? recAct.activity.id : 'explain';
+    const plan = Engine.plan(t.id);
+    const actId = plan && plan.activity ? plan.activity.id : null;
+    const mastered = Engine.isMastered(t);
     const explain = (c.explain || []).map(s => `
       <div class="kp-slide">
         <div class="kp-slide-t">${escapeHtml(s.t || '讲解要点')}</div>
@@ -480,15 +522,24 @@ const Student = (() => {
         ${s.tip ? `<div class="kp-tip"><b>要点：</b>${escapeHtml(s.tip)}</div>` : ''}
       </div>`).join('') || `<div class="text-xs" style="color:var(--text-3)">暂无讲解内容</div>`;
 
-    const quiz = (c.quiz || []).map((q, qi) => `
-      <div class="kp-quiz">
+    /* 题目默认不标答案：正确项与「解析」都先收起，避免一眼看到答案失去练习意义。
+       点击「查看答案」后由 revealAnswer() 就地展开（只改 DOM，不重渲染，折叠面板不会合上）。
+       只渲染「可作答」的题：缺答案或选项不足的题在 quizBank 里已被剔除。 */
+    const bank = Engine.quizBank(t);
+    const quiz = bank.map((q, qi) => `
+      <div class="kp-quiz" data-a="${Number(q.a) || 0}">
         <div class="kp-quiz-q">${qi + 1}. ${escapeHtml(q.q)}</div>
         ${(q.opts || []).map((o, oi) => `
           <div class="kp-quiz-opt ${oi === q.a ? 'is-answer' : ''}">
             <span class="kp-quiz-key">${'ABCD'[oi]}</span>${escapeHtml(o)}
-            ${oi === q.a ? '<span class="kp-answer-tag">正确答案</span>' : ''}
+            ${oi === q.a ? '<span class="kp-answer-tag" hidden>正确答案</span>' : ''}
           </div>`).join('')}
-        ${q.why ? `<div class="kp-quiz-why">解析：${escapeHtml(q.why)}</div>` : ''}
+        <div class="kp-quiz-foot">
+          <button class="kp-reveal" type="button" onclick="Student.revealAnswer(this)">
+            ${I('eye', 13)}<span>查看答案</span>
+          </button>
+        </div>
+        ${q.why ? `<div class="kp-quiz-why" hidden>解析：${escapeHtml(q.why)}</div>` : ''}
       </div>`).join('') || `<div class="text-xs" style="color:var(--text-3)">暂无测验题</div>`;
 
     const lv = UI.level(t.mastery);
@@ -498,10 +549,10 @@ const Student = (() => {
           <span class="kp-idx">${i + 1}</span>
           <div class="kp-main">
             <div class="kp-name">${escapeHtml(t.name)}
-              ${t.pretested ? '' : '<span class="badge badge-warning">待 Pre-test</span>'}
+              ${mastered ? '<span class="badge badge-success">已掌握</span>' : (t.pretested ? '' : '<span class="badge badge-warning">待 Pre-test</span>')}
             </div>
             <div class="kp-desc">${escapeHtml(t.desc || '')}</div>
-            <div class="kp-meta">讲解 ${(c.explain || []).length} 页 · 测验 ${(c.quiz || []).length} 题 · ${lv.label}</div>
+            <div class="kp-meta">讲解 ${(c.explain || []).length} 页 · 测验 ${bank.length} 题 · ${lv.label}</div>
           </div>
           <div class="kp-bar-wrap">${UI.bar(t.mastery)}<div class="kp-pct">${t.mastery}%</div></div>
           <span class="kp-toggle">查看解析 ▾</span>
@@ -521,12 +572,26 @@ const Student = (() => {
             <span class="text-xs" style="color:var(--text-3)">来源：${escapeHtml(t.src || '我的上传资料')}</span>
             <span class="spacer"></span>
             <button class="btn btn-soft btn-sm" onclick="Student.openTopic('${t.id}')">查看知识点详情</button>
-            <button class="btn btn-primary btn-sm" onclick="Student.start('${actId}','${t.id}')">
-              ${I('play',13)} 开始学习
-            </button>
+            ${actId ? `<button class="btn btn-primary btn-sm" onclick="Student.start('${actId}','${t.id}')">
+              ${I('play',13)} ${mastered ? '再复习一次' : '开始学习'}
+            </button>` : `<span class="badge badge-muted">暂无可学习活动</span>`}
           </div>
         </div>
       </details>`;
+  }
+
+  /* 展开/收起某道生成测验的答案：只改 DOM，不重渲染（折叠面板不会被合上） */
+  function revealAnswer(btn) {
+    const box = btn.closest('.kp-quiz');
+    if (!box) return;
+    const open = box.classList.toggle('is-revealed');
+    const tag = box.querySelector('.kp-quiz-opt.is-answer .kp-answer-tag');
+    if (tag) tag.hidden = !open;
+    const why = box.querySelector('.kp-quiz-why');
+    if (why) why.hidden = !open;
+    const label = btn.querySelector('span');
+    if (label) label.textContent = open ? '收起答案' : '查看答案';
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
 
   /* ================= 知识点详情（三种活动可选） ================= */
@@ -541,13 +606,14 @@ const Student = (() => {
     if (!t) return UI.empty('该知识点不存在或已被移除', 'inbox') +
       `<div class="row mt-16"><span class="spacer"></span><button class="btn btn-primary" onclick="App.go('#/student/dashboard')">回到学习主页</button></div>`;
     const p = Engine.plan(topicId);
+    const recAct = p && p.activity ? p.activity.id : null;
     const rec = Engine.materialOfTopic(t);
     const acts = Object.values(DATA.activities).map(a => `
-      <button class="act-card ${a.id === p.activity.id ? 'recommended' : ''}" onclick="Student.start('${a.id}','${t.id}')">
+      <button class="act-card ${a.id === recAct ? 'recommended' : ''}" onclick="Student.start('${a.id}','${t.id}')">
         <div class="row" style="gap:8px">
           <span class="act-ico">${I(a.icon, 19)}</span>
           <span class="act-name">${a.name}</span>
-          ${a.id === p.activity.id ? '<span class="badge badge-primary" style="margin-left:auto">推荐</span>' : ''}
+          ${a.id === recAct ? '<span class="badge badge-primary" style="margin-left:auto">推荐</span>' : ''}
         </div>
         <div class="act-desc">${a.desc}</div>
         <div class="act-ability">训练：${a.ability}</div>
@@ -570,13 +636,21 @@ const Student = (() => {
         <button class="btn btn-ghost btn-sm" onclick="Student.openMaterial('${rec.id}')">回到模块</button>
       </div>` : ''}
 
+      ${p && p.activity ? `
       <div class="notice">
         <span class="notice-ico">${I('sparkles',17)}</span>
         <div style="flex:1">
           <div class="notice-t">Agent 推荐：${p.activity.name}</div>
           <div class="notice-d">${p.reason}</div>
         </div>
-      </div>
+      </div>` : `
+      <div class="notice ${p && p.mastered ? 'notice-ok' : ''}">
+        <span class="notice-ico">${I(p && p.mastered ? 'check' : 'bug', 17)}</span>
+        <div style="flex:1">
+          <div class="notice-t">${p && p.mastered ? '这个知识点已掌握' : '暂无可推荐的学习活动'}</div>
+          <div class="notice-d">${p ? p.reason : ''}</div>
+        </div>
+      </div>`}
 
       <div class="section-head">
         <span class="h-section">选择学习活动（${Object.keys(DATA.activities).length} 种）</span>
@@ -627,25 +701,51 @@ const Student = (() => {
     }
 
     if (P.i >= TS.length) {
-      const correct = P.answers.filter(a => a.correct).length;
+      const correct = P.answers.filter(a => a.correct === true).length;
+      const skipped = P.answers.filter(a => a.correct === null).length;
+      const skipNote = skipped ? `（其中 ${skipped} 个知识点暂无评估题，已跳过）` : '';
       return `
         <div class="runner">
           <div class="card card-pad" style="text-align:center">
             <div class="finish-ico">${I('sparkles', 26)}</div>
             <div class="h-section mt-8" style="font-size:18px">Pre-test 完成</div>
             <div class="text-sm mt-8" style="color:var(--text-2)">
-              「${escapeHtml(rec.name)}」答对 ${correct} / ${TS.length} 题。Agent 已为这 ${TS.length} 个知识点建立初始掌握度。
+              「${escapeHtml(rec.name)}」答对 ${correct} / ${TS.length} 题${skipNote}。Agent 已为这 ${TS.length} 个知识点建立初始掌握度。
             </div>
             <div class="row mt-16" style="justify-content:center">
-              <button class="btn btn-primary" onclick="Student.commitPretest()">查看我的学习路径</button>
+              <button class="btn btn-primary" onclick="Student.commitPretest()">开始学习 ${I('arrowRight',15)}</button>
             </div>
           </div>
         </div>`;
     }
 
     const t = TS[P.i];
-    const q = Engine.topicContent(t.id).pretest || Engine.topicContent(t.id).quiz[0];
-    if (!q || !q.q) return UI.empty('该知识点暂无评估题目，可先完成讲解', 'layers');
+    const q = Engine.topicContent(t.id).pretest || Engine.quizBank(t)[0];
+    /* 没有评估题时必须给出出口：原来的写法直接 return UI.empty(...)，
+       页面上连返回按钮都没有，学生卡死在这里，且该知识点的 pretested
+       永远为 false → 这份资料的 pretestDone 永远不成立 → 整条学习路径不出现。 */
+    if (!q || !q.q) {
+      return `
+        <div class="runner">
+          <div class="runner-head">
+            <button class="btn btn-ghost btn-sm" onclick="App.go('${back}')">${I('arrowLeft',15)} 返回资料模块</button>
+            <div>
+              <div class="runner-title runner-title-ico">${I('clipboard', 17)} Pre-test · 起点评估</div>
+              <div class="runner-topic">第 ${P.i + 1} / ${TS.length} 题 · ${escapeHtml(t.name)}</div>
+            </div>
+          </div>
+          <div class="card card-pad">
+            ${UI.empty('该知识点还没有评估题', 'layers')}
+            <div class="text-sm mt-8" style="color:var(--text-2);text-align:center">
+              解析结果里没有为它生成测验题，可以跳过；它会按初始掌握度进入学习路径，稍后用讲解与练习掌握。
+            </div>
+            <div class="row mt-16" style="justify-content:center">
+              <button class="btn btn-primary" onclick="Student.skipPretest()">跳过此题 ${I('arrowRight',15)}</button>
+              <button class="btn btn-ghost" onclick="App.go('${back}')">返回资料模块</button>
+            </div>
+          </div>
+        </div>`;
+    }
     const opts = (q.opts || []).map((o, i) => `
       <button class="opt ${P.sel === i ? 'selected' : ''} ${P.sel !== null ? (i === q.a ? 'correct' : (P.sel === i ? 'wrong' : '')) : ''}"
               ${P.sel !== null ? 'disabled' : `onclick="Student.pickPretest(${i})"`}>
@@ -689,9 +789,24 @@ const Student = (() => {
     const TS = Engine.pendingTopics(rec);
     const t = TS[P.i];
     if (!t) return;
-    const q = Engine.topicContent(t.id).pretest || Engine.topicContent(t.id).quiz[0];
-    if (!q || !q.q) { P.i++; P.sel = null; App.render(); return; }
+    const q = Engine.topicContent(t.id).pretest || Engine.quizBank(t)[0];
+    if (!q || !q.q) {
+      /* 没有评估题：记一条「跳过」，否则该知识点仍是待评估，Pre-test 永远做不完 */
+      P.answers.push({ topicId: t.id, correct: null });
+      P.i++; P.sel = null; App.render(); return;
+    }
     P.answers.push({ topicId: t.id, correct: P.sel === q.a });
+    P.i++; P.sel = null;
+    App.render();
+  }
+
+  /* 跳过「没有评估题」的知识点：标记已评估但不改掌握度（见 Engine.applyPreTest） */
+  function skipPretest() {
+    const rec = Engine.findMaterial(P && P.recId);
+    const TS = rec ? Engine.pendingTopics(rec) : [];
+    const t = TS[P.i];
+    if (!t) return;
+    P.answers.push({ topicId: t.id, correct: null });
     P.i++; P.sel = null;
     App.render();
   }
@@ -701,6 +816,11 @@ const Student = (() => {
     Engine.applyPreTest(P.answers);
     P = null;
     UI.toast('已建立该资料的初始掌握度，开始学习', 'ok');
+    /* 默认就是自主规划学习：Pre-test 一结束，直接进入 Agent 排好的第一步，
+       不再让学返回模块页自己挑知识点。没有可排的活动时才退回模块页。 */
+    const roll = rec ? Engine.rollPlan(rec) : null;
+    const first = roll && roll.next;
+    if (first) { startAct(first.activity.id, first.topic.id); return; }
     App.go(rec ? '#/student/material/' + rec.id : '#/student/dashboard');
   }
 
@@ -715,10 +835,11 @@ const Student = (() => {
       if (type === 'explain') {
         A.slides = Engine.topicContent(topicId).explain || []; A.i = 0; A.ask = null;
       } else if (type === 'practice') {
-        A.qs = Engine.topicContent(topicId).quiz || [];
+        A.qs = Engine.quizBank(Engine.topic(topicId));
         A.i = 0; A.sel = null; A.correct = 0;
+        A.answers = [];
       } else if (type === 'review') {
-        A.cards = (Engine.topicContent(topicId).explain || []).map(s => ({ q: s.t, a: s.tip }));
+        A.cards = Engine.reviewCards(topicId);
         A.i = 0; A.flip = false;
       }
     }
@@ -731,38 +852,71 @@ const Student = (() => {
     // ---- 已完成 → 结果面板（含 Re-plan） ----
     if (A.result) {
       const r = A.result;
+      const up = r.delta > 0;
+      const flat = r.delta === 0;
+      const deltaTxt = flat ? '±0' : (up ? '+' + r.delta : String(r.delta));
+      const deltaCol = flat ? 'var(--text-3)' : (up ? 'var(--success)' : 'var(--danger)');
+      const headTxt = flat ? '活动完成 · 本次未计分'
+        : up ? '活动完成 · 掌握度已更新' : '活动完成 · 掌握度回落';
+
+      /* 完成后由 Agent 直接给出下一步：可能已经换到另一个知识点，
+         这正是滚动学习与「一个知识点学到掌握」的区别。学生不需要选。 */
+      const mRec = Engine.materialOfTopic(r.topic);
+      const rollNow = mRec ? Engine.rollPlan(mRec) : null;
+      const step = rollNow && rollNow.next ? rollNow.next : null;
+      const replan = step ? `
+          <div class="card card-pad mt-16" style="background:var(--primary-soft);border-color:#c7d2fe">
+            <div class="row" style="gap:10px">
+              ${I('refresh', 18)}
+              <div style="font-weight:700">Re-plan · Agent 已排好下一步</div>
+            </div>
+            <div class="text-sm mt-8" style="color:var(--text-2)">
+              本资料还有 <b>${rollNow.remaining}</b> 个知识点未掌握，Agent 按掌握度继续滚动到
+              <b>${step.activity.name} · ${escapeHtml(step.topic.name)}</b>
+              （当前 ${step.topic.mastery}%），规则命中
+              <span class="reason-rule">${step.rule}</span>。
+            </div>
+            <div class="row mt-16">
+              <button class="btn btn-primary" onclick="Student.start('${step.activity.id}','${step.topic.id}')">
+                继续：${step.activity.name} ${I('arrowRight',15)}
+              </button>
+              <button class="btn btn-ghost" onclick="App.go('${back}')">返回资料模块</button>
+            </div>
+          </div>` : `
+          <div class="card card-pad mt-16" style="background:var(--success-soft);border-color:#bbf7d0">
+            <div class="row" style="gap:10px">
+              ${I('check', 18)}
+              <div style="font-weight:700">${rollNow && rollNow.done
+                ? '这份资料的知识点已全部掌握'
+                : (r.re && r.re.mastered ? '这个知识点已掌握' : '这个知识点暂无后续活动')}</div>
+            </div>
+            <div class="text-sm mt-8" style="color:var(--text-2)">${rollNow && rollNow.done
+              ? `所有知识点都达到 ${Engine.MASTERED}% 且错题已纠正，Agent 不再安排新的活动。`
+              : (r.re ? r.re.reason : '')}</div>
+            <div class="row mt-16">
+              <button class="btn btn-primary" onclick="App.go('${back}')">
+                回到资料模块 · 查看整体路径 ${I('arrowRight',15)}
+              </button>
+              <button class="btn btn-ghost" onclick="Student.openTopic('${r.topic.id}')">查看知识点情况</button>
+            </div>
+          </div>`;
+
       return `
         <div class="runner">
           <div class="card card-pad" style="text-align:center">
             <div class="finish-ico">${I('chart', 26)}</div>
-            <div class="h-section mt-8" style="font-size:18px">活动完成 · 掌握度已更新</div>
+            <div class="h-section mt-8" style="font-size:18px">${headTxt}</div>
             <div class="row mt-16" style="justify-content:center;gap:24px">
               <div><div class="text-xs" style="color:var(--text-3)">之前</div><div style="font-size:24px;font-weight:800">${r.before}%</div></div>
               <div style="font-size:20px;color:var(--text-3)">→</div>
-              <div><div class="text-xs" style="color:var(--text-3)">现在</div><div style="font-size:24px;font-weight:800;color:var(--success)">${r.after}%</div></div>
-              <div><div class="text-xs" style="color:var(--text-3)">提升</div><div style="font-size:24px;font-weight:800;color:var(--primary)">+${r.delta}%</div></div>
+              <div><div class="text-xs" style="color:var(--text-3)">现在</div><div style="font-size:24px;font-weight:800;color:${deltaCol}">${r.after}%</div></div>
+              <div><div class="text-xs" style="color:var(--text-3)">本次变化</div><div style="font-size:24px;font-weight:800;color:${deltaCol}">${deltaTxt}%</div></div>
             </div>
             ${UI.bar(r.after)}
+            ${r.note ? `<div class="text-sm mt-8" style="color:var(--text-2)">${escapeHtml(r.note)}</div>` : ''}
             <div class="mt-16"></div>
           </div>
-
-          <div class="card card-pad mt-16" style="background:var(--primary-soft);border-color:#c7d2fe">
-            <div class="row" style="gap:10px">
-              ${I('refresh', 18)}
-              <div style="font-weight:700">Re-plan · Agent 的下一步决策</div>
-            </div>
-            <div class="text-sm mt-8" style="color:var(--text-2)">
-              该知识点现为 <b>${r.after}%</b>，规则命中
-              <span class="reason-rule">${r.re.rule}</span>，下一步推荐：
-              <b>${r.re.activity.name}</b>
-            </div>
-            <div class="row mt-16">
-              <button class="btn btn-primary" onclick="Student.start('${r.re.activity.id}','${r.topic.id}')">
-                继续：${r.re.activity.name} ${I('arrowRight',15)}
-              </button>
-              <button class="btn btn-ghost" onclick="App.go('${back}')">返回资料模块</button>
-            </div>
-          </div>
+          ${replan}
         </div>`;
     }
 
@@ -796,12 +950,19 @@ const Student = (() => {
   function vExplain() {
     const s = A.slides[A.i];
     if (!s) {
+      /* 没有讲解内容时不给「完成讲解」按钮：没有内容可学，点完成也不该加分 */
+      const hasQuiz = (Engine.topicContent(A.topicId).quiz || []).length > 0;
       return `
         <div class="card card-pad">
           ${UI.empty('该知识点的讲解内容尚未生成', 'file')}
-          <div class="row mt-16">
-            <span class="spacer"></span>
-            <button class="btn btn-primary" onclick="Student.finish({})">完成讲解 ${I('check',15)}</button>
+          <div class="text-sm mt-8" style="color:var(--text-2);text-align:center">
+            这份资料的解析结果里没有为它生成讲解页，无法学习讲解。
+          </div>
+          <div class="row mt-16" style="justify-content:center">
+            ${hasQuiz ? `
+              <button class="btn btn-primary" onclick="Student.start('practice','${A.topicId}')">${I('focus',14)} 直接做练习</button>
+              <button class="btn btn-ghost" onclick="Student.quit()">返回知识点</button>` : `
+              <button class="btn btn-primary" onclick="Student.quit()">返回知识点</button>`}
           </div>
         </div>`;
     }
@@ -960,12 +1121,18 @@ const Student = (() => {
   function vPracticeQuiz() {
     const q = A.qs[A.i];
     if (!q || !q.q) {
+      /* 没有题目时不给「完成练习」：原来点一下就走 finishPractice()，
+         qs.length === 0 → ceil(0/2) === 0 → 0 >= 0 判为通过 → 白送 +12%。
+         这里改成引导去看讲解，练习分只能靠真正答题拿到。 */
       return `
         <div class="card card-pad">
           ${UI.empty('该知识点暂无练习题', 'target')}
-          <div class="row mt-16">
-            <span class="spacer"></span>
-            <button class="btn btn-primary" onclick="Student.finishPractice()">完成练习 ${I('check',15)}</button>
+          <div class="text-sm mt-8" style="color:var(--text-2);text-align:center">
+            这份资料的解析结果里没有为它生成测验题，先看讲解更有效。
+          </div>
+          <div class="row mt-16" style="justify-content:center">
+            <button class="btn btn-primary" onclick="Student.start('explain','${A.topicId}')">${I('book',14)} 去学习讲解</button>
+            <button class="btn btn-ghost" onclick="Student.quit()">返回知识点</button>
           </div>
         </div>`;
     }
@@ -1004,27 +1171,40 @@ const Student = (() => {
   function pick(i) {
     if (A.sel !== null) return;
     A.sel = i;
-    if (i === A.qs[A.i].a) A.correct++;
+    const ok = i === A.qs[A.i].a;
+    if (ok) A.correct++;
+    if (!A.answers) A.answers = [];
+    A.answers.push({ i: A.i, ok });
     App.render();
   }
   function nextQ() {
     if (A.i < A.qs.length - 1) { A.i++; A.sel = null; App.render(); }
   }
   function finishPractice() {
-    const quizOk = A.correct >= Math.ceil(A.qs.length / 2);
-    finish({ quizCorrect: quizOk });
+    /* 防御：题目为空时既不算完成也不加分（界面已不会走到这里，防止控制台误调用） */
+    if (!A || !A.qs || !A.qs.length) {
+      UI.toast('该知识点还没有练习题，无法生成练习成绩', 'warn');
+      return;
+    }
+    finish({
+      correct: A.correct,
+      total: A.qs.length,
+      answers: (A.answers || []).slice(),
+    });
   }
 
-  /* ---- 知识复习（闪卡） ---- */
+  /* ---- 知识复习（错题闪卡） ---- */
   function vReview() {
     const c = A.cards[A.i];
     if (!c) {
       return `
         <div class="card card-pad">
-          ${UI.empty('暂无可复习的内容', 'layers')}
-          <div class="row mt-16">
-            <span class="spacer"></span>
-            <button class="btn btn-primary" onclick="Student.finish({})">完成复习 ${I('check',15)}</button>
+          ${UI.empty('这个知识点暂时没有错题', 'check')}
+          <div class="text-sm mt-8" style="color:var(--text-2);text-align:center">
+            复习只针对练习中答错的题；没有错题时不需要复习，直接去练习即可。
+          </div>
+          <div class="row mt-16" style="justify-content:center">
+            <button class="btn btn-primary" onclick="Student.quit()">返回知识点</button>
           </div>
         </div>`;
     }
@@ -1032,8 +1212,9 @@ const Student = (() => {
     return `
       <div class="flash" onclick="Student.flip()">
         <div class="flash-q">${escapeHtml(c.q)}</div>
-        ${A.flip ? `<div class="flash-a gen-anim">${escapeHtml(c.a)}</div>`
-                 : `<div class="text-sm mt-16" style="color:var(--text-3)">点击卡片查看答案</div>`}
+        ${A.flip ? `<div class="flash-a gen-anim">${escapeHtml(c.a)}</div>
+                    ${c.why ? `<div class="text-sm mt-8" style="color:var(--text-2)">${escapeHtml(c.why)}</div>` : ''}`
+                 : `<div class="text-sm mt-16" style="color:var(--text-3)">点击卡片查看正确答案</div>`}
       </div>
       <div class="row mt-16">
         <button class="btn btn-ghost" ${A.i === 0 ? 'disabled' : ''} onclick="Student.card(-1)">上一张</button>
@@ -1511,7 +1692,7 @@ const Student = (() => {
           <div class="topic-name">${escapeHtml(x.topicName)} · ${x.actName}</div>
           <div class="topic-meta">${x.before}% → ${x.after}%</div>
         </div>
-        <span class="badge badge-success">+${x.delta}%</span>
+        <span class="badge ${x.delta > 0 ? 'badge-success' : (x.delta < 0 ? 'badge-danger' : 'badge-muted')}">${x.delta > 0 ? '+' : ''}${x.delta}%</span>
       </div>`).join('') || UI.empty('该范围内暂无学习记录', 'chart');
 
     const filterBar = `
@@ -1522,6 +1703,38 @@ const Student = (() => {
           <button class="chip ${!showAll && rec && rec.id === m.id ? 'chip-active' : ''}"
                   onclick="App.go('#/student/progress/${m.id}')">${escapeHtml(m.name)}</button>`).join('')}
       </div>`;
+
+    /* 单份资料的滚动学习状态：第几轮、掌握到哪、Agent 排的下一步 */
+    const roll = rec ? Engine.rollPlan(rec) : null;
+    const rollCard = roll && roll.total ? `
+      <div class="card mb-16">
+        <div class="card-head">
+          <span class="h-section">滚动学习</span>
+          <span class="spacer"></span>
+          <span class="badge badge-muted">第 ${roll.round} 轮</span>
+        </div>
+        <div class="card-body">
+          <div class="row row-wrap" style="gap:8px">
+            <span class="chip">已掌握 ${roll.mastered} / ${roll.total}</span>
+            <span class="chip">待推进 ${roll.remaining}</span>
+            ${roll.pendingPretest ? `<span class="chip">待 Pre-test ${roll.pendingPretest}</span>` : ''}
+          </div>
+          ${roll.next ? `
+            <div class="row mt-16">
+              <span class="text-sm" style="color:var(--text-2)">
+                下一步：<b>${roll.next.activity.name}</b> · ${escapeHtml(roll.next.topic.name)}（${roll.next.topic.mastery}%）
+              </span>
+              <span class="spacer"></span>
+              <button class="btn btn-primary btn-sm"
+                      onclick="Student.start('${roll.next.activity.id}','${roll.next.topic.id}')">
+                继续 ${I('arrowRight', 13)}
+              </button>
+            </div>` : `
+            <div class="text-sm mt-16" style="color:var(--text-3)">
+              ${roll.done ? '本资料已全部掌握，路径完成。' : '本轮没有可排的活动，先完成 Pre-test。'}
+            </div>`}
+        </div>
+      </div>` : '';
 
     return `
       <div class="section-head">
@@ -1536,8 +1749,10 @@ const Student = (() => {
         ${kpi('整体掌握度', Engine.overallMastery(ts) + '%', 'focus', '', showAll ? '全部资料平均' : '本资料平均')}
         ${kpi('知识点数', ts.length, 'bookOpen', '', showAll ? '跨全部资料' : '本资料解析结果')}
         ${kpi('薄弱知识点', ts.filter(t => t.mastery < 45).length, 'bug', 'amber', '需优先关注')}
-        ${kpi('已掌握', ts.filter(t => t.mastery >= 75).length, 'check', 'green', `共 ${ts.length} 个知识点`)}
+        ${kpi('已掌握', ts.filter(t => Engine.isMastered(t)).length, 'check', 'green', `共 ${ts.length} 个知识点`)}
       </div>
+
+      ${rollCard}
 
       <div class="grid g-main">
         <div class="card">
@@ -1558,7 +1773,7 @@ const Student = (() => {
                   <span class="badge ${UI.level(t.mastery).badge}">${UI.level(t.mastery).label}</span>
                 </div>
                 ${UI.bar(t.mastery)}
-                <div class="text-xs mt-8" style="color:var(--text-3)">练习 ${t.attempts} 次 · 错误 ${t.errors} 次${t.lastActivity ? ' · 最近：' + escapeHtml(t.lastActivity) : ''}</div>
+                <div class="text-xs mt-8" style="color:var(--text-3)">学习活动 ${t.attempts} 次 · 待纠正错题 ${t.errors} 道${t.lastActivity ? ' · 最近：' + escapeHtml(t.lastActivity) : ''}</div>
               </div>`).join('')}
               <div class="divider"></div>`).join('')}
             ${ts.length ? '' : UI.empty('该范围还没有知识点，先上传并解析课程资料', 'bookOpen')}
@@ -1654,7 +1869,8 @@ const Student = (() => {
   return {
     dashboard, materialView, chooseMaterial, openMaterial,
     topicDetail, openTopic, activity, start, quit,
-    pretest, pretestView, pickPretest, nextPretest, commitPretest,
+    revealAnswer,
+    pretest, pretestView, pickPretest, nextPretest, skipPretest, commitPretest,
     slide, ask, retryAsk, pick, nextQ, finishPractice, flip, card, finish,
     materials, materialsView, onFiles, drop, rmUpload, selectQA, askAI, askExample,
     resumePending, resumeUpload,

@@ -1012,13 +1012,25 @@ body.modal-open { overflow: hidden; }
   display: flex; align-items: center; gap: 7px;
   font-size: 11.8px; color: var(--text-2); padding: 3px 0;
 }
-.kp-quiz-opt.is-answer { color: var(--success); font-weight: 600; }
+/* 答案默认收起：只有展开态（.is-revealed）才标出正确项 */
+.kp-quiz.is-revealed .kp-quiz-opt.is-answer { color: var(--success); font-weight: 600; }
+.kp-quiz.is-revealed .kp-quiz-opt.is-answer .kp-quiz-key { background: var(--success-soft); color: var(--success); }
 .kp-quiz-key {
   width: 18px; height: 18px; flex: 0 0 18px;
   display: grid; place-items: center; border-radius: 5px;
   background: var(--surface-3); font-size: 10px; font-weight: 700;
 }
 .kp-answer-tag { font-size: 10px; padding: 1px 6px; border-radius: 10px; background: var(--success-soft); }
+.kp-quiz-foot { margin-top: 7px; }
+.kp-reveal {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 999px;
+  border: 1px solid var(--border-2); background: var(--surface-2);
+  color: var(--text-2); font-family: inherit; font-size: 11.5px; font-weight: 600;
+  cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+}
+.kp-reveal:hover { background: var(--primary-soft); color: var(--primary-600); border-color: var(--primary); }
+.kp-reveal:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .kp-quiz-why { font-size: 11.5px; color: var(--text-3); margin-top: 6px; line-height: 1.55; }
 
 /* 进度页资料筛选 */

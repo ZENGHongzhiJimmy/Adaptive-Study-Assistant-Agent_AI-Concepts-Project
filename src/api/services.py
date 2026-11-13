@@ -34,6 +34,7 @@ from ..retrieval.embeddings import get_embedder
 from ..retrieval.vector_store import ChromaVectorStore, RetrievedChunk
 from ..utils.config import resolve_path
 from ..utils.llm_client import LLMClient, MissingAPIKeyError
+from ..utils.quiz_order import reorder_quiz
 
 _UPLOAD_KINDS = (".pdf", ".txt", ".md", ".markdown")
 
@@ -68,6 +69,8 @@ Rules:
   of topics must scale with the amount of content.
 - Each topic needs 1-2 explain pages and 1-2 quizzes.
 - Each quiz has 2-4 options; "a" is the 0-based index of the correct option.
+- VARY the correct option's position: spread correct answers across 0/1/2/3
+  instead of always writing it first. Do NOT default to a=0.
 - KEEP IT CONCISE: short bullet items (<= 12 words each), short quiz options,
   and a one-line "why". Do NOT write long paragraphs.
 - Base EVERYTHING strictly on the material text; do not invent facts.
@@ -663,7 +666,7 @@ class MaterialService:
             if not name or key in seen:
                 continue
             seen.add(key)
-            quiz = self._normalize_quiz(t.get("quiz") or [])
+            quiz = self._normalize_quiz(t.get("quiz") or [], topic=name)
             explain = self._normalize_explain(t.get("explain") or [])
             normalized.append({
                 "name": name,
@@ -698,7 +701,7 @@ class MaterialService:
         return "bookOpen"
 
     @staticmethod
-    def _normalize_quiz(list_: list[Any]) -> list[dict[str, Any]]:
+    def _normalize_quiz(list_: list[Any], topic: str = "") -> list[dict[str, Any]]:
         out: list[dict[str, Any]] = []
         for q in list_ or []:
             if not isinstance(q, dict):
@@ -716,7 +719,9 @@ class MaterialService:
                 "a": a,
                 "why": str(q.get("why") or q.get("explanation") or ""),
             })
-        return out
+        # 模型几乎总把正确项写在第一格（答案清一色 A）。这里在解析后重排选项，
+        # 让正确答案均匀落在 A/B/C/D，索引 "a" 同步改写；判分逻辑不变。
+        return reorder_quiz(out, seed_parts=(topic,))
 
     @staticmethod
     def _normalize_explain(list_: list[Any]) -> list[dict[str, Any]]:
@@ -760,7 +765,11 @@ class MaterialService:
                 q = dict(q)
                 q["topic"] = t.get("name")
                 all_quiz.append(q)
-        return {"material_id": material_id, "count": len(all_quiz), "quiz": all_quiz[:count]}
+        picked = all_quiz[:count]
+        # 单个知识点的题目已在本知识点内均衡；跨知识点按 count 截断后可能偏向
+        # 某个字母，这里按整份卷子再均衡一次（复制体，不影响解析缓存）。
+        reorder_quiz(picked, seed_parts=(material_id, topic or ""))
+        return {"material_id": material_id, "count": len(picked), "quiz": picked}
 
     # ---- RAG 问答 ----
     def ask(
