@@ -32,7 +32,7 @@ const Student = (() => {
 
     if (type === 'explain') {
       A.slides = Engine.topicContent(topicId).explain || [];
-      A.i = 0; A.asked = null;
+      A.i = 0; A.ask = null;
     } else if (type === 'practice') {
       A.qs = Engine.topicContent(topicId).quiz || [];
       A.i = 0; A.sel = null; A.correct = 0;
@@ -709,7 +709,7 @@ const Student = (() => {
     if (!A || A.type !== type || A.topicId !== topicId) {
       A = { type, topicId, result: null };
       if (type === 'explain') {
-        A.slides = Engine.topicContent(topicId).explain || []; A.i = 0; A.asked = null;
+        A.slides = Engine.topicContent(topicId).explain || []; A.i = 0; A.ask = null;
       } else if (type === 'practice') {
         A.qs = Engine.topicContent(topicId).quiz || [];
         A.i = 0; A.sel = null; A.correct = 0;
@@ -804,11 +804,6 @@ const Student = (() => {
     const items = (s.items || []).map(x => `<div class="slide-item"><span class="slide-bullet"></span><div>${escapeHtml(x)}</div></div>`).join('');
     const last = A.i === A.slides.length - 1;
 
-    const askAns = A.asked ? `
-      <div class="ask-answer gen-anim">
-        <b>AI 助教：</b>关于「${escapeHtml(A.asked)}」——${escapeHtml(s.tip)} 该内容来自你上传的课程资料；如需沿其他方向展开，可到「课程资料 · AI 问答」继续追问。
-      </div>` : '';
-
     return `
       <div class="slides">
         <div class="slide">
@@ -823,7 +818,7 @@ const Student = (() => {
                  onkeydown="if(event.key==='Enter')Student.ask()">
           <button class="btn btn-soft" onclick="Student.ask()">${I('sparkles',15)} 提问</button>
         </div>
-        ${askAns}
+        ${renderAsk()}
 
         <div class="row mt-16">
           <button class="btn btn-ghost" ${A.i === 0 ? 'disabled' : ''} onclick="Student.slide(-1)">上一页</button>
@@ -834,16 +829,127 @@ const Student = (() => {
         </div>
       </div>`;
   }
+
+  /* 随堂提问的渲染：加载中 / 真实 LLM 回答 / 失败重试 三态 */
+  function renderAsk() {
+    const a = A && A.ask;
+    if (!a) return '';
+    const head = `
+      <div class="ask-answer-head">
+        ${I('sparkles',13)}<b>AI 助教</b>
+        <span class="ask-q">关于「${escapeHtml(a.q)}」</span>
+      </div>`;
+
+    if (a.state === 'loading') {
+      return `
+        <div class="ask-answer gen-anim">
+          ${head}
+          <span class="msg-pending">正在结合本页讲解与课程资料作答<span class="dots"></span></span>
+        </div>`;
+    }
+
+    if (a.state === 'error') {
+      return `
+        <div class="ask-answer is-error gen-anim">
+          ${head}
+          <div class="ask-text">${escapeHtml(a.error || '暂时无法连接 AI 助教后端。')}</div>
+          <div class="ask-note">请确认后端已启动（默认 http://localhost:8000），并在项目根目录 .env 中配置 OPENROUTER_API_KEY 后重启后端。</div>
+          <div class="ask-actions">
+            <button class="btn btn-ghost btn-sm" onclick="Student.retryAsk()">${I('refresh',13)} 重试</button>
+          </div>
+        </div>`;
+    }
+
+    const src = (a.sources && a.sources.length) ? `
+      <div class="qa-src">
+        <span class="text-xs" style="color:var(--text-3)">引用出处：</span>
+        ${a.sources.map(x => `<span class="chip">${escapeHtml(x)}</span>`).join('')}
+      </div>` : '';
+    const note = a.grounded === false
+      ? `<div class="ask-note">资料中未检索到额外依据，以上回答仅基于当前讲解页内容。</div>` : '';
+    return `
+      <div class="ask-answer gen-anim">
+        ${head}
+        <div class="ask-text">${fmtAnswer(a.answer)}</div>
+        ${note}
+        ${src}
+      </div>`;
+  }
+
+  /* 轻量排版：转义后把段落/项目符号转成 HTML，不引入 markdown 渲染器 */
+  function fmtAnswer(raw) {
+    const safe = escapeHtml(raw).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+    return safe.split(/\n{2,}/).map(block => {
+      const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+      if (!lines.length) return '';
+      const bullets = lines.filter(l => /^[-*•]\s+/.test(l));
+      if (bullets.length === lines.length) {
+        return `<ul class="ask-list">${lines
+          .map(l => `<li>${l.replace(/^[-*•]\s+/, '')}</li>`).join('')}</ul>`;
+      }
+      return `<p>${lines.join('<br>')}</p>`;
+    }).join('');
+  }
+
   function slide(d) {
     A.i = Math.max(0, Math.min(A.slides.length - 1, A.i + d));
-    A.asked = null;
+    A.ask = null;
     App.render();
   }
+
+  /* 提问：先渲染「思考中」，再调用后端 /api/qa/ask（RAG + LLM）取真实回答 */
   function ask() {
     const el = document.getElementById('ask-input');
-    if (!el || !el.value.trim()) return;
-    A.asked = el.value.trim();
+    if (!el) return;
+    const q = el.value.trim();
+    if (!q) { UI.toast('请先输入你的问题', 'warn'); return; }
+    askTutor(q);
+  }
+
+  function retryAsk() {
+    const q = A && A.ask && A.ask.q;
+    if (q) askTutor(q);
+  }
+
+  async function askTutor(q) {
+    const topic = Engine.topic(A.topicId) || {};
+    const s = A.slides[A.i] || {};
+    A.ask = { q, state: 'loading' };
     App.render();
+
+    // 当前讲解页整页内容作为 grounded 上下文（同属该资料），
+    // 让「这一页没讲透」的追问能被正常解释，而不是回答「资料里没有」。
+    const rec = Engine.materialOfTopic(topic);
+    const focus = [
+      s.t ? `标题：${s.t}` : '',
+      ...(s.items || []),
+      s.tip ? `要点：${s.tip}` : '',
+    ].filter(Boolean).join('\n');
+
+    const r = await API.ask(
+      q,
+      rec ? (rec.materialId || rec.id) : null,
+      rec ? rec.name : null,
+      { topic: topic.name, focus }
+    );
+
+    // 等待期间用户可能已翻页 / 退出，丢弃过期结果
+    if (!A || A.type !== 'explain' || !A.ask || A.ask.q !== q) return;
+
+    if (r.ok && r.data) {
+      A.ask = {
+        q,
+        state: 'done',
+        answer: r.data.answer || '',
+        sources: r.data.sources || [],
+        grounded: r.data.grounded !== false,
+      };
+    } else {
+      A.ask = { q, state: 'error', error: r.error || '' };
+    }
+    App.render();
+    const box = document.querySelector('.ask-answer');
+    if (box && box.scrollIntoView) box.scrollIntoView({ block: 'nearest' });
   }
 
   /* ---- 练习测验 ---- */
@@ -1524,7 +1630,7 @@ const Student = (() => {
     dashboard, materialView, chooseMaterial, openMaterial,
     topicDetail, openTopic, activity, start, quit,
     pretest, pretestView, pickPretest, nextPretest, commitPretest,
-    slide, ask, pick, nextQ, finishPractice, flip, card, finish,
+    slide, ask, retryAsk, pick, nextQ, finishPractice, flip, card, finish,
     materials, materialsView, onFiles, drop, rmUpload, selectQA, askAI, askExample,
     resumePending, resumeUpload,
     progress, reset, dismissAppend,

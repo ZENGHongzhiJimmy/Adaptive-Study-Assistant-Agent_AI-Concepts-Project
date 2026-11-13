@@ -7,7 +7,7 @@
 # config_for_log() (version, model, alpha, thresholds, seed) into events.
 
 platform:
-  version: "0.1.0"
+  version: "0.2.0"
 
 llm:
   # Primary model (OpenRouter id). Change this to switch models.

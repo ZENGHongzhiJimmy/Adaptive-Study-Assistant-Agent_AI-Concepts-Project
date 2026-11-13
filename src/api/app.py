@@ -85,6 +85,10 @@ class AskRequest(BaseModel):
     # 不带时保持全局检索（兼容旧调用与 CLI 路径）。
     material_id: str | None = None
     material_name: str | None = None
+    # 「知识点讲解」页随堂提问：当前知识点名 + 正在阅读的讲解页内容。
+    # 两者都来自该资料，因此可作为 grounded 上下文直接交给模型。
+    topic: str | None = None
+    focus: str | None = None
 
 
 @app.get("/api/health")
@@ -181,6 +185,8 @@ def ask(req: AskRequest) -> dict[str, Any]:
             question,
             material_id=req.material_id,
             material_name=req.material_name,
+            topic=req.topic,
+            focus=req.focus,
         )
     except svc.MissingKey as exc:
         raise HTTPException(status_code=503, detail=str(exc))

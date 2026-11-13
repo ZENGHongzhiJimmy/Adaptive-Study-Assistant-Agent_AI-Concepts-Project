@@ -97,12 +97,16 @@ const API = (() => {
     });
   }
 
-  /* RAG + LLM 问答，返回 { answer, sources }
-     可选传入当前选中的课程资料，后端会把检索限定在该资料范围内。 */
-  async function ask(question, materialId, materialName) {
+  /* RAG + LLM 问答，返回 { answer, sources, grounded, mode }
+     可选传入当前选中的课程资料，后端会把检索限定在该资料范围内。
+     extra 支持 { topic, focus }：知识点讲解页随堂提问时，把当前知识点与
+     正在阅读的讲解页内容一并送给后端，答案会按「助教讲解」的方式组织。 */
+  async function ask(question, materialId, materialName, extra) {
     const body = { question };
     if (materialId) body.material_id = materialId;
     if (materialName) body.material_name = materialName;
+    if (extra && extra.topic) body.topic = extra.topic;
+    if (extra && extra.focus) body.focus = extra.focus;
     return request('/api/qa/ask', {
       method: 'POST',
       body: JSON.stringify(body),

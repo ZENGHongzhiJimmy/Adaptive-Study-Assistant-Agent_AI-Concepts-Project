@@ -99,6 +99,73 @@ Relevant excerpts from the student's materials (verbatim, with source labels):
 {context}
 """
 
+# 「知识点讲解」页里的随堂提问：学生正在看某一页讲解，问的通常是这一页
+# 没讲透的地方。除了检索片段，还会把当前讲解页内容一起交给模型，避免
+# 明明页面上就有的内容被答成「资料里没找到」。
+TUTOR_SYSTEM = """You are an AI teaching assistant. A student is studying ONE knowledge
+point of their own uploaded course material and has paused to ask a question
+about the slide they are reading.
+
+Rules:
+- Answer the question directly first (2-5 sentences), then add at most three
+  short supporting points, each starting with "- ", only if they help.
+- Ground every claim in the material given below: the current lecture slide and
+  the retrieved excerpts both come from the student's uploaded material. If
+  neither covers the question, say briefly what is missing instead of inventing
+  facts.
+- Teaching tone: define the term, then give one concrete example or contrast.
+- Do NOT write any citation, page number, or "Source:" line; the platform
+  appends the verified sources after your answer.
+- Answer in the same language as the student's question.
+- Plain text only: no markdown fences, no headings."""
+
+TUTOR_USER = """Knowledge point: {topic}
+Current lecture slide the student is reading:
+{lecture}
+
+Student's question: {question}
+
+Related excerpts retrieved from the material:
+{context}
+"""
+
+
+# 回答的 token 预算：推理型免费模型会把思考 token 也算在内，给 800 容易
+# 在正文中途被截断，因此放宽到 1500（答案本身仍受 prompt 的篇幅约束）。
+_ANSWER_MAX_TOKENS = 1500
+
+_SCRATCHPAD_MARKERS = (
+    "the student is asking",
+    "the user is asking",
+    "we need to answer",
+    "i need to answer",
+    "let me look at",
+    "let me draft",
+    "let me write",
+    "draft answer:",
+    "the retrieved excerpts",
+)
+
+
+def _clean_answer(text: str) -> str:
+    """Strip transport/markdown artefacts a free model sometimes prefixes."""
+    out = (text or "").strip()
+    out = re.sub(r"^[/\\]n\s*", "", out)          # 个别模型返回 "/n" 前缀
+    out = re.sub(r"^```[a-zA-Z]*\s*", "", out)     # 误加的代码围栏
+    out = re.sub(r"\s*```$", "", out)
+    return out.strip()
+
+
+def _looks_like_scratchpad(text: str) -> bool:
+    """True when a model leaked its chain-of-thought into the answer body.
+
+    Reasoning models normally return the trace in ``reasoning``; when the
+    output is truncated some providers append it to ``content`` instead. A
+    student must never see that, so the caller retries once.
+    """
+    head = (text or "")[:400].lower()
+    return any(marker in head for marker in _SCRATCHPAD_MARKERS)
+
 
 def key_status(config: dict[str, Any]) -> dict[str, Any]:
     client = LLMClient(config)
@@ -697,29 +764,84 @@ class MaterialService:
         question: str,
         material_id: str | None = None,
         material_name: str | None = None,
+        topic: str | None = None,
+        focus: str | None = None,
     ) -> dict[str, Any]:
+        """RAG + LLM answer.
+
+        ``topic`` / ``focus`` are optional and only used by the in-lecture
+        question box: ``topic`` is the knowledge point being studied and
+        ``focus`` is the text of the slide on screen. Passing them makes the
+        model answer in a tutoring tone grounded on that slide, which keeps a
+        follow-up question from being answered with "not found in materials"
+        when the slide itself already says it.
+        """
         self._require_key()
+        topic = (topic or "").strip() or None
+        focus = (focus or "").strip() or None
+        # 知识点名称同时用作检索提示词：hashed 向量是词级匹配，带上知识点
+        # 词汇能显著提高命中该知识点原文的概率。
         hits = self._retrieve(
-            question, material_id=material_id, material_name=material_name
+            question,
+            material_id=material_id,
+            material_name=material_name,
+            topic_hint=topic,
         )
-        if not hits:
+        if not hits and not focus:
             return {
                 "answer": "我在你上传的资料中没有找到直接依据。请换用资料中的原词再问，或上传包含该内容的资料后重试。我不会凭空编造答案。",
                 "sources": [],
                 "grounded": False,
+                "mode": "material",
             }
 
-        context = self._format_context(hits)
-        messages = [
-            {"role": "system", "content": QA_SYSTEM},
-            {"role": "user", "content": QA_USER.format(question=question, context=context)},
-        ]
-        response = self.llm.chat(messages, max_tokens=800)
+        context = self._format_context(hits) if hits else "(none retrieved)"
+        if topic or focus:
+            messages = [
+                {"role": "system", "content": TUTOR_SYSTEM},
+                {"role": "user", "content": TUTOR_USER.format(
+                    topic=topic or "当前知识点",
+                    lecture=focus or "(none)",
+                    question=question,
+                    context=context,
+                )},
+            ]
+            mode = "tutor"
+        else:
+            messages = [
+                {"role": "system", "content": QA_SYSTEM},
+                {"role": "user", "content": QA_USER.format(question=question, context=context)},
+            ]
+            mode = "material"
+
+        response = self.llm.chat(messages, max_tokens=_ANSWER_MAX_TOKENS)
+        answer = _clean_answer(response.text)
+        if not answer or _looks_like_scratchpad(answer):
+            # 免费模型偶发把「思考过程」写进正文并因截断而只剩草稿。
+            # 强化一次输出约束后重试一次；仍不合格就如实告知，不展示草稿。
+            answer = _clean_answer(self.llm.chat(
+                [*messages, {
+                    "role": "system",
+                    "content": "Output ONLY the final answer for the student. "
+                               "No analysis, no reasoning, no scratchpad.",
+                }],
+                max_tokens=_ANSWER_MAX_TOKENS,
+            ).text)
+            if not answer or _looks_like_scratchpad(answer):
+                return {
+                    "answer": "模型这次没有返回可用的回答，请再提问一次（可换个说法）。",
+                    "sources": [],
+                    "grounded": False,
+                    "mode": "tutor" if (topic or focus) else "material",
+                }
         sources = list(dict.fromkeys(h.source for h in hits if h.source))
         return {
-            "answer": response.text.strip(),
+            "answer": answer,
             "sources": sources,
-            "grounded": True,
+            # 讲解页内容本身也来自该资料，因此有 focus 也算有依据。
+            "grounded": bool(hits or focus),
+            "retrieved": len(hits),
+            "mode": mode,
             "model": response.model,
         }
 
@@ -747,10 +869,13 @@ class MaterialService:
         question: str,
         material_id: str | None = None,
         material_name: str | None = None,
+        topic_hint: str | None = None,
     ) -> list[RetrievedChunk]:
         if self.store.count() == 0:
             return []
-        vector = self.embedder.embed([question])[0]
+        # topic_hint（当前知识点名）只影响检索召回，不改变答案的提问内容。
+        query = f"{topic_hint} {question}" if topic_hint else question
+        vector = self.embedder.embed([query])[0]
         top_k = int(self.retrieval_cfg.get("top_k", 3))
         topic = self._topic_for_material(material_id, material_name)
         hits = self.store.search_by_vector(vector, top_k=top_k, topic=topic)
