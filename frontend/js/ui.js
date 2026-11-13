@@ -35,6 +35,12 @@ const UI = (() => {
     edit:      '<path d="M11 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-6M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     download:  '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     file:      '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>',
+    clipboard: '<rect x="5" y="4" width="14" height="17" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M9 4V2.5h6V4M9 10h6M9 14h4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
+    inbox:     '<path d="M3 13h5l1.5 2.5h5L16 13h5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M4.5 5h15L21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>',
+    /* 下面 3 个是描边式线性图标，放大/缩小时轮廓清晰，不会糊成实心色块 */
+    bookOpen:  '<path d="M12 6.5C9.8 4.9 6.8 4.2 3.5 4.5v13c3.3-.3 6.3.4 8.5 2 2.2-1.6 5.2-2.3 8.5-2v-13c-3.3-.3-6.3.4-8.5 2z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="M12 6.5v13" stroke="currentColor" stroke-width="1.7" fill="none"/>',
+    focus:     '<circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7" fill="none"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.7" fill="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>',
+    stack:     '<path d="M12 3 3 8l9 5 9-5-9-5z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="m3 12.5 9 5 9-5M3 17l9 5 9-5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
   };
 
   function icon(name, size = 18) {
@@ -207,9 +213,12 @@ const UI = (() => {
       ${label ? `<div class="text-xs" style="color:var(--text-3);margin-top:4px">${label}</div>` : ''}`;
   }
 
-  /* ---------- 空状态 ---------- */
-  function empty(text, emoji = '📭') {
-    return `<div class="empty"><div class="empty-ico">${emoji}</div><div>${text}</div></div>`;
+  /* ---------- 空状态 ----------
+     统一使用单色线性 SVG 图标（传入 P 里的图标名，如 'inbox' / 'bookOpen' / 'file'）。
+     兼容历史调用：若仍传入 emoji 字符，自动回退成 'inbox'，界面不再出现彩色 emoji。 */
+  function empty(text, glyph = 'inbox') {
+    const name = /^[a-zA-Z]+$/.test(glyph) ? glyph : 'inbox';
+    return `<div class="empty"><div class="empty-ico">${icon(name, 24)}</div><div>${text}</div></div>`;
   }
 
   /* ---------- 卡片包装 ---------- */

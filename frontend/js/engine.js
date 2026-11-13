@@ -64,6 +64,11 @@ const Engine = (() => {
       const rec = state.uploads.find(u => u.name && u.name === t.src);
       if (rec) t._materialId = rec.materialId || rec.id;
     });
+    /* 旧版本把彩色 emoji 存进了知识点 icon；界面已统一改用单色线性 SVG，
+       这里把历史数据归一成语义图标名，避免陈旧 emoji 再被任何视图渲染出来。 */
+    state.topics.forEach(t => {
+      if (t && t.icon && !/^[a-zA-Z]+$/.test(String(t.icon))) t.icon = 'bookOpen';
+    });
     if (state.activeMaterialId && !findMaterial(state.activeMaterialId)) {
       state.activeMaterialId = null;
     }
@@ -343,7 +348,7 @@ const Engine = (() => {
       const topicObj = {
         id: tid,
         name: name,
-        icon: p.icon || '📘',
+        icon: 'bookOpen',   // 统一语义图标名：所有知识点共用一种图标，不再按序号轮换彩色 emoji
         desc: p.desc || '',
         mastery: 30,
         attempts: 0,
@@ -367,7 +372,7 @@ const Engine = (() => {
         count: added.length,
         courseTitle: parsed.source || '我的上传资料',
         materialId: materialId || null,
-        names: added.slice(0, 5).map(t => t.icon + ' ' + t.name),
+        names: added.slice(0, 5).map(t => t.name),
       };
     }
     save();

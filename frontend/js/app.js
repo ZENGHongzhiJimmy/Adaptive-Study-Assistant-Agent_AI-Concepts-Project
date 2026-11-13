@@ -92,7 +92,7 @@ const App = (() => {
     const sidebar = `
       <aside class="sidebar">
         <div class="brand">
-          <div class="brand-logo">${I('brain', 17)}</div>
+          <div class="brand-logo">${I('bookOpen', 17)}</div>
           <div class="brand-name">Adaptive Study</div>
         </div>
         <div class="sidebar-scroll">

@@ -5,7 +5,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Frontend](https://img.shields.io/badge/Frontend-原生%20HTML%2FCSS%2FJS-orange)
-![Backend](https://img.shields.io/badge/Backend-FastAPI%20%2B%20LangGraph%20%2B%20ChromaDB-green)
+![Backend](https://img.shields.io/badge/Backend-FastAPI%20%2B%20ChromaDB%20%2B%20OpenAI%20SDK-green)
 ![LLM](https://img.shields.io/badge/LLM-OpenRouter-red)
 ![License](https://img.shields.io/badge/License-Coursework-lightgrey)
 
@@ -71,35 +71,45 @@
 | **练习测验** | 有一定基础（45–80%） | 针对资料内容生成的测验题，检验掌握度 |
 | **知识复习** | 反复出错 / 已达熟练 | 针对历史错误的闪卡回顾 |
 
-自适应规划遵循 `Plan → Act → Observe → Update → Re-plan` 闭环：每次作答后按动量式公式更新掌握度，Agent 重新决定下一项活动。
+自适应规划遵循 `Plan → Act → Observe → Update → Re-plan` 闭环：每次作答后按活动类型增减掌握度，Agent 重新决定下一项活动。
 
 ---
 
 ## 3. 系统架构
 
-```
-┌─────────────────────────────────────────────────────────┐
-│              前端（原生 HTML / CSS / JS）                 │
-│  学习主页（按课程资料分类）→ 资料学习模块                  │
-│  课程资料 · 问答  │  学习进度  │  Pre-test / 学习活动       │
-│   (index.html + styles.css + js/*)                       │
-└────────────────────────┬────────────────────────────────┘
-                         │  fetch (REST)
-                         ▼
-┌─────────────────────────────────────────────────────────┐
-│              后端 API（FastAPI · src/api/）              │
-│  /materials/upload · parse · /quiz/generate · /qa/ask     │
-└──────────┬──────────────────────────┬───────────────────┘
-           │                          │
-           ▼                          ▼
-┌──────────────────────┐   ┌──────────────────────────────┐
-│  LLM (OpenRouter)     │   │  RAG 知识库 (ChromaDB)        │
-│  解析资料 / 生成 quiz  │   │  上传资料切片 + 向量检索        │
-│  问答生成             │   │  (Hashing / sentence-tf)      │
-└──────────────────────┘   └──────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph FE["浏览器 · 原生 HTML / CSS / JS"]
+        PAGES["学习主页 · 资料学习模块<br/>问答 · 进度 · Pre-test / 学习活动"]
+        STATE[("localStorage<br/>掌握度 · 轨迹 · 资料状态")]
+        PAGES <--> STATE
+    end
+
+    subgraph API["FastAPI · src/api/ · /api/*"]
+        UP["上传 · 解析<br/>upload / parse / quiz/generate"]
+        QA["RAG 问答<br/>qa/ask"]
+        MG["资料管理<br/>health / status / progress / delete / reset"]
+    end
+
+    subgraph CAP["能力层 · src/ingestion · retrieval · utils"]
+        DOC["PyMuPDF / Hashing Embedder<br/>PDF · TXT · MD → 切片向量"]
+        VEC[("ChromaDB<br/>切片向量库")]
+        LLM["OpenRouter LLM<br/>OpenAI 兼容接口"]
+        DOC --> VEC
+    end
+
+    FE -->|"fetch · REST"| API
+    API -->|"解析 · 生成 · 检索"| CAP
+
+    classDef fe stroke:#6366f1,stroke-width:2px
+    classDef api stroke:#0ea5e9,stroke-width:2px
+    classDef cap stroke:#10b981,stroke-width:2px
+    class PAGES,STATE fe
+    class UP,QA,MG api
+    class DOC,VEC,LLM cap
 ```
 
-数据流：学生上传资料 → 后端保存并向量化入库（ChromaDB）→ LLM 解析资料抽取知识点并生成讲解/quiz → 前端按资料 id 把知识点归入对应模块，并本地维护该模块的学习状态（Pre-test、掌握度、轨迹）→ 问答时后端检索相关片段 + LLM 作答并附引用。
+上传 → 切片向量化入库 → LLM 生成知识点 / 讲解 / quiz → 前端按资料归属并本地维护学习状态；问答时检索相关片段 + LLM 作答并附引用。
 
 ---
 
@@ -139,7 +149,7 @@ js/app.js             # 应用外壳 + hash 路由（含资料模块与资料级
 | 向量检索 | **ChromaDB** | 上传资料的切片向量存储与语义检索 |
 | 文本向量化 | **Hashing（确定性词袋哈希）** | 无外部模型依赖，离线可复现的文本向量 |
 | 资料解析 | **PyMuPDF** + 纯文本 | PDF / TXT / MD 提取正文 |
-| Agent 编排 | **LangGraph** | 自适应规划闭环（由前端 `engine.js` 承担规划，后端专注内容生成） |
+| 实验侧编排 | **LangGraph** | 仅 `src/agent/` 的 CLI 闭环使用；学生端 API 不调用，规划由前端 `engine.js` 承担 |
 
 ---
 
@@ -169,7 +179,7 @@ Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
 │   │   ├── app.py                  # FastAPI 应用与路由
 │   │   ├── services.py             # 资料解析 / quiz 生成 / RAG 问答
 │   │   └── run.py                  # 启动入口
-│   ├── agent/                      # Agent 编排
+│   ├── agent/                      # 实验侧 CLI 编排（LangGraph）
 │   ├── ingestion/                  # PDF/TXT 解析与切片
 │   ├── retrieval/                  # 向量库与嵌入
 │   ├── student_model/              # 学生状态模型
@@ -249,11 +259,12 @@ npm start        # 或 node server.js
 | GET | `/api/health` | 健康检查，返回 LLM 配置状态 |
 | POST | `/api/materials/upload` | 上传资料（multipart，PDF/TXT/MD） |
 | POST | `/api/materials/parse` | LLM 解析资料 → 抽取知识点 + 生成讲解与 quiz |
+| GET | `/api/materials/{material_id}` | 查询资料解析状态与缓存结果（刷新后恢复） |
 | DELETE | `/api/materials/{material_id}` | 删除指定资料 |
 | POST | `/api/materials/reset` | 重置全部数据（上传资料、课程材料、ChromaDB 索引与向量库文件），平台回到初始状态 |
 | POST | `/api/quiz/generate` | 基于资料生成 quiz（可选独立入口） |
 | POST | `/api/qa/ask` | RAG + LLM 问答，返回 `{ answer, sources, grounded, mode }`；可选 `material_id` / `material_name`（限定检索资料）与 `topic` / `focus`（知识点讲解页随堂提问：当前知识点名 + 当页讲解内容，答案按助教讲解方式组织，`mode="tutor"`） |
-| GET | `/api/progress` | 学习进度，返回 `{ topics, overall_mastery }` |
+| GET | `/api/progress` | 已解析知识点列表（掌握度由前端本地维护） |
 
 示例（解析资料）：
 

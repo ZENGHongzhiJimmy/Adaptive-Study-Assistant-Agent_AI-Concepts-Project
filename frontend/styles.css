@@ -321,8 +321,9 @@ input, textarea, select { font: inherit; color: inherit; }
 .focus-ico {
   width: 46px; height: 46px; border-radius: 12px; flex: 0 0 46px;
   background: var(--primary); color: #fff;
-  display: grid; place-items: center; font-size: 22px;
+  display: grid; place-items: center;
 }
+.focus-ico svg { display: block; }
 .focus-main { flex: 1; min-width: 0; }
 .focus-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; color: var(--primary-600); }
 .focus-title { font-size: 19px; font-weight: 800; letter-spacing: -.01em; margin-top: 2px; }
@@ -358,7 +359,14 @@ input, textarea, select { font: inherit; color: inherit; }
   border: 1px solid #c7d2fe; border-radius: var(--r-lg);
   background: var(--primary-soft);
 }
-.notice-ico { font-size: 18px; }
+.notice-ico {
+  width: 32px; height: 32px; flex: 0 0 32px;
+  display: grid; place-items: center; border-radius: 10px;
+  background: rgba(79,70,229,.10); color: var(--primary-600);
+}
+.notice-ico svg { display: block; }
+.notice-soft .notice-ico { background: var(--surface-3); color: var(--text-2); }
+.notice-ok  .notice-ico { background: rgba(22,163,74,.12); color: var(--success); }
 .notice-t { font-weight: 700; font-size: 13.5px; }
 .notice-d { font-size: 12.5px; color: var(--text-2); }
 
@@ -411,11 +419,16 @@ input, textarea, select { font: inherit; color: inherit; }
   box-shadow: inset 3px 0 0 var(--primary);
 }
 .topic-row.qa-pick.is-active .topic-name { color: var(--primary-600); }
+.topic-row.qa-pick.is-active .topic-emoji {
+  background: var(--primary); color: #fff; box-shadow: none;
+}
 .topic-emoji {
   width: 36px; height: 36px; border-radius: 10px; flex: 0 0 36px;
-  background: var(--surface-3);
-  display: grid; place-items: center; font-size: 17px;
+  background: var(--primary-soft); color: var(--primary-600);
+  box-shadow: inset 0 0 0 1px rgba(79,70,229,.08);
+  display: grid; place-items: center;
 }
+.topic-emoji svg { display: block; }
 .topic-main { flex: 1; min-width: 0; }
 .topic-name { font-weight: 650; font-size: 13.5px; }
 .topic-meta { font-size: 11.5px; color: var(--text-3); }
@@ -440,7 +453,13 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 .act-card:hover { border-color: var(--primary); }
 .act-card.recommended { border-color: var(--primary); background: var(--primary-soft); }
-.act-ico { font-size: 20px; }
+.act-ico {
+  width: 30px; height: 30px; flex: 0 0 30px;
+  display: grid; place-items: center; border-radius: 9px;
+  background: var(--primary-soft); color: var(--primary-600);
+}
+.act-ico svg { display: block; }
+.act-card.recommended .act-ico { background: var(--surface); }
 .act-name { font-weight: 700; font-size: 13.5px; }
 .act-desc { font-size: 12px; color: var(--text-3); line-height: 1.45; }
 .act-ability { font-size: 11px; color: var(--primary-600); font-weight: 600; }
@@ -672,7 +691,24 @@ input, textarea, select { font: inherit; color: inherit; }
 /* ============================ 其他 ============================ */
 
 .empty { text-align: center; padding: 40px 20px; color: var(--text-3); }
-.empty-ico { font-size: 30px; margin-bottom: 8px; opacity: .55; }
+.empty-ico {
+  width: 52px; height: 52px; margin: 0 auto 12px;
+  display: grid; place-items: center; border-radius: 16px;
+  background: var(--surface-3); color: var(--text-3);
+}
+.empty-ico svg { display: block; }
+
+/* 完成 / 结果面板：统一的单色图标圆片，替代彩色 emoji */
+.finish-ico {
+  width: 56px; height: 56px; margin: 0 auto 10px;
+  display: grid; place-items: center; border-radius: 18px;
+  background: var(--primary-soft); color: var(--primary-600);
+}
+.finish-ico svg { display: block; }
+
+/* 运行器标题：图标与标题同排，统一主色线性图标 */
+.runner-title-ico { display: flex; align-items: center; gap: 8px; }
+.runner-title-ico svg { color: var(--primary-600); flex: 0 0 auto; }
 
 .divider { height: 1px; background: var(--border); margin: 16px 0; }
 
@@ -867,15 +903,18 @@ body.modal-open { overflow: hidden; }
   box-shadow: 0 0 0 2px rgba(79,70,229,.13), 0 10px 24px -14px rgba(79,70,229,.7);
   background: linear-gradient(180deg, var(--primary-soft), var(--surface) 62%);
 }
-.mat-card.is-active .mat-ico { background: var(--primary-soft); }
+.mat-card.is-active .mat-ico { background: rgba(79,70,229,.14); }
 .mat-card .badge, .plan-current svg { vertical-align: -2px; }
 .mat-card .badge svg { display: inline-block; }
 .mat-top { display: flex; align-items: flex-start; gap: 10px; }
 .mat-ico {
   width: 38px; height: 38px; flex: 0 0 38px;
-  display: grid; place-items: center; font-size: 21px;
-  background: var(--surface-3); border-radius: 10px;
+  display: grid; place-items: center;
+  background: var(--primary-soft); color: var(--primary-600);
+  border-radius: 11px;
+  box-shadow: inset 0 0 0 1px rgba(79,70,229,.08);
 }
+.mat-ico svg { display: block; }
 .mat-name { font-weight: 700; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mat-meta { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
 .mat-stats {
@@ -932,13 +971,17 @@ body.modal-open { overflow: hidden; }
 }
 .kp-head::-webkit-details-marker { display: none; }
 .kp-head:hover { background: var(--primary-soft); }
+/* 知识点列表：去掉按序号轮换的彩色 emoji，统一用「序号徽标」作为视觉锚点，
+   一排同色、同形状，只有数字不同，展开/悬停时再由主色强调。 */
 .kp-idx {
-  width: 22px; height: 22px; flex: 0 0 22px;
-  display: grid; place-items: center; border-radius: 6px;
-  background: var(--surface-3); color: var(--text-3);
-  font-size: 11px; font-weight: 700;
+  width: 30px; height: 30px; flex: 0 0 30px;
+  display: grid; place-items: center; border-radius: 9px;
+  background: var(--primary-soft); color: var(--primary-600);
+  box-shadow: inset 0 0 0 1px rgba(79,70,229,.10);
+  font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums;
 }
-.kp-ico { font-size: 18px; }
+.kp-item[open] .kp-idx,
+.kp-head:hover .kp-idx { background: var(--primary); color: #fff; box-shadow: none; }
 .kp-main { flex: 1; min-width: 0; }
 .kp-name { font-weight: 700; font-size: 13.5px; }
 .kp-name .badge { font-size: 10px; margin-left: 6px; vertical-align: 1px; }

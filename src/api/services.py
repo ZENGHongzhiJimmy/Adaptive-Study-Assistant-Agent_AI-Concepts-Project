@@ -690,8 +690,12 @@ class MaterialService:
 
     @staticmethod
     def _icon_for(i: int) -> str:
-        icons = ["📘", "📗", "📙", "📕", "📌", "🧩", "💡", "🎯"]
-        return icons[i % len(icons)]
+        """知识点图标统一为单一语义名，由前端以单色线性 SVG 渲染。
+
+        历史版本按序号轮换彩色 emoji，列表里会出现书本/图钉/灯泡等多种
+        高饱和形状，视觉噪声较大。这里保留字段与接口形状不变，只固定取值。
+        """
+        return "bookOpen"
 
     @staticmethod
     def _normalize_quiz(list_: list[Any]) -> list[dict[str, Any]]:

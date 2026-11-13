@@ -55,10 +55,15 @@ const Student = (() => {
 
   /* ================= 通用片段 ================= */
 
+  /* 统一图标语言：所有资料类型共用一个单色线性「文件」图标，
+     类型信息交给旁边的 PDF / PPT / MD / TXT 文字，避免彩色 emoji 抢焦点。
+     kind 保留为兼容参数（历史调用会传入文件类型）。 */
   function fileIcon(kind) {
-    return kind === 'PDF' ? '📕' : kind === 'PPT' ? '📊'
-         : kind === 'MD' ? '📝' : kind === 'TXT' ? '📄' : '📄';
+    return I('file', 18);
   }
+
+  /* 知识点行：统一用一个「书」线性图标，不再按序号轮换彩色 emoji */
+  function kpIcon() { return I('bookOpen', 16); }
 
   function statusBadge(m) {
     switch (m.status) {
@@ -123,7 +128,7 @@ const Student = (() => {
       ? `<div class="plan-current">
            <div>
              <div class="text-xs" style="color:var(--primary-600);font-weight:700">${I('check', 12)} 已选中 · 当前资料</div>
-             <div style="font-weight:700;font-size:13.5px">${fileIcon(active.kind)} ${escapeHtml(active.name)}</div>
+             <div style="font-weight:700;font-size:13.5px">${I('file', 14)} ${escapeHtml(active.name)}</div>
              <div class="text-xs" style="color:var(--text-3)">
                ${activeStats.count} 个知识点 · ${activeStats.pretestDone ? 'Pre-test 已完成' : `还有 ${activeStats.pending} 个知识点待 Pre-test`}
              </div>
@@ -141,7 +146,7 @@ const Student = (() => {
          </div>`;
 
     const planCard = homeSection(
-      'brain', '自主学习规划', `${planSteps.length} 步闭环`,
+      'focus', '自主学习规划', `${planSteps.length} 步闭环`,
       'Plan → Act → Observe → Update → Re-plan',
       `${stepsBar(planSteps, cur)}${activeHint}`
     );
@@ -149,7 +154,7 @@ const Student = (() => {
     /* ② 平台功能（展示时排在自主学习规划之前） */
     const FEATURES = [
       ['upload',    '上传与 AI 解析', 'PDF / TXT / MD 上传后，LLM 自动抽取知识点、讲解与测验题'],
-      ['brain',     '自适应学习路径', '按掌握度与错误次数推荐讲解 / 练习 / 复习，一次只推一件事'],
+      ['sparkles',  '自适应学习路径', '按掌握度与错误次数推荐讲解 / 练习 / 复习，一次只推一件事'],
       ['chat',      '课程资料 AI 问答', 'RAG 只依据你上传的资料作答，并给出可核对的引用出处'],
       ['chart',     '学习进度追踪', '掌握度、错误与学习轨迹按资料模块独立记录，随时回看'],
     ];
@@ -159,7 +164,7 @@ const Student = (() => {
         <div class="overview-t">${f[1]}</div>
         <div class="overview-d">${f[2]}</div>
       </div>`).join('');
-    const overview = homeSection('layers', '平台功能', `${FEATURES.length} 项能力`, '',
+    const overview = homeSection('stack', '平台功能', `${FEATURES.length} 项能力`, '',
       `<div class="grid g-4 overview-grid">${featureCards}</div>`);
 
     /* ③ 按课程资料文件分类的模块 */
@@ -191,7 +196,7 @@ const Student = (() => {
 
     const emptyHint = !mine.length ? `
       <div class="notice">
-        <span class="notice-ico">📚</span>
+        <span class="notice-ico">${I('bookOpen', 17)}</span>
         <div style="flex:1">
           <div class="notice-t">开始你的自主学习</div>
           <div class="notice-d">上传第一份课程资料，AI 会解析出知识点与测验，并为它建立独立的学习模块。</div>
@@ -200,7 +205,7 @@ const Student = (() => {
       </div>` : '';
 
     const materialSection = homeSection(
-      'book', '我的课程资料',
+      'bookOpen', '我的课程资料',
       `${mine.length} 份资料 · ${parsed.length} 份已解析`,
       '点击卡片选中 · 点「进入学习模块」开始',
       `<div class="mat-grid">${cards}${addCard}</div>`
@@ -300,7 +305,7 @@ const Student = (() => {
   function materialView(id) {
     const rec = Engine.findMaterial(id);
     if (!rec) {
-      return UI.empty('该资料不存在或已被移除，请回到学习主页重新选择', '📭') +
+      return UI.empty('该资料不存在或已被移除，请回到学习主页重新选择', 'inbox') +
         `<div class="row mt-16"><span class="spacer"></span>
           <button class="btn btn-primary" onclick="App.go('#/student/dashboard')">回到学习主页</button></div>`;
     }
@@ -313,7 +318,7 @@ const Student = (() => {
       <div class="runner-head">
         <button class="btn btn-ghost btn-sm" onclick="App.go('#/student/dashboard')">${I('arrowLeft',15)} 学习主页</button>
         <div style="min-width:0">
-          <div class="runner-title">${fileIcon(rec.kind)} ${escapeHtml(rec.name)}</div>
+          <div class="runner-title runner-title-ico">${I('file', 17)} ${escapeHtml(rec.name)}</div>
           <div class="runner-topic">${rec.kind} · ${rec.size}${rec.pages ? ' · ' + rec.pages + ' 页' : ''} · ${rec.from || '我的上传'}</div>
         </div>
         <span class="spacer"></span>
@@ -326,7 +331,7 @@ const Student = (() => {
         <div class="card card-pad">
           ${UI.empty(rec.status === 'error'
             ? '该资料解析失败：' + escapeHtml(rec.error || '未知错误')
-            : '该资料还没有解析出知识点', rec.status === 'error' ? '⚠️' : '📄')}
+            : '该资料还没有解析出知识点', rec.status === 'error' ? 'bug' : 'file')}
           <div class="text-sm mt-8" style="color:var(--text-2);text-align:center">
             请到「课程资料 · AI 问答」完成上传与解析，或移除后重新上传。
           </div>
@@ -346,9 +351,9 @@ const Student = (() => {
         </div>
         <div class="card-body">
           <div class="grid g-4">
-            ${miniStat('知识点', s.count, 'book')}
-            ${miniStat('讲解页', s.explainCount, 'layers')}
-            ${miniStat('测验题', s.quizCount, 'target')}
+            ${miniStat('知识点', s.count, 'bookOpen')}
+            ${miniStat('讲解页', s.explainCount, 'stack')}
+            ${miniStat('测验题', s.quizCount, 'focus')}
             ${miniStat('平均掌握度', s.avg + '%', 'chart')}
           </div>
         </div>
@@ -363,7 +368,7 @@ const Student = (() => {
     const cur = !s.pretestDone ? 0 : (s.trace.length ? 2 : 1);
     const pretestNotice = !s.pretestDone ? `
       <div class="notice">
-        <span class="notice-ico">📝</span>
+        <span class="notice-ico">${I('clipboard', 17)}</span>
         <div style="flex:1">
           <div class="notice-t">先完成这份资料的 Pre-test</div>
           <div class="notice-d">共 ${s.pending} 道题（对应尚未评估的知识点），约 1–2 分钟；结果只影响本资料模块。</div>
@@ -371,7 +376,7 @@ const Student = (() => {
         <button class="btn btn-primary" onclick="Student.pretest('${rec.id}')">开始 Pre-test ${I('arrowRight',15)}</button>
       </div>` : `
       <div class="notice notice-ok">
-        <span class="notice-ico">✅</span>
+        <span class="notice-ico">${I('check', 17)}</span>
         <div style="flex:1">
           <div class="notice-t">Pre-test 已完成</div>
           <div class="notice-d">Agent 已为这 ${s.count} 个知识点建立起点，下面推荐下一步学习活动。</div>
@@ -382,11 +387,11 @@ const Student = (() => {
     const focus = plan ? `
       <div class="focus-card mt-16">
         <div class="focus-top">
-          <div class="focus-ico">${plan.activity.icon}</div>
+          <div class="focus-ico">${I(plan.activity.icon, 23)}</div>
           <div class="focus-main">
             <div class="focus-label">ADAPTIVE PLANNING AGENT · 推荐下一步</div>
             <div class="focus-title">${plan.activity.name}</div>
-            <div class="focus-meta">${plan.topic.icon} ${escapeHtml(plan.topic.name)} · 当前掌握度 ${plan.topic.mastery}%</div>
+            <div class="focus-meta">${escapeHtml(plan.topic.name)} · 当前掌握度 ${plan.topic.mastery}%</div>
           </div>
           ${UI.ring(plan.topic.mastery, 68)}
         </div>
@@ -431,13 +436,13 @@ const Student = (() => {
     /* ④ 该资料的学习记录 */
     const recent = s.trace.slice(0, 5).map(x => `
       <div class="topic-row">
-        <div class="topic-emoji">${(Engine.topic(x.topicId) || {}).icon || '📘'}</div>
+        <div class="topic-emoji">${kpIcon()}</div>
         <div class="topic-main">
           <div class="topic-name">${escapeHtml(x.topicName)} · ${x.actName}</div>
           <div class="topic-meta">掌握度 ${x.before}% → ${x.after}%</div>
         </div>
         <span class="badge badge-success">+${x.delta}%</span>
-      </div>`).join('') || UI.empty('这份资料还没有学习记录，完成一个活动试试', '🌱');
+      </div>`).join('') || UI.empty('这份资料还没有学习记录，完成一个活动试试', 'sparkles');
 
     const recordCard = `
       <div class="card">
@@ -491,7 +496,6 @@ const Student = (() => {
       <details class="kp-item">
         <summary class="kp-head">
           <span class="kp-idx">${i + 1}</span>
-          <span class="kp-ico">${t.icon || '📘'}</span>
           <div class="kp-main">
             <div class="kp-name">${escapeHtml(t.name)}
               ${t.pretested ? '' : '<span class="badge badge-warning">待 Pre-test</span>'}
@@ -534,14 +538,14 @@ const Student = (() => {
 
   function topicDetail(topicId) {
     const t = Engine.topic(topicId);
-    if (!t) return UI.empty('该知识点不存在或已被移除', '📭') +
+    if (!t) return UI.empty('该知识点不存在或已被移除', 'inbox') +
       `<div class="row mt-16"><span class="spacer"></span><button class="btn btn-primary" onclick="App.go('#/student/dashboard')">回到学习主页</button></div>`;
     const p = Engine.plan(topicId);
     const rec = Engine.materialOfTopic(t);
     const acts = Object.values(DATA.activities).map(a => `
       <button class="act-card ${a.id === p.activity.id ? 'recommended' : ''}" onclick="Student.start('${a.id}','${t.id}')">
         <div class="row" style="gap:8px">
-          <span class="act-ico">${a.icon}</span>
+          <span class="act-ico">${I(a.icon, 19)}</span>
           <span class="act-name">${a.name}</span>
           ${a.id === p.activity.id ? '<span class="badge badge-primary" style="margin-left:auto">推荐</span>' : ''}
         </div>
@@ -553,7 +557,7 @@ const Student = (() => {
       <div class="runner-head">
         <button class="btn btn-ghost btn-sm" onclick="App.go('${backHash(t.id)}')">${I('arrowLeft',15)} 返回资料模块</button>
         <div>
-          <div class="runner-title">${t.icon} ${escapeHtml(t.name)}</div>
+          <div class="runner-title runner-title-ico">${I('bookOpen', 17)} ${escapeHtml(t.name)}</div>
           <div class="runner-topic">${escapeHtml(t.desc || '')}</div>
         </div>
         <span class="spacer"></span>
@@ -567,9 +571,9 @@ const Student = (() => {
       </div>` : ''}
 
       <div class="notice">
-        <span class="notice-ico">${I('brain',17)}</span>
+        <span class="notice-ico">${I('sparkles',17)}</span>
         <div style="flex:1">
-          <div class="notice-t">Agent 推荐：${p.activity.icon} ${p.activity.name}</div>
+          <div class="notice-t">Agent 推荐：${p.activity.name}</div>
           <div class="notice-d">${p.reason}</div>
         </div>
       </div>
@@ -600,7 +604,7 @@ const Student = (() => {
   function pretestView(recId) {
     const rec = Engine.findMaterial(recId || (P && P.recId)) || Engine.activeMaterial();
     if (!rec) {
-      return UI.empty('请先在学习主页选择一份课程资料', '📚') +
+      return UI.empty('请先在学习主页选择一份课程资料', 'bookOpen') +
         `<div class="row mt-16"><span class="spacer"></span>
           <button class="btn btn-primary" onclick="App.go('#/student/dashboard')">回到学习主页</button></div>`;
     }
@@ -614,9 +618,9 @@ const Student = (() => {
         <div class="runner">
           <div class="runner-head">
             <button class="btn btn-ghost btn-sm" onclick="App.go('${back}')">${I('arrowLeft',15)} 返回资料模块</button>
-            <div><div class="runner-title">Pre-test · ${escapeHtml(rec.name)}</div></div>
+            <div><div class="runner-title runner-title-ico">${I('clipboard', 17)} Pre-test · ${escapeHtml(rec.name)}</div></div>
           </div>
-          ${UI.empty('这份资料的所有知识点都已完成起点评估', '✅')}
+          ${UI.empty('这份资料的所有知识点都已完成起点评估', 'check')}
           <div class="row mt-16"><span class="spacer"></span>
             <button class="btn btn-primary" onclick="App.go('${back}')">查看我的学习路径</button></div>
         </div>`;
@@ -627,7 +631,7 @@ const Student = (() => {
       return `
         <div class="runner">
           <div class="card card-pad" style="text-align:center">
-            <div style="font-size:40px">🎉</div>
+            <div class="finish-ico">${I('sparkles', 26)}</div>
             <div class="h-section mt-8" style="font-size:18px">Pre-test 完成</div>
             <div class="text-sm mt-8" style="color:var(--text-2)">
               「${escapeHtml(rec.name)}」答对 ${correct} / ${TS.length} 题。Agent 已为这 ${TS.length} 个知识点建立初始掌握度。
@@ -641,7 +645,7 @@ const Student = (() => {
 
     const t = TS[P.i];
     const q = Engine.topicContent(t.id).pretest || Engine.topicContent(t.id).quiz[0];
-    if (!q || !q.q) return UI.empty('该知识点暂无评估题目，可先完成讲解', '🚧');
+    if (!q || !q.q) return UI.empty('该知识点暂无评估题目，可先完成讲解', 'layers');
     const opts = (q.opts || []).map((o, i) => `
       <button class="opt ${P.sel === i ? 'selected' : ''} ${P.sel !== null ? (i === q.a ? 'correct' : (P.sel === i ? 'wrong' : '')) : ''}"
               ${P.sel !== null ? 'disabled' : `onclick="Student.pickPretest(${i})"`}>
@@ -663,7 +667,7 @@ const Student = (() => {
           <button class="btn btn-ghost btn-sm" onclick="App.go('${back}')">${I('arrowLeft',15)} 返回资料模块</button>
           <div>
             <div class="runner-title">Pre-test · 起点评估</div>
-            <div class="runner-topic">第 ${P.i + 1} / ${TS.length} 题 · ${t.icon} ${escapeHtml(t.name)}</div>
+            <div class="runner-topic">第 ${P.i + 1} / ${TS.length} 题 · ${escapeHtml(t.name)}</div>
           </div>
           <span class="spacer"></span>
           <span class="badge badge-muted">${escapeHtml(rec.name)} · 本次评估 ${TS.length} 个知识点</span>
@@ -704,7 +708,7 @@ const Student = (() => {
   function activity(type, topicId) {
     if (!Engine.topic(topicId)) {
       A = null;
-      return UI.empty('该知识点不存在或已被移除', '📭');
+      return UI.empty('该知识点不存在或已被移除', 'inbox');
     }
     if (!A || A.type !== type || A.topicId !== topicId) {
       A = { type, topicId, result: null };
@@ -721,7 +725,7 @@ const Student = (() => {
 
     const t = Engine.topic(topicId);
     const act = DATA.activities[type];
-    if (!act) { A = null; return UI.empty('该活动已下线', '🚧'); }
+    if (!act) { A = null; return UI.empty('该活动已下线', 'layers'); }
     const back = backHash(topicId);
 
     // ---- 已完成 → 结果面板（含 Re-plan） ----
@@ -730,7 +734,7 @@ const Student = (() => {
       return `
         <div class="runner">
           <div class="card card-pad" style="text-align:center">
-            <div style="font-size:38px">${r.delta > 0 ? '📈' : '📉'}</div>
+            <div class="finish-ico">${I('chart', 26)}</div>
             <div class="h-section mt-8" style="font-size:18px">活动完成 · 掌握度已更新</div>
             <div class="row mt-16" style="justify-content:center;gap:24px">
               <div><div class="text-xs" style="color:var(--text-3)">之前</div><div style="font-size:24px;font-weight:800">${r.before}%</div></div>
@@ -750,7 +754,7 @@ const Student = (() => {
             <div class="text-sm mt-8" style="color:var(--text-2)">
               该知识点现为 <b>${r.after}%</b>，规则命中
               <span class="reason-rule">${r.re.rule}</span>，下一步推荐：
-              <b>${r.re.activity.icon} ${r.re.activity.name}</b>
+              <b>${r.re.activity.name}</b>
             </div>
             <div class="row mt-16">
               <button class="btn btn-primary" onclick="Student.start('${r.re.activity.id}','${r.topic.id}')">
@@ -773,8 +777,8 @@ const Student = (() => {
         <div class="runner-head">
           <button class="btn btn-ghost btn-sm" onclick="Student.quit()">${I('arrowLeft',15)} 退出</button>
           <div>
-            <div class="runner-title">${act.icon} ${act.name}</div>
-            <div class="runner-topic">${t.icon} ${escapeHtml(t.name)} · 训练：${act.ability}</div>
+            <div class="runner-title runner-title-ico">${I(act.icon, 17)} ${act.name}</div>
+            <div class="runner-topic">${escapeHtml(t.name)} · 训练：${act.ability}</div>
           </div>
           <span class="spacer"></span>
         </div>
@@ -794,7 +798,7 @@ const Student = (() => {
     if (!s) {
       return `
         <div class="card card-pad">
-          ${UI.empty('该知识点的讲解内容尚未生成', '📄')}
+          ${UI.empty('该知识点的讲解内容尚未生成', 'file')}
           <div class="row mt-16">
             <span class="spacer"></span>
             <button class="btn btn-primary" onclick="Student.finish({})">完成讲解 ${I('check',15)}</button>
@@ -958,7 +962,7 @@ const Student = (() => {
     if (!q || !q.q) {
       return `
         <div class="card card-pad">
-          ${UI.empty('该知识点暂无练习题', '📝')}
+          ${UI.empty('该知识点暂无练习题', 'target')}
           <div class="row mt-16">
             <span class="spacer"></span>
             <button class="btn btn-primary" onclick="Student.finishPractice()">完成练习 ${I('check',15)}</button>
@@ -1017,7 +1021,7 @@ const Student = (() => {
     if (!c) {
       return `
         <div class="card card-pad">
-          ${UI.empty('暂无可复习的内容', '🔁')}
+          ${UI.empty('暂无可复习的内容', 'layers')}
           <div class="row mt-16">
             <span class="spacer"></span>
             <button class="btn btn-primary" onclick="Student.finish({})">完成复习 ${I('check',15)}</button>
@@ -1502,13 +1506,13 @@ const Student = (() => {
     const trace = Engine.state.trace.filter(x => ids.indexOf(x.topicId) !== -1);
     const traceRows = trace.map(x => `
       <div class="topic-row">
-        <div class="topic-emoji">${(Engine.topic(x.topicId) || {}).icon || '📘'}</div>
+        <div class="topic-emoji">${kpIcon()}</div>
         <div class="topic-main">
           <div class="topic-name">${escapeHtml(x.topicName)} · ${x.actName}</div>
           <div class="topic-meta">${x.before}% → ${x.after}%</div>
         </div>
         <span class="badge badge-success">+${x.delta}%</span>
-      </div>`).join('') || UI.empty('该范围内暂无学习记录', '📊');
+      </div>`).join('') || UI.empty('该范围内暂无学习记录', 'chart');
 
     const filterBar = `
       <div class="row row-wrap mb-16" style="gap:8px">
@@ -1516,7 +1520,7 @@ const Student = (() => {
         <button class="chip ${showAll ? 'chip-active' : ''}" onclick="App.go('#/student/progress/all')">全部资料</button>
         ${mine.map(m => `
           <button class="chip ${!showAll && rec && rec.id === m.id ? 'chip-active' : ''}"
-                  onclick="App.go('#/student/progress/${m.id}')">${fileIcon(m.kind)} ${escapeHtml(m.name)}</button>`).join('')}
+                  onclick="App.go('#/student/progress/${m.id}')">${escapeHtml(m.name)}</button>`).join('')}
       </div>`;
 
     return `
@@ -1529,8 +1533,8 @@ const Student = (() => {
       ${filterBar}
 
       <div class="grid g-4 mb-16">
-        ${kpi('整体掌握度', Engine.overallMastery(ts) + '%', 'target', '', showAll ? '全部资料平均' : '本资料平均')}
-        ${kpi('知识点数', ts.length, 'book', '', showAll ? '跨全部资料' : '本资料解析结果')}
+        ${kpi('整体掌握度', Engine.overallMastery(ts) + '%', 'focus', '', showAll ? '全部资料平均' : '本资料平均')}
+        ${kpi('知识点数', ts.length, 'bookOpen', '', showAll ? '跨全部资料' : '本资料解析结果')}
         ${kpi('薄弱知识点', ts.filter(t => t.mastery < 45).length, 'bug', 'amber', '需优先关注')}
         ${kpi('已掌握', ts.filter(t => t.mastery >= 75).length, 'check', 'green', `共 ${ts.length} 个知识点`)}
       </div>
@@ -1548,7 +1552,7 @@ const Student = (() => {
               ${g.topics.map(t => `
               <div class="mb-16">
                 <div class="row mb-8">
-                  <span style="font-weight:600;font-size:13.5px">${t.icon} ${escapeHtml(t.name)}</span>
+                  <span style="font-weight:600;font-size:13.5px">${escapeHtml(t.name)}</span>
                   <span class="spacer"></span>
                   <span style="font-weight:800">${t.mastery}%</span>
                   <span class="badge ${UI.level(t.mastery).badge}">${UI.level(t.mastery).label}</span>
@@ -1557,7 +1561,7 @@ const Student = (() => {
                 <div class="text-xs mt-8" style="color:var(--text-3)">练习 ${t.attempts} 次 · 错误 ${t.errors} 次${t.lastActivity ? ' · 最近：' + escapeHtml(t.lastActivity) : ''}</div>
               </div>`).join('')}
               <div class="divider"></div>`).join('')}
-            ${ts.length ? '' : UI.empty('该范围还没有知识点，先上传并解析课程资料', '📚')}
+            ${ts.length ? '' : UI.empty('该范围还没有知识点，先上传并解析课程资料', 'bookOpen')}
           </div>
         </div>
 
