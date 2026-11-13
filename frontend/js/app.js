@@ -33,6 +33,19 @@ const App = (() => {
 
   const USER = { name: 'Student', initial: 'S', role: '学生' };
 
+  /* 平台功能：原「学习主页 · 平台功能」四张卡片，改为侧边栏的能力说明区。
+     desc 用于侧栏一行短描述，tip 是完整说明（悬停可见）。 */
+  const FEATURES = [
+    ['upload',   '上传与 AI 解析', 'PDF / TXT / MD 自动解析',
+     'PDF / TXT / MD 上传后，LLM 自动抽取知识点、讲解与测验题'],
+    ['sparkles', '自适应学习路径', '按掌握度推荐下一步',
+     '按掌握度与错误次数推荐讲解 / 练习 / 复习，一次只推一件事'],
+    ['chat',     '课程资料 AI 问答', '只依据资料作答 · 带引用',
+     'RAG 只依据你上传的资料作答，并给出可核对的引用出处'],
+    ['chart',    '学习进度追踪', '掌握度与轨迹按资料记录',
+     '掌握度、错误与学习轨迹按资料模块独立记录，随时回看'],
+  ];
+
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -101,6 +114,19 @@ const App = (() => {
             <button class="nav-item ${isActive(h, n.hash) ? 'active' : ''}" onclick="App.go('${n.hash}')">
               <span class="ico">${I(n.icon, 17)}</span>${n.label}
             </button>`).join('')}
+          <div class="side-bottom">
+            <div class="nav-label">平台功能</div>
+            <div class="side-feats">
+              ${FEATURES.map(f => `
+                <div class="side-feat" title="${esc(f[1])}：${esc(f[3])}">
+                  <span class="side-feat-ico">${I(f[0], 14)}</span>
+                  <span class="side-feat-main">
+                    <span class="side-feat-t">${f[1]}</span>
+                    <span class="side-feat-d">${f[2]}</span>
+                  </span>
+                </div>`).join('')}
+            </div>
+          </div>
         </div>
         <div class="sidebar-foot">自适应学习助手 · 学生端</div>
       </aside>`;

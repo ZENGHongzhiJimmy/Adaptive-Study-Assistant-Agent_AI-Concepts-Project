@@ -106,7 +106,8 @@ const Student = (() => {
   }
 
   /* ================= 学习主页 =================
-     只保留：平台功能、自主学习规划、按资料文件分类的模块入口。
+     只保留：自主学习规划、按资料文件分类的模块入口。
+     平台功能已移到左侧菜单栏（app.js 的 FEATURES）。
      不再把全部知识点、推荐活动、学习记录堆在主页。 */
   function dashboard() {
     const mine = Engine.uploads();
@@ -158,23 +159,7 @@ const Student = (() => {
       `${stepsBar(planSteps, cur)}${activeHint}`
     );
 
-    /* ② 平台功能（展示时排在自主学习规划之前） */
-    const FEATURES = [
-      ['upload',    '上传与 AI 解析', 'PDF / TXT / MD 上传后，LLM 自动抽取知识点、讲解与测验题'],
-      ['sparkles',  '自适应学习路径', '按掌握度与错误次数推荐讲解 / 练习 / 复习，一次只推一件事'],
-      ['chat',      '课程资料 AI 问答', 'RAG 只依据你上传的资料作答，并给出可核对的引用出处'],
-      ['chart',     '学习进度追踪', '掌握度、错误与学习轨迹按资料模块独立记录，随时回看'],
-    ];
-    const featureCards = FEATURES.map(f => `
-      <div class="card overview-item">
-        <div class="overview-ico">${I(f[0], 18)}</div>
-        <div class="overview-t">${f[1]}</div>
-        <div class="overview-d">${f[2]}</div>
-      </div>`).join('');
-    const overview = homeSection('stack', '平台功能', `${FEATURES.length} 项能力`, '',
-      `<div class="grid g-4 overview-grid">${featureCards}</div>`);
-
-    /* ③ 按课程资料文件分类的模块 */
+    /* ② 按课程资料文件分类的模块（平台功能已移到左侧菜单栏） */
     const cards = mine.map(m => materialCard(m)).join('');
     const addCard = `
       <button class="mat-card mat-add" onclick="App.go('#/student/materials')">
@@ -219,7 +204,6 @@ const Student = (() => {
     );
 
     return `
-      ${overview}
       ${planCard}
       ${emptyHint}
       ${appendBanner}
