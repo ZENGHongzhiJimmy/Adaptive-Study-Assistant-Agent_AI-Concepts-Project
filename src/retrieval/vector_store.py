@@ -100,15 +100,27 @@ class ChromaVectorStore:
             self._client.delete_collection(self.collection_name)
         self._collection = self._open_collection()
 
-    def upsert_chunks(self, chunks: Sequence[Chunk], vectors: Sequence[Sequence[float]]) -> int:
+    def upsert_chunks(
+        self,
+        chunks: Sequence[Chunk],
+        vectors: Sequence[Sequence[float]],
+        *,
+        extra_metadata: dict[str, Any] | None = None,
+    ) -> int:
         if len(chunks) != len(vectors):
             raise ValueError("chunks and vectors must have the same length")
         if not chunks:
             return 0
+        metadatas = []
+        for chunk in chunks:
+            meta = chunk.metadata()
+            if extra_metadata:
+                meta = {**meta, **extra_metadata}
+            metadatas.append(meta)
         self._collection.upsert(
             ids=[chunk.chunk_id for chunk in chunks],
             documents=[chunk.text for chunk in chunks],
-            metadatas=[chunk.metadata() for chunk in chunks],
+            metadatas=metadatas,
             embeddings=[list(map(float, vector)) for vector in vectors],
         )
         return len(chunks)
@@ -123,6 +135,26 @@ class ChromaVectorStore:
         without touching unrelated chunks (idempotent: missing ids are fine).
         """
         ids = [str(i) for i in ids]
+        if not ids:
+            return 0
+        self._collection.delete(ids=ids)
+        return len(ids)
+
+    def delete_where(self, where: dict[str, Any]) -> int:
+        """Delete every chunk whose metadata matches ``where``.
+
+        Returns the number of records actually removed. Unlike
+        :meth:`delete_by_ids`, this needs no in-memory bookkeeping: the filter
+        is evaluated against the persisted collection, so it still works after
+        a backend restart wiped the material table.
+        """
+        if not where:
+            return 0
+        try:
+            found = self._collection.get(where=where, include=[])
+            ids = found.get("ids") or []
+        except Exception:
+            return 0
         if not ids:
             return 0
         self._collection.delete(ids=ids)

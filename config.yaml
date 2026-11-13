@@ -7,7 +7,7 @@
 # config_for_log() (version, model, alpha, thresholds, seed) into events.
 
 platform:
-  version: "0.1.0"
+  version: "0.2.0"
 
 llm:
   # Primary model (OpenRouter id). Change this to switch models.
@@ -27,8 +27,7 @@ llm:
   max_retries: 3
 
 embedding:
-  backend: auto
-  model: sentence-transformers/all-MiniLM-L6-v2
+  backend: hashing
   hashing_dimension: 256
 
 paths:

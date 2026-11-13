@@ -3,7 +3,7 @@
 Reuses the project's existing building blocks:
   * LLMClient          -> chat (OpenRouter, OpenAI-compatible)
   * ChromaVectorStore  -> RAG over uploaded materials
-  * HashingEmbedder / SentenceTransformerEmbedder -> text vectors
+  * HashingEmbedder  -> deterministic text vectors
   * ingestion.chunker  -> chunk text with citation metadata
   * ingestion.pdf_parser -> PDF -> text (plus TXT/MD support added here)
 
@@ -34,6 +34,7 @@ from ..retrieval.embeddings import get_embedder
 from ..retrieval.vector_store import ChromaVectorStore, RetrievedChunk
 from ..utils.config import resolve_path
 from ..utils.llm_client import LLMClient, MissingAPIKeyError
+from ..utils.quiz_order import reorder_quiz
 
 _UPLOAD_KINDS = (".pdf", ".txt", ".md", ".markdown")
 
@@ -68,6 +69,8 @@ Rules:
   of topics must scale with the amount of content.
 - Each topic needs 1-2 explain pages and 1-2 quizzes.
 - Each quiz has 2-4 options; "a" is the 0-based index of the correct option.
+- VARY the correct option's position: spread correct answers across 0/1/2/3
+  instead of always writing it first. Do NOT default to a=0.
 - KEEP IT CONCISE: short bullet items (<= 12 words each), short quiz options,
   and a one-line "why". Do NOT write long paragraphs.
 - Base EVERYTHING strictly on the material text; do not invent facts.
@@ -98,6 +101,73 @@ QA_USER = """Question: {question}
 Relevant excerpts from the student's materials (verbatim, with source labels):
 {context}
 """
+
+# 「知识点讲解」页里的随堂提问：学生正在看某一页讲解，问的通常是这一页
+# 没讲透的地方。除了检索片段，还会把当前讲解页内容一起交给模型，避免
+# 明明页面上就有的内容被答成「资料里没找到」。
+TUTOR_SYSTEM = """You are an AI teaching assistant. A student is studying ONE knowledge
+point of their own uploaded course material and has paused to ask a question
+about the slide they are reading.
+
+Rules:
+- Answer the question directly first (2-5 sentences), then add at most three
+  short supporting points, each starting with "- ", only if they help.
+- Ground every claim in the material given below: the current lecture slide and
+  the retrieved excerpts both come from the student's uploaded material. If
+  neither covers the question, say briefly what is missing instead of inventing
+  facts.
+- Teaching tone: define the term, then give one concrete example or contrast.
+- Do NOT write any citation, page number, or "Source:" line; the platform
+  appends the verified sources after your answer.
+- Answer in the same language as the student's question.
+- Plain text only: no markdown fences, no headings."""
+
+TUTOR_USER = """Knowledge point: {topic}
+Current lecture slide the student is reading:
+{lecture}
+
+Student's question: {question}
+
+Related excerpts retrieved from the material:
+{context}
+"""
+
+
+# 回答的 token 预算：推理型免费模型会把思考 token 也算在内，给 800 容易
+# 在正文中途被截断，因此放宽到 1500（答案本身仍受 prompt 的篇幅约束）。
+_ANSWER_MAX_TOKENS = 1500
+
+_SCRATCHPAD_MARKERS = (
+    "the student is asking",
+    "the user is asking",
+    "we need to answer",
+    "i need to answer",
+    "let me look at",
+    "let me draft",
+    "let me write",
+    "draft answer:",
+    "the retrieved excerpts",
+)
+
+
+def _clean_answer(text: str) -> str:
+    """Strip transport/markdown artefacts a free model sometimes prefixes."""
+    out = (text or "").strip()
+    out = re.sub(r"^[/\\]n\s*", "", out)          # 个别模型返回 "/n" 前缀
+    out = re.sub(r"^```[a-zA-Z]*\s*", "", out)     # 误加的代码围栏
+    out = re.sub(r"\s*```$", "", out)
+    return out.strip()
+
+
+def _looks_like_scratchpad(text: str) -> bool:
+    """True when a model leaked its chain-of-thought into the answer body.
+
+    Reasoning models normally return the trace in ``reasoning``; when the
+    output is truncated some providers append it to ``content`` instead. A
+    student must never see that, so the caller retries once.
+    """
+    head = (text or "")[:400].lower()
+    return any(marker in head for marker in _SCRATCHPAD_MARKERS)
 
 
 def key_status(config: dict[str, Any]) -> dict[str, Any]:
@@ -282,6 +352,11 @@ class MaterialService:
 
         self._materials: dict[str, dict[str, Any]] = {}
         self._topics: dict[str, list[dict[str, Any]]] = {}
+        # Cache of completed parse results. A page refresh aborts the browser
+        # request but not the server-side parse thread, so re-requesting the
+        # same material can return the cached result instead of a second LLM
+        # call. Front-end recovery reads this via material_status().
+        self._parse_results: dict[str, dict[str, Any]] = {}
         self._llm: LLMClient | None = None
 
     @property
@@ -334,7 +409,9 @@ class MaterialService:
         chunk_ids: list[str] = []
         if chunks:
             vectors = self.embedder.embed([c.text for c in chunks])
-            self.store.upsert_chunks(chunks, vectors)
+            # Tag every chunk with its material id so deletion can find them
+            # directly in ChromaDB, even after the in-memory table is gone.
+            self.store.upsert_chunks(chunks, vectors, extra_metadata={"material_id": mid})
             chunk_ids = [c.chunk_id for c in chunks]
 
         rec = {
@@ -438,6 +515,7 @@ class MaterialService:
         # 5) 清空内存状态
         material_ids = list(self._materials.keys())
         self._topics.clear()
+        self._parse_results.clear()
         self._materials.clear()
         return {
             "reset": True,
@@ -448,38 +526,74 @@ class MaterialService:
             "chroma_db_removed": db_removed,
         }
 
-    def delete_material(self, material_id: str) -> dict[str, Any]:
-        """Remove an uploaded material everywhere it lives.
+    def delete_material(
+        self, material_id: str, material_name: str | None = None
+    ) -> dict[str, Any]:
+        """Remove an uploaded material everywhere it lives (idempotent).
 
-        Deletes the on-disk file, the ChromaDB chunks (so future RAG Q&A no
-        longer cites it), the parsed topics, and the in-memory record. This is
-        the single cleanup path that guarantees no stale citations remain.
+        ``_materials`` is only an in-memory cache: restarting the backend wipes
+        it while the uploaded file and the ChromaDB chunks survive. Cleanup
+        therefore must NOT depend on that cache -- previously a missing record
+        raised 404, the front-end swallowed the error, and the user saw the
+        material disappear while the file (and its citations) stayed behind.
+
+        Layers, most precise first:
+          1. chunks tagged with ``material_id`` (written at upload time),
+          2. chunk ids tracked in memory (legacy behaviour),
+          3. chunks whose ``topic`` matches the original filename (legacy
+             index built before the material_id tag existed).
+        The on-disk file is removed by id prefix, so no record/suffix is needed.
+        """
+        rec = self._materials.get(material_id)
+        name = material_name or (rec.get("name") if rec else None)
+
+        # 1) ChromaDB chunks
+        removed = self.store.delete_where({"material_id": material_id})
+        if removed == 0 and rec and rec.get("chunk_ids"):
+            try:
+                removed = self.store.delete_by_ids(rec["chunk_ids"])
+            except Exception:
+                removed = 0
+        if removed == 0 and name:
+            removed = self.store.delete_where({"topic": lecture_name(name)})
+
+        # 2) on-disk file(s): glob by id instead of relying on rec["name"]
+        files_removed = 0
+        for path in self.upload_dir.glob(f"{material_id}.*"):
+            if path.is_file():
+                try:
+                    path.unlink()
+                    files_removed += 1
+                except OSError:
+                    pass
+
+        # 3) in-memory state, parsed topics and cached parse result
+        self._topics.pop(material_id, None)
+        self._parse_results.pop(material_id, None)
+        self._materials.pop(material_id, None)
+        return {
+            "deleted": material_id,
+            "chunks_removed": removed,
+            "files_removed": files_removed,
+        }
+
+    def material_status(self, material_id: str) -> dict[str, Any] | None:
+        """Parse state used by the front-end to recover after a page refresh.
+
+        ``parsed`` reflects the server's own truth (not the browser's), and
+        ``result`` carries the cached parse output so the UI can finish without
+        re-running the LLM. Returns ``None`` when the record is gone.
         """
         rec = self._materials.get(material_id)
         if rec is None:
-            raise ValueError("资料不存在或已被移除")
-
-        # 1) remove indexed chunks from ChromaDB
-        chunk_ids = rec.get("chunk_ids") or []
-        if chunk_ids:
-            try:
-                self.store.delete_by_ids(chunk_ids)
-            except Exception:
-                pass
-
-        # 2) remove the on-disk file
-        suffix = Path(rec["name"]).suffix.lower()
-        path = self.upload_dir / f"{material_id}{suffix}"
-        try:
-            if path.is_file():
-                path.unlink()
-        except Exception:
-            pass
-
-        # 3) drop parsed topics and the record
-        self._topics.pop(material_id, None)
-        self._materials.pop(material_id, None)
-        return {"deleted": material_id, "chunks_removed": len(chunk_ids)}
+            return None
+        return {
+            "id": material_id,
+            "name": rec["name"],
+            "status": rec.get("status", "uploaded"),
+            "parsed": rec.get("status") == "parsed",
+            "result": self._parse_results.get(material_id),
+        }
 
     # ---- 解析：LLM 抽取知识点 + 生成讲解与 quiz ----
     def _material_text(self, material_id: str) -> str:
@@ -495,10 +609,16 @@ class MaterialService:
         return text
 
     def parse_material(self, material_id: str) -> dict[str, Any]:
-        self._require_key()
         rec = self.get_material(material_id)
         if rec is None:
             raise ValueError("资料不存在")
+        # Refreshing the page aborts the browser request, but FastAPI's sync
+        # endpoint keeps running in its thread pool. Serve the cached result
+        # on retry so recovery is instant and does not pay for another LLM call.
+        cached = self._parse_results.get(material_id)
+        if cached is not None:
+            return cached
+        self._require_key()
 
         text = self._material_text(material_id)
 
@@ -546,7 +666,7 @@ class MaterialService:
             if not name or key in seen:
                 continue
             seen.add(key)
-            quiz = self._normalize_quiz(t.get("quiz") or [])
+            quiz = self._normalize_quiz(t.get("quiz") or [], topic=name)
             explain = self._normalize_explain(t.get("explain") or [])
             normalized.append({
                 "name": name,
@@ -561,21 +681,27 @@ class MaterialService:
         rec["status"] = "parsed"
         rec["topic_count"] = len(normalized)
 
-        return {
+        result = {
             "material_id": material_id,
             "source": rec["name"],
             "summary": payload.get("summary", ""),
             "pages": rec.get("pages"),
             "topics": normalized,
         }
+        self._parse_results[material_id] = result
+        return result
 
     @staticmethod
     def _icon_for(i: int) -> str:
-        icons = ["📘", "📗", "📙", "📕", "📌", "🧩", "💡", "🎯"]
-        return icons[i % len(icons)]
+        """知识点图标统一为单一语义名，由前端以单色线性 SVG 渲染。
+
+        历史版本按序号轮换彩色 emoji，列表里会出现书本/图钉/灯泡等多种
+        高饱和形状，视觉噪声较大。这里保留字段与接口形状不变，只固定取值。
+        """
+        return "bookOpen"
 
     @staticmethod
-    def _normalize_quiz(list_: list[Any]) -> list[dict[str, Any]]:
+    def _normalize_quiz(list_: list[Any], topic: str = "") -> list[dict[str, Any]]:
         out: list[dict[str, Any]] = []
         for q in list_ or []:
             if not isinstance(q, dict):
@@ -593,7 +719,9 @@ class MaterialService:
                 "a": a,
                 "why": str(q.get("why") or q.get("explanation") or ""),
             })
-        return out
+        # 模型几乎总把正确项写在第一格（答案清一色 A）。这里在解析后重排选项，
+        # 让正确答案均匀落在 A/B/C/D，索引 "a" 同步改写；判分逻辑不变。
+        return reorder_quiz(out, seed_parts=(topic,))
 
     @staticmethod
     def _normalize_explain(list_: list[Any]) -> list[dict[str, Any]]:
@@ -637,40 +765,138 @@ class MaterialService:
                 q = dict(q)
                 q["topic"] = t.get("name")
                 all_quiz.append(q)
-        return {"material_id": material_id, "count": len(all_quiz), "quiz": all_quiz[:count]}
+        picked = all_quiz[:count]
+        # 单个知识点的题目已在本知识点内均衡；跨知识点按 count 截断后可能偏向
+        # 某个字母，这里按整份卷子再均衡一次（复制体，不影响解析缓存）。
+        reorder_quiz(picked, seed_parts=(material_id, topic or ""))
+        return {"material_id": material_id, "count": len(picked), "quiz": picked}
 
     # ---- RAG 问答 ----
-    def ask(self, question: str) -> dict[str, Any]:
+    def ask(
+        self,
+        question: str,
+        material_id: str | None = None,
+        material_name: str | None = None,
+        topic: str | None = None,
+        focus: str | None = None,
+    ) -> dict[str, Any]:
+        """RAG + LLM answer.
+
+        ``topic`` / ``focus`` are optional and only used by the in-lecture
+        question box: ``topic`` is the knowledge point being studied and
+        ``focus`` is the text of the slide on screen. Passing them makes the
+        model answer in a tutoring tone grounded on that slide, which keeps a
+        follow-up question from being answered with "not found in materials"
+        when the slide itself already says it.
+        """
         self._require_key()
-        hits = self._retrieve(question)
-        if not hits:
+        topic = (topic or "").strip() or None
+        focus = (focus or "").strip() or None
+        # 知识点名称同时用作检索提示词：hashed 向量是词级匹配，带上知识点
+        # 词汇能显著提高命中该知识点原文的概率。
+        hits = self._retrieve(
+            question,
+            material_id=material_id,
+            material_name=material_name,
+            topic_hint=topic,
+        )
+        if not hits and not focus:
             return {
                 "answer": "我在你上传的资料中没有找到直接依据。请换用资料中的原词再问，或上传包含该内容的资料后重试。我不会凭空编造答案。",
                 "sources": [],
                 "grounded": False,
+                "mode": "material",
             }
 
-        context = self._format_context(hits)
-        messages = [
-            {"role": "system", "content": QA_SYSTEM},
-            {"role": "user", "content": QA_USER.format(question=question, context=context)},
-        ]
-        response = self.llm.chat(messages, max_tokens=800)
+        context = self._format_context(hits) if hits else "(none retrieved)"
+        if topic or focus:
+            messages = [
+                {"role": "system", "content": TUTOR_SYSTEM},
+                {"role": "user", "content": TUTOR_USER.format(
+                    topic=topic or "当前知识点",
+                    lecture=focus or "(none)",
+                    question=question,
+                    context=context,
+                )},
+            ]
+            mode = "tutor"
+        else:
+            messages = [
+                {"role": "system", "content": QA_SYSTEM},
+                {"role": "user", "content": QA_USER.format(question=question, context=context)},
+            ]
+            mode = "material"
+
+        response = self.llm.chat(messages, max_tokens=_ANSWER_MAX_TOKENS)
+        answer = _clean_answer(response.text)
+        if not answer or _looks_like_scratchpad(answer):
+            # 免费模型偶发把「思考过程」写进正文并因截断而只剩草稿。
+            # 强化一次输出约束后重试一次；仍不合格就如实告知，不展示草稿。
+            answer = _clean_answer(self.llm.chat(
+                [*messages, {
+                    "role": "system",
+                    "content": "Output ONLY the final answer for the student. "
+                               "No analysis, no reasoning, no scratchpad.",
+                }],
+                max_tokens=_ANSWER_MAX_TOKENS,
+            ).text)
+            if not answer or _looks_like_scratchpad(answer):
+                return {
+                    "answer": "模型这次没有返回可用的回答，请再提问一次（可换个说法）。",
+                    "sources": [],
+                    "grounded": False,
+                    "mode": "tutor" if (topic or focus) else "material",
+                }
         sources = list(dict.fromkeys(h.source for h in hits if h.source))
         return {
-            "answer": response.text.strip(),
+            "answer": answer,
             "sources": sources,
-            "grounded": True,
+            # 讲解页内容本身也来自该资料，因此有 focus 也算有依据。
+            "grounded": bool(hits or focus),
+            "retrieved": len(hits),
+            "mode": mode,
             "model": response.model,
         }
 
-    def _retrieve(self, question: str) -> list[RetrievedChunk]:
+    def _topic_for_material(
+        self, material_id: str | None, material_name: str | None
+    ) -> str | None:
+        """把「当前问答资料」映射到索引里的 topic 标签。
+
+        ``save_upload()`` 索引时把每个 chunk 的 ``topic`` 设为
+        ``lecture_name(原始文件名)``。这里复用同一规则即可定位该资料的
+        chunk，因此旧索引无需重建；后端重启后内存记录丢失时，前端传来的
+        原始文件名同样能完成映射。
+        """
+        name = material_name
+        if not name and material_id:
+            rec = self._materials.get(material_id)
+            if rec:
+                name = rec.get("name")
+        if not name:
+            return None
+        return lecture_name(name)
+
+    def _retrieve(
+        self,
+        question: str,
+        material_id: str | None = None,
+        material_name: str | None = None,
+        topic_hint: str | None = None,
+    ) -> list[RetrievedChunk]:
         if self.store.count() == 0:
             return []
-        vector = self.embedder.embed([question])[0]
-        return self.store.search_by_vector(
-            vector, top_k=int(self.retrieval_cfg.get("top_k", 3))
-        )
+        # topic_hint（当前知识点名）只影响检索召回，不改变答案的提问内容。
+        query = f"{topic_hint} {question}" if topic_hint else question
+        vector = self.embedder.embed([query])[0]
+        top_k = int(self.retrieval_cfg.get("top_k", 3))
+        topic = self._topic_for_material(material_id, material_name)
+        hits = self.store.search_by_vector(vector, top_k=top_k, topic=topic)
+        if not hits and topic:
+            # 安全兜底：若旧索引无法按该标签命中（例如文件名与索引标签不一致），
+            # 退回全局检索，避免误报「未找到依据」。
+            hits = self.store.search_by_vector(vector, top_k=top_k)
+        return hits
 
     @staticmethod
     def _format_context(hits: Sequence[RetrievedChunk], limit: int = 700) -> str:

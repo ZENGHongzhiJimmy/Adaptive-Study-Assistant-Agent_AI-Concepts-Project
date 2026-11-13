@@ -5,7 +5,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Frontend](https://img.shields.io/badge/Frontend-原生%20HTML%2FCSS%2FJS-orange)
-![Backend](https://img.shields.io/badge/Backend-FastAPI%20%2B%20LangGraph%20%2B%20ChromaDB-green)
+![Backend](https://img.shields.io/badge/Backend-FastAPI%20%2B%20ChromaDB%20%2B%20OpenAI%20SDK-green)
 ![LLM](https://img.shields.io/badge/LLM-OpenRouter-red)
 ![License](https://img.shields.io/badge/License-Coursework-lightgrey)
 
@@ -14,7 +14,7 @@
 | 项目名称 | Adaptive Study Assistant Agent — 学生端 |
 | 项目类型 | 课程项目 / 原型系统 |
 | 目标用户 | 需要自主学习专业课程知识的大学生 |
-| 核心能力 | 学生自主上传课程资料 → LLM 自动解析并生成 quiz；学习主页提示自主学习路径；课程资料 + AI 问答；学习进度追踪 |
+| 核心能力 | 学生自主上传课程资料 → LLM 自动解析并生成 quiz；学习主页按资料文件分类进入独立学习模块；课程资料 + AI 问答；学习进度追踪 |
 
 ---
 
@@ -38,63 +38,78 @@
 系统围绕「学生自主上传课程资料」这一入口，形成完整闭环：
 
 ```
-学生上传课程资料
+学生上传课程资料（每份资料 = 一个独立学习模块）
     → LLM 自动解析资料、抽取知识点并生成讲解与 quiz
-    → 学习主页提示自主学习路径（Agent 推荐下一步）
-    → 学生完成讲解 / 练习 / 复习，系统更新掌握度并重新规划
-    → 学习进度页可视化各知识点掌握度与学习轨迹
+    → 学习主页按「课程资料文件」分类展示模块卡片，点击选择一份资料
+    → 进入该资料模块后才显示自主学习路径：Pre-test → 推荐活动 → 进度追踪
+    → 模块内可展开查看课件解析后的知识点（讲解要点 / 生成测验 / 掌握度）
+    → 学生完成讲解 / 练习 / 复习，系统只更新该资料的掌握度并重新规划
 ```
 
-同时，学生可在「课程资料 · AI 问答」中就上传的资料向 AI 提问，系统基于 RAG（检索增强生成）作答并给出**可核对的引用出处**，而不是凭空编造。
+学习主页提供平台功能概览、自主学习规划与课程资料模块入口。选中资料后进入对应模块，完成 Pre-test、讲解 / 练习 / 复习、课件知识点查看与进度追踪，各模块进度独立。「课程资料 · AI 问答」基于上传资料做 RAG 问答并附引用出处；知识点讲解页内也可随时暂停提问，同样由 RAG + LLM 现场作答（以当前讲解页为上下文，答案更贴合正在学的知识点）。
 
 ---
 
 ## 2. 功能特性
 
-学生端共三个页面 + 三种学习活动：
+学生端共三个一级页面（另有按资料进入的模块页）+ 三种学习活动：
 
 | 页面 | 功能 |
 | ---- | ---- |
-| **学习主页** | 自主学习路径提示、Agent 推荐下一步（一次只推一件事）、知识点掌握度总览、最近学习记录 |
-| **课程资料 · 问答** | 自主上传课程资料（PDF / TXT / MD）、AI 解析资料生成知识点与 quiz、AI 问答（带引用出处） |
-| **学习进度** | 整体掌握度、各知识点掌握度条形图、完整学习轨迹 |
+| **学习主页** | 平台功能概览、自主学习规划、课程资料文件卡片（知识点数 / 掌握度 / 解析状态）；点击卡片选中资料，点「进入学习模块」进入对应模块 |
+| **资料学习模块**（选中资料后） | 该资料的课件解析概览、自主学习路径（先 Pre-test，再由 Agent 推荐下一步）、课件解析后的知识点（可展开查看讲解要点与生成测验）、本资料学习记录 |
+| **课程资料 · 问答** | 自主上传课程资料（PDF / TXT / MD）、AI 解析资料生成知识点与 quiz、AI 问答（带引用出处）、从资料列表直接进入模块 |
+| **学习进度** | 按资料范围筛选的整体掌握度、各知识点掌握度条形图、学习轨迹 |
+
+> **按资料隔离**：每个知识点通过 `_materialId` 绑定所属资料，Pre-test 状态、掌握度、推荐活动与学习记录都只在该资料模块内生效，不同资料之间互不干扰。
 
 三种学习活动（由自适应规划 Agent 依据掌握度分派）：
 
 | 活动 | 触发条件 | 说明 |
 | ---- | ---- | ---- |
-| **知识点讲解** | 掌握度低（< 45%） | 基于上传资料生成的分页讲解，可随时暂停提问 |
+| **知识点讲解** | 掌握度低（< 45%） | 基于上传资料生成的分页讲解，可随时暂停提问（提问由 RAG + LLM 现场作答，并附引用出处） |
 | **练习测验** | 有一定基础（45–80%） | 针对资料内容生成的测验题，检验掌握度 |
 | **知识复习** | 反复出错 / 已达熟练 | 针对历史错误的闪卡回顾 |
 
-自适应规划遵循 `Plan → Act → Observe → Update → Re-plan` 闭环：每次作答后按动量式公式更新掌握度，Agent 重新决定下一项活动。
+自适应规划遵循 `Plan → Act → Observe → Update → Re-plan` 闭环：每次作答后按活动类型增减掌握度，Agent 重新决定下一项活动。
 
 ---
 
 ## 3. 系统架构
 
-```
-┌─────────────────────────────────────────────────────────┐
-│              前端（原生 HTML / CSS / JS）                 │
-│   学习主页  │  课程资料 · 问答  │  学习进度                 │
-│   (index.html + styles.css + js/*)                       │
-└────────────────────────┬────────────────────────────────┘
-                         │  fetch (REST)
-                         ▼
-┌─────────────────────────────────────────────────────────┐
-│              后端 API（FastAPI · src/api/）              │
-│  /materials/upload · parse · /quiz/generate · /qa/ask     │
-└──────────┬──────────────────────────┬───────────────────┘
-           │                          │
-           ▼                          ▼
-┌──────────────────────┐   ┌──────────────────────────────┐
-│  LLM (OpenRouter)     │   │  RAG 知识库 (ChromaDB)        │
-│  解析资料 / 生成 quiz  │   │  上传资料切片 + 向量检索        │
-│  问答生成             │   │  (Hashing / sentence-tf)      │
-└──────────────────────┘   └──────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph FE["浏览器 · 原生 HTML / CSS / JS"]
+        PAGES["学习主页 · 资料学习模块<br/>问答 · 进度 · Pre-test / 学习活动"]
+        STATE[("localStorage<br/>掌握度 · 轨迹 · 资料状态")]
+        PAGES <--> STATE
+    end
+
+    subgraph API["FastAPI · src/api/ · /api/*"]
+        UP["上传 · 解析<br/>upload / parse / quiz/generate"]
+        QA["RAG 问答<br/>qa/ask"]
+        MG["资料管理<br/>health / status / progress / delete / reset"]
+    end
+
+    subgraph CAP["能力层 · src/ingestion · retrieval · utils"]
+        DOC["PyMuPDF / Hashing Embedder<br/>PDF · TXT · MD → 切片向量"]
+        VEC[("ChromaDB<br/>切片向量库")]
+        LLM["OpenRouter LLM<br/>OpenAI 兼容接口"]
+        DOC --> VEC
+    end
+
+    FE -->|"fetch · REST"| API
+    API -->|"解析 · 生成 · 检索"| CAP
+
+    classDef fe stroke:#6366f1,stroke-width:2px
+    classDef api stroke:#0ea5e9,stroke-width:2px
+    classDef cap stroke:#10b981,stroke-width:2px
+    class PAGES,STATE fe
+    class UP,QA,MG api
+    class DOC,VEC,LLM cap
 ```
 
-数据流：学生上传资料 → 后端保存并向量化入库（ChromaDB）→ LLM 解析资料抽取知识点并生成讲解/quiz → 前端本地维护学习状态（掌握度、轨迹），问答时后端检索相关片段 + LLM 作答并附引用。
+上传 → 切片向量化入库 → LLM 生成知识点 / 讲解 / quiz → 前端按资料归属并本地维护学习状态；问答时检索相关片段 + LLM 作答并附引用。
 
 ---
 
@@ -107,8 +122,8 @@
 | 页面结构 | **HTML5** | 单页应用外壳（`#app` 根节点 + hash 路由） |
 | 样式 | **CSS3** | `styles.css` 设计系统（CSS 变量、卡片、进度条、环形进度等） |
 | 交互逻辑 | **原生 JavaScript** | 模块化 IIFE：`ui.js` / `data.js` / `engine.js` / `views-student.js` / `app.js` / `api.js` |
-| 路由 | **hash 路由** | `#/student/dashboard` 等，无需后端路由 |
-| 状态持久化 | **localStorage** | 学习状态（掌握度、轨迹）本地保存，刷新不丢 |
+| 路由 | **hash 路由** | `#/student/dashboard`、`#/student/material/:id`、`#/student/pretest/:id`、`#/student/progress/:scope` 等，无需后端路由 |
+| 状态持久化 | **localStorage** | 学习状态（当前资料、掌握度、轨迹）本地保存，刷新不丢 |
 | 后端通信 | **fetch API** | `js/api.js` 封装 REST 调用（`/api/*`） |
 | 本地服务 | **Node.js 内置 http** | `server.js` 零依赖静态服务器（可选） |
 
@@ -117,10 +132,10 @@
 ```
 js/ui.js              # 图标 + 通用 UI 组件（toast / bar / ring / card）
 js/data.js            # 活动类型 + 问答欢迎语（后端不可用时的演示兜底）
-js/engine.js          # 学生知识模型 + 自适应规划 Agent + 上传状态
+js/engine.js          # 按资料隔离的知识模型 + 自适应规划 Agent + 上传状态
 js/api.js             # 后端 HTTP API 封装
-js/views-student.js   # 学生端三大页面视图
-js/app.js             # 应用外壳 + hash 路由
+js/views-student.js   # 学习主页 / 资料模块 / 问答 / 进度 / Pre-test / 活动视图
+js/app.js             # 应用外壳 + hash 路由（含资料模块与资料级路由参数）
 ```
 
 ---
@@ -132,9 +147,9 @@ js/app.js             # 应用外壳 + hash 路由
 | API 框架 | **FastAPI** | 暴露学生端 REST 接口（`src/api/`） |
 | LLM 接入 | **OpenRouter**（OpenAI 兼容） | 解析资料抽取知识点、生成 quiz、RAG 问答 |
 | 向量检索 | **ChromaDB** | 上传资料的切片向量存储与语义检索 |
-| 文本向量化 | **sentence-transformers / Hashing** | 语义嵌入（正式）/ 确定性离线嵌入（测试） |
+| 文本向量化 | **Hashing（确定性词袋哈希）** | 无外部模型依赖，离线可复现的文本向量 |
 | 资料解析 | **PyMuPDF** + 纯文本 | PDF / TXT / MD 提取正文 |
-| Agent 编排 | **LangGraph** | 自适应规划闭环（由前端 `engine.js` 承担规划，后端专注内容生成） |
+| 实验侧编排 | **LangGraph** | 仅 `src/agent/` 的 CLI 闭环使用；学生端 API 不调用，规划由前端 `engine.js` 承担 |
 
 ---
 
@@ -155,16 +170,16 @@ Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
 │   └── js/
 │       ├── ui.js                   # 图标 + UI 组件
 │       ├── data.js                 # 活动类型 + 演示兜底数据
-│       ├── engine.js               # 知识模型 + 自适应规划 + 上传状态
+│       ├── engine.js               # 按资料隔离的知识模型 + 自适应规划 + 上传状态
 │       ├── api.js                  # 后端 HTTP API 封装
-│       ├── views-student.js        # 学生端视图
+│       ├── views-student.js        # 学习主页 / 资料模块 / 问答 / 进度等视图
 │       └── app.js                  # 应用外壳 + 路由
 ├── src/
 │   ├── api/                        # ★ 学生端 HTTP API
 │   │   ├── app.py                  # FastAPI 应用与路由
 │   │   ├── services.py             # 资料解析 / quiz 生成 / RAG 问答
 │   │   └── run.py                  # 启动入口
-│   ├── agent/                      # Agent 编排
+│   ├── agent/                      # 实验侧 CLI 编排（LangGraph）
 │   ├── ingestion/                  # PDF/TXT 解析与切片
 │   ├── retrieval/                  # 向量库与嵌入
 │   ├── student_model/              # 学生状态模型
@@ -185,7 +200,7 @@ Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
 - Python 3.10+、pip
 - Node.js ≥ 16（仅前端可选本地服务需要；也可直接用 Python http.server）
 - OpenRouter API Key（LLM 解析 / 问答需要，填在本地 `.env`）
-- 可运行 sentence-transformers 的内存（建议 ≥ 4 GB；否则自动降级为 hashing 离线嵌入）
+- 内存：无大模型加载需求（内置 hashing 嵌入，常规配置即可）
 
 ### 7.2 后端安装与启动
 
@@ -244,11 +259,12 @@ npm start        # 或 node server.js
 | GET | `/api/health` | 健康检查，返回 LLM 配置状态 |
 | POST | `/api/materials/upload` | 上传资料（multipart，PDF/TXT/MD） |
 | POST | `/api/materials/parse` | LLM 解析资料 → 抽取知识点 + 生成讲解与 quiz |
+| GET | `/api/materials/{material_id}` | 查询资料解析状态与缓存结果（刷新后恢复） |
 | DELETE | `/api/materials/{material_id}` | 删除指定资料 |
 | POST | `/api/materials/reset` | 重置全部数据（上传资料、课程材料、ChromaDB 索引与向量库文件），平台回到初始状态 |
 | POST | `/api/quiz/generate` | 基于资料生成 quiz（可选独立入口） |
-| POST | `/api/qa/ask` | RAG + LLM 问答，返回 `{ answer, sources }` |
-| GET | `/api/progress` | 学习进度，返回 `{ topics, overall_mastery }` |
+| POST | `/api/qa/ask` | RAG + LLM 问答，返回 `{ answer, sources, grounded, mode }`；可选 `material_id` / `material_name`（限定检索资料）与 `topic` / `focus`（知识点讲解页随堂提问：当前知识点名 + 当页讲解内容，答案按助教讲解方式组织，`mode="tutor"`） |
+| GET | `/api/progress` | 已解析知识点列表（掌握度由前端本地维护） |
 
 示例（解析资料）：
 
@@ -264,7 +280,7 @@ curl -X POST http://127.0.0.1:8000/api/materials/parse \
 
 - **LLM 模型配置与限流**：默认主模型为 OpenRouter 免费模型 `(baidu/ernie-5.5-flash-preview:free)`，并在 `fallback_models` 中配置付费模型 `(deepseek/deepseek-v4.1-flash)` 作为兜底。主模型正常时只调用免费模型、不额外消耗付费额度；当主模型不可用（如被下架或限流返回 404/429）时，自动按序切换到付费兜底模型完成解析与问答。模型均可根据个人需求在 `config.yaml -> llm` 段自由更换（改 `model` 与 `fallback_models`）。
 - **学习状态存于前端**：掌握度与学习轨迹由前端 `localStorage` 维护，后端不持久化学生作答状态。
-- **嵌入后端**：默认 `auto`，本机未安装 sentence-transformers 时降级为 hashing（确定性词袋哈希，非语义嵌入）。正式语义检索需安装并固定为 `sentence_transformers`。
+- **嵌入后端**：固定为 `hashing`（确定性词袋哈希 + L2 归一化 cosine），无外部模型依赖、离线可复现；属于词面匹配而非语义嵌入，同义改写与跨语言检索能力有限。
 - **资料格式**：支持 PDF / TXT / MD；PPT 暂不支持（可先导出为 PDF）。
 - **单用户**：当前为课程原型，未实现多用户认证与数据隔离。
 

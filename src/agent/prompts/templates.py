@@ -49,6 +49,8 @@ Required schema:
 Rules:
 - Exactly 4 non-empty, mutually distinct options with keys A, B, C, D.
 - Exactly one correct option; distractors must be plausible but clearly wrong.
+- Do NOT always put the correct option in slot A: vary its position across
+  A/B/C/D depending on which reads most naturally.
 - Use ONLY facts present in the lecture excerpts when excerpts are provided.
 - The stem and options must be answerable from the excerpts / topic alone.
 - Output valid JSON: double quotes only, no trailing commas, no comments."""

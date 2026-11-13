@@ -19,12 +19,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import random
 import re
 import warnings
 from dataclasses import dataclass
 from typing import Any, Sequence
 
 from ..utils.llm_client import LLMClient, key_setup_message
+from ..utils.quiz_order import move_correct_to, seed_for
 from .prompts.templates import (
     NO_EXCERPTS,
     QUESTION_RETRY,
@@ -200,6 +202,32 @@ def parse_question_payload(
     )
 
 
+def _reorder_mcq_options(mcq: MCQ) -> MCQ:
+    """Move the correct option off its usual first slot.
+
+    Parsing stays a pure translation of the reply (tests rely on that); the
+    option order is rebalanced here so a whole self-test does not read
+    "A, A, A, B". The shuffle is seeded from the question id + stem, so the same
+    question always renders identically while different questions land on
+    different letters. ``question_id`` is deliberately unchanged - it identifies
+    the question, not the layout.
+    """
+    keys = [key for key in OPTION_KEYS if key in mcq.options]
+    if len(keys) < 2 or mcq.correct_option not in keys:
+        return mcq
+    values = [mcq.options[key] for key in keys]
+    correct = keys.index(mcq.correct_option)
+    rng = random.Random(seed_for(mcq.question_id, mcq.prompt))
+    target = rng.randrange(len(values))
+    new_values, new_index = move_correct_to(values, correct, target, rng)
+    return MCQ(
+        question_id=mcq.question_id,
+        prompt=mcq.prompt,
+        options=dict(zip(keys, new_values)),
+        correct_option=keys[new_index],
+    )
+
+
 def _strip_citation_lines(text: str) -> str:
     kept = [line for line in text.splitlines() if not _SOURCE_LINE.match(line)]
     return "\n".join(kept).strip()
@@ -372,7 +400,7 @@ class LLMContentGenerator:
                 mcq = parse_question_payload(
                     previous, topic=topic, difficulty=difficulty, index=index,
                 )
-                return QuestionResult(mcq, "llm", usage.as_dict())
+                return QuestionResult(_reorder_mcq_options(mcq), "llm", usage.as_dict())
             except QuestionParseError as exc:
                 last_error = str(exc)
             except Exception as exc:

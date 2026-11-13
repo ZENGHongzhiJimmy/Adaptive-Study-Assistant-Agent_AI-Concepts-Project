@@ -11,9 +11,10 @@ const DATA = {
 
   /* ---------- 学习活动类型（学生端只有 3 种） ---------- */
   activities: {
-    explain:  { id: 'explain',  name: '知识点讲解', icon: '🎧', ability: '理解概念', desc: '基于上传资料生成的分页讲解，可随时提问' },
-    practice: { id: 'practice', name: '练习测验',   icon: '🎯', ability: '练习巩固', desc: '针对资料内容生成的测验题，检验掌握度' },
-    review:   { id: 'review',   name: '知识复习',   icon: '🔁', ability: '巩固纠错', desc: '针对历史错误的闪卡回顾' },
+    /* icon 是 ui.js 里的单色线性 SVG 图标名，全站共用一套图标语言 */
+    explain:  { id: 'explain',  name: '知识点讲解', icon: 'bookOpen', ability: '理解概念', desc: '基于上传资料生成的分页讲解，可随时提问' },
+    practice: { id: 'practice', name: '练习测验',   icon: 'focus',   ability: '练习巩固', desc: '针对资料内容生成的测验题，检验掌握度' },
+    review:   { id: 'review',   name: '知识复习',   icon: 'stack',   ability: '巩固纠错', desc: '针对历史错误的闪卡回顾' },
   },
 
   /* ---------- AI 问答助手 ---------- */
@@ -30,7 +31,7 @@ const DATA = {
   /* ---------- 内置示例知识点（后端不可用时的演示兜底） ----------
      真实使用中，知识点来自后端解析学生上传的资料。 */
   topicLib: [
-    { id: 'demo_req', name: '示例知识点 · 需求分析', icon: '📋', desc: '演示用：了解需求获取、分析与规约', mastery: 30, attempts: 0, errors: 0 },
+    { id: 'demo_req', name: '示例知识点 · 需求分析', icon: 'bookOpen', desc: '演示用：了解需求获取、分析与规约', mastery: 30, attempts: 0, errors: 0 },
   ],
 
   /* ---------- 内置示例讲解 / 练习（演示兜底） ---------- */

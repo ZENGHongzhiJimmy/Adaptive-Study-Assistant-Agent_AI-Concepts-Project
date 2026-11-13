@@ -34,6 +34,14 @@ const UI = (() => {
     database:  '<ellipse cx="12" cy="6" rx="8" ry="3.2" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M4 6v12c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2V6M4 12c0 1.8 3.6 3.2 8 3.2s8-1.4 8-3.2" stroke="currentColor" stroke-width="1.8" fill="none"/>',
     edit:      '<path d="M11 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-6M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     download:  '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+    file:      '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>',
+    clipboard: '<rect x="5" y="4" width="14" height="17" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M9 4V2.5h6V4M9 10h6M9 14h4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>',
+    eye:       '<path d="M1.8 12S5.2 5.8 12 5.8 22.2 12 22.2 12 18.8 18.2 12 18.2 1.8 12 1.8 12z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8" fill="none"/>',
+    inbox:     '<path d="M3 13h5l1.5 2.5h5L16 13h5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><path d="M4.5 5h15L21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>',
+    /* 下面 3 个是描边式线性图标，放大/缩小时轮廓清晰，不会糊成实心色块 */
+    bookOpen:  '<path d="M12 6.5C9.8 4.9 6.8 4.2 3.5 4.5v13c3.3-.3 6.3.4 8.5 2 2.2-1.6 5.2-2.3 8.5-2v-13c-3.3-.3-6.3.4-8.5 2z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="M12 6.5v13" stroke="currentColor" stroke-width="1.7" fill="none"/>',
+    focus:     '<circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7" fill="none"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.7" fill="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>',
+    stack:     '<path d="M12 3 3 8l9 5 9-5-9-5z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="m3 12.5 9 5 9-5M3 17l9 5 9-5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
   };
 
   function icon(name, size = 18) {
@@ -59,9 +67,113 @@ const UI = (() => {
     }, 2600);
   }
 
+  /* ---------- 确认弹窗 ----------
+     返回 Promise<boolean>：确认 → true，取消 / Esc / 点击遮罩 → false
+     用法：
+       const ok = await UI.confirm({
+         title: '重置数据？',
+         message: '说明文字',
+         details: ['要点 1', '要点 2'],
+         hint: '补充提示',
+         confirmText: '确认重置',
+         cancelText: '取消',
+         danger: true,
+         icon: 'refresh',
+       });
+  */
+  function modalRoot() {
+    let root = document.getElementById('modal-root');
+    if (!root) {
+      root = document.createElement('div');
+      root.id = 'modal-root';
+      document.body.appendChild(root);
+    }
+    return root;
+  }
+
+  function confirm(opts = {}) {
+    const o = Object.assign({
+      title: '确认操作',
+      message: '',
+      details: [],
+      hint: '',
+      confirmText: '确认',
+      cancelText: '取消',
+      danger: false,
+      icon: 'refresh',
+    }, opts);
+
+    return new Promise(resolve => {
+      const root = modalRoot();
+      const prevFocus = document.activeElement;
+      const details = (o.details || []).filter(Boolean);
+
+      const wrap = document.createElement('div');
+      wrap.className = 'modal-backdrop';
+      wrap.innerHTML = `
+        <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="modal-title">
+          <div class="modal-head">
+            <div class="modal-ico ${o.danger ? 'danger' : 'warn'}">${icon(o.icon, 20)}</div>
+            <div class="modal-title" id="modal-title">${o.title}</div>
+          </div>
+          ${o.message ? `<div class="modal-msg">${o.message}</div>` : ''}
+          ${details.length ? `<ul class="modal-list">${details.map(d => `<li>${d}</li>`).join('')}</ul>` : ''}
+          ${o.hint ? `<div class="modal-hint">${o.hint}</div>` : ''}
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" data-act="cancel">${o.cancelText}</button>
+            <button type="button" class="btn ${o.danger ? 'btn-danger' : 'btn-primary'}" data-act="ok">${o.confirmText}</button>
+          </div>
+        </div>`;
+
+      root.appendChild(wrap);
+      document.body.classList.add('modal-open');
+
+      const okBtn = wrap.querySelector('[data-act="ok"]');
+      const cancelBtn = wrap.querySelector('[data-act="cancel"]');
+      let done = false;
+
+      function close(val) {
+        if (done) return;
+        done = true;
+        document.removeEventListener('keydown', onKey, true);
+        document.body.classList.remove('modal-open');
+        wrap.classList.add('closing');
+        setTimeout(() => {
+          wrap.remove();
+          if (prevFocus && typeof prevFocus.focus === 'function') {
+            try { prevFocus.focus(); } catch (e) { /* 元素已销毁 */ }
+          }
+        }, 150);
+        resolve(val);
+      }
+
+      function onKey(e) {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(false); return; }
+        if (e.key === 'Tab') {
+          // 焦点锁在弹窗内，默认聚焦「取消」避免误触确认
+          const focusable = [cancelBtn, okBtn];
+          const i = focusable.indexOf(document.activeElement);
+          e.preventDefault();
+          const next = e.shiftKey
+            ? focusable[(i <= 0 ? focusable.length : i) - 1]
+            : focusable[(i + 1) % focusable.length];
+          next.focus();
+        }
+      }
+
+      okBtn.addEventListener('click', () => close(true));
+      cancelBtn.addEventListener('click', () => close(false));
+      wrap.addEventListener('mousedown', e => { if (e.target === wrap) close(false); });
+      document.addEventListener('keydown', onKey, true);
+
+      // 动画结束后再聚焦，避免焦点跳变导致的滚动
+      requestAnimationFrame(() => cancelBtn.focus());
+    });
+  }
+
   /* ---------- 掌握度 → 等级 ---------- */
   function level(m) {
-    if (m >= 75) return { key: 'ok',  label: '已掌握', badge: 'badge-success' };
+    if (m >= 80) return { key: 'ok',  label: '已掌握', badge: 'badge-success' };
     if (m >= 45) return { key: 'mid', label: '学习中', badge: 'badge-warning' };
     return            { key: 'low', label: '薄弱',   badge: 'badge-danger'  };
   }
@@ -88,7 +200,7 @@ const UI = (() => {
     const r = size / 2 - 8;
     const c = 2 * Math.PI * r;
     const off = c - (m / 100) * c;
-    const col = m >= 75 ? '#16a34a' : m >= 45 ? '#d97706' : '#dc2626';
+    const col = m >= 80 ? '#16a34a' : m >= 45 ? '#d97706' : '#dc2626';
     return `
       <div class="ring" style="width:${size}px;height:${size}px">
         <svg width="${size}" height="${size}">
@@ -102,9 +214,12 @@ const UI = (() => {
       ${label ? `<div class="text-xs" style="color:var(--text-3);margin-top:4px">${label}</div>` : ''}`;
   }
 
-  /* ---------- 空状态 ---------- */
-  function empty(text, emoji = '📭') {
-    return `<div class="empty"><div class="empty-ico">${emoji}</div><div>${text}</div></div>`;
+  /* ---------- 空状态 ----------
+     统一使用单色线性 SVG 图标（传入 P 里的图标名，如 'inbox' / 'bookOpen' / 'file'）。
+     兼容历史调用：若仍传入 emoji 字符，自动回退成 'inbox'，界面不再出现彩色 emoji。 */
+  function empty(text, glyph = 'inbox') {
+    const name = /^[a-zA-Z]+$/.test(glyph) ? glyph : 'inbox';
+    return `<div class="empty"><div class="empty-ico">${icon(name, 24)}</div><div>${text}</div></div>`;
   }
 
   /* ---------- 卡片包装 ---------- */
@@ -116,5 +231,5 @@ const UI = (() => {
     return `<div class="card">${head}<div class="${opts.pad === false ? '' : 'card-body'}">${inner}</div></div>`;
   }
 
-  return { icon, toast, level, heatColor, bar, ring, empty, card, P };
+  return { icon, toast, confirm, level, heatColor, bar, ring, empty, card, P };
 })();

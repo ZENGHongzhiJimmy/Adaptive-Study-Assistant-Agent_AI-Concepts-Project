@@ -24,7 +24,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -81,6 +81,14 @@ class QuizRequest(BaseModel):
 
 class AskRequest(BaseModel):
     question: str
+    # 可选的「当前问答资料」：带上后 RAG 检索会限定在该资料范围内，
+    # 不带时保持全局检索（兼容旧调用与 CLI 路径）。
+    material_id: str | None = None
+    material_name: str | None = None
+    # 「知识点讲解」页随堂提问：当前知识点名 + 正在阅读的讲解页内容。
+    # 两者都来自该资料，因此可作为 grounded 上下文直接交给模型。
+    topic: str | None = None
+    focus: str | None = None
 
 
 @app.get("/api/health")
@@ -119,18 +127,38 @@ def parse_material(req: ParseRequest) -> dict[str, Any]:
     return result
 
 
+@app.get("/api/materials/{material_id}")
+def material_status(material_id: str) -> dict[str, Any]:
+    """Front-end recovery probe after a page refresh.
+
+    Returns whether the server already finished parsing this material and, if
+    so, the cached result. A 404 means the backend lost its in-memory record
+    (e.g. it was restarted) and the file has to be uploaded again.
+    """
+    info = get_material_service().material_status(material_id)
+    if info is None:
+        raise HTTPException(status_code=404, detail="资料不存在或已被移除")
+    return info
+
+
 @app.delete("/api/materials/{material_id}")
-def delete_material(material_id: str) -> dict[str, Any]:
-    svc = get_material_service()
-    try:
-        return svc.delete_material(material_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
+def delete_material(
+    material_id: str, name: str | None = Query(default=None)
+) -> dict[str, Any]:
+    """Idempotent cleanup of an uploaded material.
+
+    ``name`` is the original filename: it lets the service fall back to the
+    lecture topic when the in-memory record was lost to a backend restart.
+    Missing records are NOT a 404 -- the file and index are still cleaned.
+    """
+    return get_material_service().delete_material(
+        material_id, material_name=name
+    )
 
 
 @app.post("/api/materials/reset")
 def reset_materials() -> dict[str, Any]:
-    """清除全部演示数据（含 ChromaDB 索引与上传文件），供前端"重置演示数据"调用。"""
+    """清除全部数据（含 ChromaDB 索引与上传文件），供前端"重置数据"调用。"""
     return get_material_service().reset()
 
 
@@ -153,7 +181,13 @@ def ask(req: AskRequest) -> dict[str, Any]:
         raise HTTPException(status_code=400, detail="问题不能为空")
     svc = get_material_service()
     try:
-        return svc.ask(question)
+        return svc.ask(
+            question,
+            material_id=req.material_id,
+            material_name=req.material_name,
+            topic=req.topic,
+            focus=req.focus,
+        )
     except svc.MissingKey as exc:
         raise HTTPException(status_code=503, detail=str(exc))
     except Exception as exc:  # noqa: BLE001

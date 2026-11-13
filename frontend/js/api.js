@@ -33,7 +33,9 @@ const API = (() => {
     try {
       resp = await fetch(url, opts);
     } catch (e) {
-      return { ok: false, error: '无法连接后端服务（' + base() + '），请确认已启动后端。' };
+      // Network-layer failure: backend down, or the request was aborted by a
+      // page refresh. NOT a parse failure — callers keep the material recoverable.
+      return { ok: false, network: true, error: '无法连接后端服务（' + base() + '），请确认已启动后端。' };
     }
     let data = null;
     try { data = await resp.json(); } catch (e) { data = null; }
@@ -44,8 +46,17 @@ const API = (() => {
     return { ok: true, data };
   }
 
+  /* 只有网络层失败（含刷新导致的请求中断）才是「可恢复」；带 HTTP status 的
+     都是后端明确返回的错误，仍应按真实失败处理。 */
+  function isNetworkFailure(r) { return !!r && !r.ok && !!r.network; }
+
   async function health() {
     return request('/api/health');
+  }
+
+  /* 刷新后查询后端资料真实状态：是否已解析、以及缓存的解析结果 */
+  async function getMaterial(materialId) {
+    return request('/api/materials/' + encodeURIComponent(materialId));
   }
 
   /* 上传单个资料文件，返回 { id, name, kind, size, status } */
@@ -64,13 +75,16 @@ const API = (() => {
   }
 
   /* 删除资料：同时清理后端索引（ChromaDB 向量），避免残留引用 */
-  async function deleteMaterial(materialId) {
-    return request('/api/materials/' + encodeURIComponent(materialId), {
+  /* 删除资料：带上原始文件名，让后端在内存记录丢失（重启过）时也能按
+     文件名推导 lecture/topic，兜底清掉磁盘文件与向量 chunk。 */
+  async function deleteMaterial(materialId, name) {
+    const q = name ? '?name=' + encodeURIComponent(name) : '';
+    return request('/api/materials/' + encodeURIComponent(materialId) + q, {
       method: 'DELETE',
     });
   }
 
-  /* 清除全部演示数据：后端会一并清理 ChromaDB 索引与上传文件 */
+  /* 清除全部数据：后端会一并清理 ChromaDB 索引与上传文件 */
   async function resetMaterials() {
     return request('/api/materials/reset', { method: 'POST' });
   }
@@ -83,13 +97,21 @@ const API = (() => {
     });
   }
 
-  /* RAG + LLM 问答，返回 { answer, sources } */
-  async function ask(question) {
+  /* RAG + LLM 问答，返回 { answer, sources, grounded, mode }
+     可选传入当前选中的课程资料，后端会把检索限定在该资料范围内。
+     extra 支持 { topic, focus }：知识点讲解页随堂提问时，把当前知识点与
+     正在阅读的讲解页内容一并送给后端，答案会按「助教讲解」的方式组织。 */
+  async function ask(question, materialId, materialName, extra) {
+    const body = { question };
+    if (materialId) body.material_id = materialId;
+    if (materialName) body.material_name = materialName;
+    if (extra && extra.topic) body.topic = extra.topic;
+    if (extra && extra.focus) body.focus = extra.focus;
     return request('/api/qa/ask', {
       method: 'POST',
-      body: JSON.stringify({ question }),
+      body: JSON.stringify(body),
     });
   }
 
-  return { base, health, uploadMaterial, parseMaterial, deleteMaterial, resetMaterials, generateQuiz, ask };
+  return { base, health, isNetworkFailure, getMaterial, uploadMaterial, parseMaterial, deleteMaterial, resetMaterials, generateQuiz, ask };
 })();
