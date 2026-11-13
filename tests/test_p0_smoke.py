@@ -18,7 +18,7 @@ from src.utils import llm_client as lc
 
 EXPECTED_PACKAGES = {
     "langgraph", "langchain-openrouter", "openai", "pymupdf",
-    "sentence-transformers", "chromadb", "pandas",
+    "chromadb", "pandas",
     "scikit-learn", "matplotlib", "python-dotenv", "PyYAML", "pytest",
 }
 

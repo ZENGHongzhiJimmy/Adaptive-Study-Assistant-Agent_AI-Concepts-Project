@@ -8,7 +8,6 @@ topic-filtered retrieval landing on the right page, idempotent rebuild, and
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pytest
@@ -125,10 +124,9 @@ def test_hashing_embedder_is_deterministic_and_normalized():
     assert sum(x * y for x, y in zip(a, c)) < 0.5
 
 
-def test_missing_sentence_transformers_backend_errors_clearly(monkeypatch):
-    monkeypatch.setitem(sys.modules, "sentence_transformers", None)
+def test_unsupported_embedding_backend_errors_clearly():
     with pytest.raises(EmbeddingBackendError, match="--backend hashing"):
-        get_embedder("sentence_transformers")
+        get_embedder("unsupported_backend")
 
 
 # --- index / retrieval ------------------------------------------------------

@@ -24,7 +24,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -138,12 +138,18 @@ def material_status(material_id: str) -> dict[str, Any]:
 
 
 @app.delete("/api/materials/{material_id}")
-def delete_material(material_id: str) -> dict[str, Any]:
-    svc = get_material_service()
-    try:
-        return svc.delete_material(material_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
+def delete_material(
+    material_id: str, name: str | None = Query(default=None)
+) -> dict[str, Any]:
+    """Idempotent cleanup of an uploaded material.
+
+    ``name`` is the original filename: it lets the service fall back to the
+    lecture topic when the in-memory record was lost to a backend restart.
+    Missing records are NOT a 404 -- the file and index are still cleaned.
+    """
+    return get_material_service().delete_material(
+        material_id, material_name=name
+    )
 
 
 @app.post("/api/materials/reset")

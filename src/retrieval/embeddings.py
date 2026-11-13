@@ -1,13 +1,12 @@
-"""Pluggable text embeddings (P1).
+"""Deterministic text embeddings (P1).
 
-Production backend: sentence-transformers (semantic retrieval, README 6).
-Offline/deterministic backend: hashing bag-of-words, used by tests and by
-machines that have not downloaded a model yet. It is deterministic and
-dependency-free, so index rebuilds and topic routing can be verified without
-network access or a multi-hundred-MB torch install.
+The platform uses a dependency-free signed-hashing bag-of-words embedder with
+L2 normalization for cosine similarity. It is deterministic and offline, so
+index rebuilds and topic routing are reproducible without network access or
+large model downloads.
 
-``backend: auto`` in config.yaml prefers sentence-transformers and falls back
-to hashing with an explicit warning. P6 must freeze the backend explicitly.
+``embedding.backend`` is frozen to ``hashing`` in config.yaml (P6). ``auto``
+is accepted as a compatibility alias and resolves to the same backend.
 """
 
 from __future__ import annotations
@@ -15,7 +14,6 @@ from __future__ import annotations
 import hashlib
 import math
 import re
-import warnings
 from typing import Any, Protocol, Sequence
 
 STOPWORDS = frozenset(
@@ -34,7 +32,7 @@ class Embedder(Protocol):
 
 
 class EmbeddingBackendError(RuntimeError):
-    """Raised when a requested embedding backend is unavailable."""
+    """Raised when a requested embedding backend is unsupported."""
 
 
 class HashingEmbedder:
@@ -67,62 +65,22 @@ class HashingEmbedder:
         return [self._vector(text) for text in texts]
 
 
-class SentenceTransformerEmbedder:
-    """Lazy wrapper around sentence-transformers; model is loaded once."""
-
-    name = "sentence_transformers"
-
-    def __init__(self, model_name: str) -> None:
-        try:
-            from sentence_transformers import SentenceTransformer
-        except ImportError as exc:
-            raise EmbeddingBackendError(
-                "sentence-transformers is not installed. Run `pip install -r "
-                "requirements.txt`, or use `--backend hashing` for an offline "
-                "deterministic index."
-            ) from exc
-        try:
-            self._model = SentenceTransformer(model_name)
-        except Exception as exc:  # model download / cache / network failures
-            raise EmbeddingBackendError(
-                f"could not load embedding model {model_name!r}: {exc}. "
-                "Use `--backend hashing` for an offline index."
-            ) from exc
-        self.model_name = model_name
-        self.dimension = int(self._model.get_sentence_embedding_dimension())
-
-    def embed(self, texts: Sequence[str]) -> list[list[float]]:
-        vectors = self._model.encode(
-            list(texts), normalize_embeddings=True, convert_to_numpy=True
-        )
-        return [list(map(float, row)) for row in vectors]
-
-
 def get_embedder(
     backend: str | None = None,
     config: dict[str, Any] | None = None,
 ) -> Embedder:
-    """Resolve an embedder from config (or an explicit CLI override)."""
+    """Resolve the deterministic hashing embedder from config (or a CLI override)."""
     from ..utils.config import get_config
 
     cfg = config or get_config()
     embedding_cfg = cfg.get("embedding", {})
-    selected = (backend or embedding_cfg.get("backend", "auto")).lower()
+    selected = (backend or embedding_cfg.get("backend", "hashing")).lower()
 
-    if selected == "hashing":
+    # ``auto`` is kept as a compatibility alias for older CLI calls; both
+    # resolve to the same deterministic 256-dimension hashing backend.
+    if selected in ("hashing", "auto"):
         return HashingEmbedder(int(embedding_cfg.get("hashing_dimension", 256)))
-    if selected == "sentence_transformers":
-        return SentenceTransformerEmbedder(
-            embedding_cfg.get("model", "sentence-transformers/all-MiniLM-L6-v2")
-        )
-    if selected == "auto":
-        try:
-            return SentenceTransformerEmbedder(
-                embedding_cfg.get("model", "sentence-transformers/all-MiniLM-L6-v2")
-            )
-        except EmbeddingBackendError as exc:
-            warnings.warn(f"[P1] falling back to hashing embeddings: {exc}", stacklevel=2)
-            return HashingEmbedder(int(embedding_cfg.get("hashing_dimension", 256)))
     raise EmbeddingBackendError(
-        f"unknown embedding backend {selected!r}; choose hashing / sentence_transformers / auto"
+        f"unsupported embedding backend {selected!r}; "
+        "use 'hashing' (--backend hashing)"
     )

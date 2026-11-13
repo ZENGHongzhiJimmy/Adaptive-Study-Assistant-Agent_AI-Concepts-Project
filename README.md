@@ -137,7 +137,7 @@ js/app.js             # 应用外壳 + hash 路由（含资料模块与资料级
 | API 框架 | **FastAPI** | 暴露学生端 REST 接口（`src/api/`） |
 | LLM 接入 | **OpenRouter**（OpenAI 兼容） | 解析资料抽取知识点、生成 quiz、RAG 问答 |
 | 向量检索 | **ChromaDB** | 上传资料的切片向量存储与语义检索 |
-| 文本向量化 | **sentence-transformers / Hashing** | 语义嵌入（正式）/ 确定性离线嵌入（测试） |
+| 文本向量化 | **Hashing（确定性词袋哈希）** | 无外部模型依赖，离线可复现的文本向量 |
 | 资料解析 | **PyMuPDF** + 纯文本 | PDF / TXT / MD 提取正文 |
 | Agent 编排 | **LangGraph** | 自适应规划闭环（由前端 `engine.js` 承担规划，后端专注内容生成） |
 
@@ -190,7 +190,7 @@ Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
 - Python 3.10+、pip
 - Node.js ≥ 16（仅前端可选本地服务需要；也可直接用 Python http.server）
 - OpenRouter API Key（LLM 解析 / 问答需要，填在本地 `.env`）
-- 可运行 sentence-transformers 的内存（建议 ≥ 4 GB；否则自动降级为 hashing 离线嵌入）
+- 内存：无大模型加载需求（内置 hashing 嵌入，常规配置即可）
 
 ### 7.2 后端安装与启动
 
@@ -269,7 +269,7 @@ curl -X POST http://127.0.0.1:8000/api/materials/parse \
 
 - **LLM 模型配置与限流**：默认主模型为 OpenRouter 免费模型 `(baidu/ernie-5.5-flash-preview:free)`，并在 `fallback_models` 中配置付费模型 `(deepseek/deepseek-v4.1-flash)` 作为兜底。主模型正常时只调用免费模型、不额外消耗付费额度；当主模型不可用（如被下架或限流返回 404/429）时，自动按序切换到付费兜底模型完成解析与问答。模型均可根据个人需求在 `config.yaml -> llm` 段自由更换（改 `model` 与 `fallback_models`）。
 - **学习状态存于前端**：掌握度与学习轨迹由前端 `localStorage` 维护，后端不持久化学生作答状态。
-- **嵌入后端**：默认 `auto`，本机未安装 sentence-transformers 时降级为 hashing（确定性词袋哈希，非语义嵌入）。正式语义检索需安装并固定为 `sentence_transformers`。
+- **嵌入后端**：固定为 `hashing`（确定性词袋哈希 + L2 归一化 cosine），无外部模型依赖、离线可复现；属于词面匹配而非语义嵌入，同义改写与跨语言检索能力有限。
 - **资料格式**：支持 PDF / TXT / MD；PPT 暂不支持（可先导出为 PDF）。
 - **单用户**：当前为课程原型，未实现多用户认证与数据隔离。
 

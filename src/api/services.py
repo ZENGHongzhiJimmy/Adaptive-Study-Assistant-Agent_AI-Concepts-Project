@@ -3,7 +3,7 @@
 Reuses the project's existing building blocks:
   * LLMClient          -> chat (OpenRouter, OpenAI-compatible)
   * ChromaVectorStore  -> RAG over uploaded materials
-  * HashingEmbedder / SentenceTransformerEmbedder -> text vectors
+  * HashingEmbedder  -> deterministic text vectors
   * ingestion.chunker  -> chunk text with citation metadata
   * ingestion.pdf_parser -> PDF -> text (plus TXT/MD support added here)
 
@@ -339,7 +339,9 @@ class MaterialService:
         chunk_ids: list[str] = []
         if chunks:
             vectors = self.embedder.embed([c.text for c in chunks])
-            self.store.upsert_chunks(chunks, vectors)
+            # Tag every chunk with its material id so deletion can find them
+            # directly in ChromaDB, even after the in-memory table is gone.
+            self.store.upsert_chunks(chunks, vectors, extra_metadata={"material_id": mid})
             chunk_ids = [c.chunk_id for c in chunks]
 
         rec = {
@@ -454,39 +456,56 @@ class MaterialService:
             "chroma_db_removed": db_removed,
         }
 
-    def delete_material(self, material_id: str) -> dict[str, Any]:
-        """Remove an uploaded material everywhere it lives.
+    def delete_material(
+        self, material_id: str, material_name: str | None = None
+    ) -> dict[str, Any]:
+        """Remove an uploaded material everywhere it lives (idempotent).
 
-        Deletes the on-disk file, the ChromaDB chunks (so future RAG Q&A no
-        longer cites it), the parsed topics, and the in-memory record. This is
-        the single cleanup path that guarantees no stale citations remain.
+        ``_materials`` is only an in-memory cache: restarting the backend wipes
+        it while the uploaded file and the ChromaDB chunks survive. Cleanup
+        therefore must NOT depend on that cache -- previously a missing record
+        raised 404, the front-end swallowed the error, and the user saw the
+        material disappear while the file (and its citations) stayed behind.
+
+        Layers, most precise first:
+          1. chunks tagged with ``material_id`` (written at upload time),
+          2. chunk ids tracked in memory (legacy behaviour),
+          3. chunks whose ``topic`` matches the original filename (legacy
+             index built before the material_id tag existed).
+        The on-disk file is removed by id prefix, so no record/suffix is needed.
         """
         rec = self._materials.get(material_id)
-        if rec is None:
-            raise ValueError("资料不存在或已被移除")
+        name = material_name or (rec.get("name") if rec else None)
 
-        # 1) remove indexed chunks from ChromaDB
-        chunk_ids = rec.get("chunk_ids") or []
-        if chunk_ids:
+        # 1) ChromaDB chunks
+        removed = self.store.delete_where({"material_id": material_id})
+        if removed == 0 and rec and rec.get("chunk_ids"):
             try:
-                self.store.delete_by_ids(chunk_ids)
+                removed = self.store.delete_by_ids(rec["chunk_ids"])
             except Exception:
-                pass
+                removed = 0
+        if removed == 0 and name:
+            removed = self.store.delete_where({"topic": lecture_name(name)})
 
-        # 2) remove the on-disk file
-        suffix = Path(rec["name"]).suffix.lower()
-        path = self.upload_dir / f"{material_id}{suffix}"
-        try:
+        # 2) on-disk file(s): glob by id instead of relying on rec["name"]
+        files_removed = 0
+        for path in self.upload_dir.glob(f"{material_id}.*"):
             if path.is_file():
-                path.unlink()
-        except Exception:
-            pass
+                try:
+                    path.unlink()
+                    files_removed += 1
+                except OSError:
+                    pass
 
-        # 3) drop parsed topics, cached result and the record
+        # 3) in-memory state, parsed topics and cached parse result
         self._topics.pop(material_id, None)
         self._parse_results.pop(material_id, None)
         self._materials.pop(material_id, None)
-        return {"deleted": material_id, "chunks_removed": len(chunk_ids)}
+        return {
+            "deleted": material_id,
+            "chunks_removed": removed,
+            "files_removed": files_removed,
+        }
 
     def material_status(self, material_id: str) -> dict[str, Any] | None:
         """Parse state used by the front-end to recover after a page refresh.

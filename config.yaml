@@ -27,8 +27,7 @@ llm:
   max_retries: 3
 
 embedding:
-  backend: auto
-  model: sentence-transformers/all-MiniLM-L6-v2
+  backend: hashing
   hashing_dimension: 256
 
 paths:

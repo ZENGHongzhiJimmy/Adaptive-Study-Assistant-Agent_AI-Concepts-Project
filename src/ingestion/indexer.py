@@ -91,7 +91,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="P1: index course PDFs into ChromaDB")
     parser.add_argument("--input", default="./data/course_materials")
     parser.add_argument("--rebuild", action="store_true", help="drop and recreate collection")
-    parser.add_argument("--backend", choices=("hashing", "sentence_transformers", "auto"))
+    parser.add_argument("--backend", choices=("hashing", "auto"), help="embedding backend (auto is a hashing alias)")
     parser.add_argument("--topic", default=None, help="topic label applied to every PDF")
     parser.add_argument("--topic-map", default=None, help="JSON file: {filename: topic}")
     parser.add_argument("--persist-dir", default=None)

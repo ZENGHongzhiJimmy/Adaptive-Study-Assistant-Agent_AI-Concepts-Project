@@ -75,8 +75,11 @@ const API = (() => {
   }
 
   /* 删除资料：同时清理后端索引（ChromaDB 向量），避免残留引用 */
-  async function deleteMaterial(materialId) {
-    return request('/api/materials/' + encodeURIComponent(materialId), {
+  /* 删除资料：带上原始文件名，让后端在内存记录丢失（重启过）时也能按
+     文件名推导 lecture/topic，兜底清掉磁盘文件与向量 chunk。 */
+  async function deleteMaterial(materialId, name) {
+    const q = name ? '?name=' + encodeURIComponent(name) : '';
+    return request('/api/materials/' + encodeURIComponent(materialId) + q, {
       method: 'DELETE',
     });
   }

@@ -1300,11 +1300,15 @@ const Student = (() => {
 
   async function rmUpload(id) {
     const rec = Engine.uploads().find(x => x.id === id);
-    // 先调后端删除，清理 ChromaDB 向量与磁盘文件，避免残留引用
-    if (rec && rec.materialId) {
-      try {
-        await API.deleteMaterial(rec.materialId);
-      } catch (e) { /* 后端删除失败也继续删本地，避免卡住 */ }
+    // 始终请求后端清理：即使后端重启过（内存资料表已空），后端也会按
+    // 资料 id / 文件名兜底删除磁盘文件与向量，避免「界面消失但数据残留」。
+    // 上传中断还没回填 materialId 时，用本地记录 id 兜底（至少能按文件名清理索引）。
+    const materialId = rec && (rec.materialId || rec.id);
+    if (materialId) {
+      const r = await API.deleteMaterial(materialId, rec && rec.name);
+      if (r && !r.ok) {
+        UI.toast('后端清理未完成：' + (r.error || '未知错误') + '，请确认后端已启动后重试', 'err');
+      }
     }
     Engine.removeUpload(id);
     // 同步删除该资料的独立问答记录；若正选中它，切到剩余的第一份资料
