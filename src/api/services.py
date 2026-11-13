@@ -282,6 +282,11 @@ class MaterialService:
 
         self._materials: dict[str, dict[str, Any]] = {}
         self._topics: dict[str, list[dict[str, Any]]] = {}
+        # Cache of completed parse results. A page refresh aborts the browser
+        # request but not the server-side parse thread, so re-requesting the
+        # same material can return the cached result instead of a second LLM
+        # call. Front-end recovery reads this via material_status().
+        self._parse_results: dict[str, dict[str, Any]] = {}
         self._llm: LLMClient | None = None
 
     @property
@@ -438,6 +443,7 @@ class MaterialService:
         # 5) 清空内存状态
         material_ids = list(self._materials.keys())
         self._topics.clear()
+        self._parse_results.clear()
         self._materials.clear()
         return {
             "reset": True,
@@ -476,10 +482,29 @@ class MaterialService:
         except Exception:
             pass
 
-        # 3) drop parsed topics and the record
+        # 3) drop parsed topics, cached result and the record
         self._topics.pop(material_id, None)
+        self._parse_results.pop(material_id, None)
         self._materials.pop(material_id, None)
         return {"deleted": material_id, "chunks_removed": len(chunk_ids)}
+
+    def material_status(self, material_id: str) -> dict[str, Any] | None:
+        """Parse state used by the front-end to recover after a page refresh.
+
+        ``parsed`` reflects the server's own truth (not the browser's), and
+        ``result`` carries the cached parse output so the UI can finish without
+        re-running the LLM. Returns ``None`` when the record is gone.
+        """
+        rec = self._materials.get(material_id)
+        if rec is None:
+            return None
+        return {
+            "id": material_id,
+            "name": rec["name"],
+            "status": rec.get("status", "uploaded"),
+            "parsed": rec.get("status") == "parsed",
+            "result": self._parse_results.get(material_id),
+        }
 
     # ---- 解析：LLM 抽取知识点 + 生成讲解与 quiz ----
     def _material_text(self, material_id: str) -> str:
@@ -495,10 +520,16 @@ class MaterialService:
         return text
 
     def parse_material(self, material_id: str) -> dict[str, Any]:
-        self._require_key()
         rec = self.get_material(material_id)
         if rec is None:
             raise ValueError("资料不存在")
+        # Refreshing the page aborts the browser request, but FastAPI's sync
+        # endpoint keeps running in its thread pool. Serve the cached result
+        # on retry so recovery is instant and does not pay for another LLM call.
+        cached = self._parse_results.get(material_id)
+        if cached is not None:
+            return cached
+        self._require_key()
 
         text = self._material_text(material_id)
 
@@ -561,13 +592,15 @@ class MaterialService:
         rec["status"] = "parsed"
         rec["topic_count"] = len(normalized)
 
-        return {
+        result = {
             "material_id": material_id,
             "source": rec["name"],
             "summary": payload.get("summary", ""),
             "pages": rec.get("pages"),
             "topics": normalized,
         }
+        self._parse_results[material_id] = result
+        return result
 
     @staticmethod
     def _icon_for(i: int) -> str:

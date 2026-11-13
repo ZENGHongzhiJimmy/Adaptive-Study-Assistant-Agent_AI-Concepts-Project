@@ -65,6 +65,7 @@ const Student = (() => {
       case 'uploading': return `<span class="badge badge-warning">${I('refresh',12)} 上传中…</span>`;
       case 'uploaded':  return `<span class="badge badge-muted">${I('file',12)} 已上传（未解析）</span>`;
       case 'parsing':   return `<span class="badge badge-warning">${I('refresh',12)} AI 解析中…</span>`;
+      case 'interrupted': return `<span class="badge badge-warning" title="${escapeHtml(m.error || '')}">${I('refresh',12)} ${m.materialId ? '解析中断 · 正在恢复' : '上传中断 · 请重新上传'}</span>`;
       case 'error':     return `<span class="badge badge-danger" title="${escapeHtml(m.error || '')}">${I('bug',12)} 解析失败</span>`;
       case 'parsed':
       case 'indexed':   return `<span class="badge badge-success">${I('check',12)} 已解析</span>`;
@@ -1181,9 +1182,15 @@ const Student = (() => {
     // 1) 上传
     const up = await API.uploadMaterial(file);
     if (!up.ok) {
-      Engine.markUpload(rec.id, { status: 'error', error: up.error });
-      UI.toast('上传失败：' + up.error, 'err');
-      App.render();
+      if (API.isNetworkFailure(up)) {
+        // 页面刷新/网络瞬断导致请求被中断：不是失败，转为可恢复状态
+        Engine.markUpload(rec.id, { status: 'interrupted' });
+        await resumeUpload(rec.id);
+      } else {
+        Engine.markUpload(rec.id, { status: 'error', error: up.error });
+        UI.toast('上传失败：' + up.error, 'err');
+        App.render();
+      }
       return;
     }
     const materialId = up.data.id || up.data.material_id || rec.id;
@@ -1195,20 +1202,100 @@ const Student = (() => {
     App.render();
     const parsed = await API.parseMaterial(materialId);
     if (!parsed.ok) {
-      Engine.markUpload(rec.id, { status: 'error', error: parsed.error });
-      UI.toast('解析失败：' + parsed.error, 'err');
-      App.render();
+      if (API.isNetworkFailure(parsed)) {
+        Engine.markUpload(rec.id, { status: 'interrupted' });
+        await resumeUpload(rec.id);
+      } else {
+        Engine.markUpload(rec.id, { status: 'error', error: parsed.error });
+        UI.toast('解析失败：' + parsed.error, 'err');
+        App.render();
+      }
       return;
     }
-    const data = parsed.data || {};
-    const added = Engine.ingestParsed({ ...data, source: file.name, material_id: materialId });
+    finishParse(rec, parsed.data || {});
+  }
+
+  /* 解析结果落地：知识点去重入库、标记已解析、保证该资料的问答桶存在 */
+  function finishParse(rec, data) {
+    const added = Engine.ingestParsed({
+      ...data,
+      source: rec.name,
+      material_id: data.material_id || rec.materialId,
+    });
     Engine.markUpload(rec.id, {
       status: 'parsed',
       topicCount: added.length,
       pages: data.pages,
     });
-    UI.toast(`已从「${file.name}」解析出 ${added.length} 个知识点`, 'ok');
+    if (!M) loadChat();
+    if (!M[chatKey(rec)] || !Array.isArray(M[chatKey(rec)].msgs)) {
+      M[chatKey(rec)] = { msgs: [] };
+    }
+    saveChat();
+    if (added.length) UI.toast(`已从「${rec.name}」解析出 ${added.length} 个知识点`, 'ok');
     App.render();
+  }
+
+  /* 刷新或网络瞬断后恢复一份资料。服务端解析线程不会被页面刷新取消，
+     所以先查后端真实状态：已完成就直接取缓存结果（不再调 LLM），
+     未完成才重新发起解析。只有后端明确报错才标记为真正的解析失败。 */
+  async function resumeUpload(id) {
+    const rec = Engine.uploads().find(x => x.id === id);
+    if (!rec || rec.status === 'parsed' || rec.status === 'indexed' || rec.status === 'error') return;
+    if (!rec.materialId) {
+      // 上传阶段就被中断：File 对象已随页面销毁，只能请用户重新选择文件
+      Engine.markUpload(id, { status: 'interrupted' });
+      App.render();
+      return;
+    }
+    Engine.markUpload(id, { status: 'parsing' });
+    App.render();
+
+    const info = await API.getMaterial(rec.materialId);
+    if (!info.ok) {
+      if (info.status === 404) {
+        Engine.markUpload(id, {
+          status: 'interrupted',
+          error: '后端资料记录已丢失，请重新上传该文件',
+        });
+      } else if (API.isNetworkFailure(info)) {
+        Engine.markUpload(id, { status: 'interrupted' });
+      } else {
+        Engine.markUpload(id, { status: 'error', error: info.error });
+        UI.toast('解析失败：' + info.error, 'err');
+      }
+      App.render();
+      return;
+    }
+
+    const cached = info.data && info.data.parsed ? info.data.result : null;
+    if (cached) {
+      finishParse(rec, cached);
+      return;
+    }
+
+    const parsed = await API.parseMaterial(rec.materialId);
+    if (!parsed.ok) {
+      if (API.isNetworkFailure(parsed)) {
+        Engine.markUpload(id, { status: 'interrupted' });
+      } else {
+        Engine.markUpload(id, { status: 'error', error: parsed.error });
+        UI.toast('解析失败：' + parsed.error, 'err');
+      }
+      App.render();
+      return;
+    }
+    finishParse(rec, parsed.data || {});
+  }
+
+  /* 页面加载后自动恢复全部被中断的资料（串行，避免并发打满 LLM） */
+  async function resumePending() {
+    const pending = Engine.uploads()
+      .filter(u => u && u.status === 'interrupted')
+      .map(u => u.id);
+    for (const id of pending) {
+      await resumeUpload(id);
+    }
   }
 
   async function rmUpload(id) {
@@ -1419,12 +1506,23 @@ const Student = (() => {
     startAct(type, topicId);
   }
 
+  /* 页面刷新后自动续传：延后一个 tick，等首屏渲染完成后再跑 */
+  if (typeof document !== 'undefined' && typeof setTimeout === 'function') {
+    const kick = () => setTimeout(resumePending, 0);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', kick);
+    } else {
+      kick();
+    }
+  }
+
   return {
     dashboard, materialView, chooseMaterial, openMaterial,
     topicDetail, openTopic, activity, start, quit,
     pretest, pretestView, pickPretest, nextPretest, commitPretest,
     slide, ask, pick, nextQ, finishPractice, flip, card, finish,
     materials, materialsView, onFiles, drop, rmUpload, selectQA, askAI, askExample,
+    resumePending, resumeUpload,
     progress, reset, dismissAppend,
   };
 })();

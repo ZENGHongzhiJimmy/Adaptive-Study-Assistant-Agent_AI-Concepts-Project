@@ -49,6 +49,7 @@ const Engine = (() => {
         if (!Array.isArray(state.trace)) state.trace = [];
         if (typeof state.activeMaterialId === 'undefined') state.activeMaterialId = null;
         migrateLinks();
+        recoverInterrupted();
         return;
       } catch (e) { /* 忽略损坏数据 */ }
     }
@@ -69,6 +70,20 @@ const Engine = (() => {
     /* 旧版本把 LLM 生成的「材料解读/摘要」写进了资料记录，界面已不再展示，
        统一清掉，保证所有资料（PDF / TXT / MD）的记录结构与显示完全一致。 */
     state.uploads.forEach(u => { if (u && 'summary' in u) delete u.summary; });
+    save();
+  }
+
+  /* 刷新页面会中断正在进行的上传/解析请求，localStorage 里可能残留
+     uploading / uploaded / parsing。这些都不是失败：统一归一为 interrupted，
+     由视图层在页面加载后自动续传，避免刷新后卡住或误显示「解析失败」。 */
+  function recoverInterrupted() {
+    state.uploads.forEach(u => {
+      if (u && (u.status === 'uploading' || u.status === 'uploaded' ||
+                u.status === 'parsing' || u.status === 'interrupted')) {
+        u.status = 'interrupted';
+        delete u.error;
+      }
+    });
     save();
   }
 
@@ -310,13 +325,24 @@ const Engine = (() => {
   function ingestParsed(parsed) {
     const tlist = (parsed && parsed.topics) || [];
     const materialId = parsed && (parsed.material_id || parsed.materialId);
+    /* 续传时后端可能早已解析成功、只是响应因刷新丢失。按「资料 + 知识点名」
+       去重，避免重复插入，同时保留学生已有的学习进度（mastery/attempts）。 */
+    const existing = new Set(
+      state.topics
+        .filter(t => t && materialId && t._materialId === materialId)
+        .map(t => String(t.name || '').trim().toLowerCase())
+    );
     const added = [];
     tlist.forEach((p, i) => {
+      const name = p.name || ('知识点 ' + (i + 1));
+      const key = String(name).trim().toLowerCase();
+      if (existing.has(key)) return;
+      existing.add(key);
       const tid = 't_' + Date.now().toString(36) + '_' + i;
       const quiz = normalizeQuiz(p.quiz || p.questions || []);
       const topicObj = {
         id: tid,
-        name: p.name || ('知识点 ' + (i + 1)),
+        name: name,
         icon: p.icon || '📘',
         desc: p.desc || '',
         mastery: 30,

@@ -123,6 +123,20 @@ def parse_material(req: ParseRequest) -> dict[str, Any]:
     return result
 
 
+@app.get("/api/materials/{material_id}")
+def material_status(material_id: str) -> dict[str, Any]:
+    """Front-end recovery probe after a page refresh.
+
+    Returns whether the server already finished parsing this material and, if
+    so, the cached result. A 404 means the backend lost its in-memory record
+    (e.g. it was restarted) and the file has to be uploaded again.
+    """
+    info = get_material_service().material_status(material_id)
+    if info is None:
+        raise HTTPException(status_code=404, detail="资料不存在或已被移除")
+    return info
+
+
 @app.delete("/api/materials/{material_id}")
 def delete_material(material_id: str) -> dict[str, Any]:
     svc = get_material_service()

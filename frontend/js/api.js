@@ -33,7 +33,9 @@ const API = (() => {
     try {
       resp = await fetch(url, opts);
     } catch (e) {
-      return { ok: false, error: '无法连接后端服务（' + base() + '），请确认已启动后端。' };
+      // Network-layer failure: backend down, or the request was aborted by a
+      // page refresh. NOT a parse failure — callers keep the material recoverable.
+      return { ok: false, network: true, error: '无法连接后端服务（' + base() + '），请确认已启动后端。' };
     }
     let data = null;
     try { data = await resp.json(); } catch (e) { data = null; }
@@ -44,8 +46,17 @@ const API = (() => {
     return { ok: true, data };
   }
 
+  /* 只有网络层失败（含刷新导致的请求中断）才是「可恢复」；带 HTTP status 的
+     都是后端明确返回的错误，仍应按真实失败处理。 */
+  function isNetworkFailure(r) { return !!r && !r.ok && !!r.network; }
+
   async function health() {
     return request('/api/health');
+  }
+
+  /* 刷新后查询后端资料真实状态：是否已解析、以及缓存的解析结果 */
+  async function getMaterial(materialId) {
+    return request('/api/materials/' + encodeURIComponent(materialId));
   }
 
   /* 上传单个资料文件，返回 { id, name, kind, size, status } */
@@ -95,5 +106,5 @@ const API = (() => {
     });
   }
 
-  return { base, health, uploadMaterial, parseMaterial, deleteMaterial, resetMaterials, generateQuiz, ask };
+  return { base, health, isNetworkFailure, getMaterial, uploadMaterial, parseMaterial, deleteMaterial, resetMaterials, generateQuiz, ask };
 })();
