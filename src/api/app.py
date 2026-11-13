@@ -158,7 +158,7 @@ def delete_material(
 
 @app.post("/api/materials/reset")
 def reset_materials() -> dict[str, Any]:
-    """清除全部演示数据（含 ChromaDB 索引与上传文件），供前端"重置演示数据"调用。"""
+    """清除全部数据（含 ChromaDB 索引与上传文件），供前端"重置数据"调用。"""
     return get_material_service().reset()
 
 

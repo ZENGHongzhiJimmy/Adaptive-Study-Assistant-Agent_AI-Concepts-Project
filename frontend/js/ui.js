@@ -60,6 +60,110 @@ const UI = (() => {
     }, 2600);
   }
 
+  /* ---------- 确认弹窗 ----------
+     返回 Promise<boolean>：确认 → true，取消 / Esc / 点击遮罩 → false
+     用法：
+       const ok = await UI.confirm({
+         title: '重置数据？',
+         message: '说明文字',
+         details: ['要点 1', '要点 2'],
+         hint: '补充提示',
+         confirmText: '确认重置',
+         cancelText: '取消',
+         danger: true,
+         icon: 'refresh',
+       });
+  */
+  function modalRoot() {
+    let root = document.getElementById('modal-root');
+    if (!root) {
+      root = document.createElement('div');
+      root.id = 'modal-root';
+      document.body.appendChild(root);
+    }
+    return root;
+  }
+
+  function confirm(opts = {}) {
+    const o = Object.assign({
+      title: '确认操作',
+      message: '',
+      details: [],
+      hint: '',
+      confirmText: '确认',
+      cancelText: '取消',
+      danger: false,
+      icon: 'refresh',
+    }, opts);
+
+    return new Promise(resolve => {
+      const root = modalRoot();
+      const prevFocus = document.activeElement;
+      const details = (o.details || []).filter(Boolean);
+
+      const wrap = document.createElement('div');
+      wrap.className = 'modal-backdrop';
+      wrap.innerHTML = `
+        <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="modal-title">
+          <div class="modal-head">
+            <div class="modal-ico ${o.danger ? 'danger' : 'warn'}">${icon(o.icon, 20)}</div>
+            <div class="modal-title" id="modal-title">${o.title}</div>
+          </div>
+          ${o.message ? `<div class="modal-msg">${o.message}</div>` : ''}
+          ${details.length ? `<ul class="modal-list">${details.map(d => `<li>${d}</li>`).join('')}</ul>` : ''}
+          ${o.hint ? `<div class="modal-hint">${o.hint}</div>` : ''}
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" data-act="cancel">${o.cancelText}</button>
+            <button type="button" class="btn ${o.danger ? 'btn-danger' : 'btn-primary'}" data-act="ok">${o.confirmText}</button>
+          </div>
+        </div>`;
+
+      root.appendChild(wrap);
+      document.body.classList.add('modal-open');
+
+      const okBtn = wrap.querySelector('[data-act="ok"]');
+      const cancelBtn = wrap.querySelector('[data-act="cancel"]');
+      let done = false;
+
+      function close(val) {
+        if (done) return;
+        done = true;
+        document.removeEventListener('keydown', onKey, true);
+        document.body.classList.remove('modal-open');
+        wrap.classList.add('closing');
+        setTimeout(() => {
+          wrap.remove();
+          if (prevFocus && typeof prevFocus.focus === 'function') {
+            try { prevFocus.focus(); } catch (e) { /* 元素已销毁 */ }
+          }
+        }, 150);
+        resolve(val);
+      }
+
+      function onKey(e) {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(false); return; }
+        if (e.key === 'Tab') {
+          // 焦点锁在弹窗内，默认聚焦「取消」避免误触确认
+          const focusable = [cancelBtn, okBtn];
+          const i = focusable.indexOf(document.activeElement);
+          e.preventDefault();
+          const next = e.shiftKey
+            ? focusable[(i <= 0 ? focusable.length : i) - 1]
+            : focusable[(i + 1) % focusable.length];
+          next.focus();
+        }
+      }
+
+      okBtn.addEventListener('click', () => close(true));
+      cancelBtn.addEventListener('click', () => close(false));
+      wrap.addEventListener('mousedown', e => { if (e.target === wrap) close(false); });
+      document.addEventListener('keydown', onKey, true);
+
+      // 动画结束后再聚焦，避免焦点跳变导致的滚动
+      requestAnimationFrame(() => cancelBtn.focus());
+    });
+  }
+
   /* ---------- 掌握度 → 等级 ---------- */
   function level(m) {
     if (m >= 75) return { key: 'ok',  label: '已掌握', badge: 'badge-success' };
@@ -117,5 +221,5 @@ const UI = (() => {
     return `<div class="card">${head}<div class="${opts.pad === false ? '' : 'card-body'}">${inner}</div></div>`;
   }
 
-  return { icon, toast, level, heatColor, bar, ring, empty, card, P };
+  return { icon, toast, confirm, level, heatColor, bar, ring, empty, card, P };
 })();

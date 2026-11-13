@@ -1582,6 +1582,27 @@ const Student = (() => {
   }
 
   async function reset() {
+    // 破坏性操作：先二次确认，用户取消则完全不动任何数据
+    const ok = await UI.confirm({
+      title: '重置全部数据？',
+      message: '该操作会清空当前学习状态，并清除后端的资料索引与已上传文件，重置后无法恢复。',
+      details: [
+        '各知识点掌握度、练习与复习记录',
+        'Pre-test 结果与自主学习规划',
+        'AI 问答与知识库聊天记录',
+        '后端已上传的课程资料与向量索引',
+      ],
+      hint: '如需保留学习记录，请点击「取消」返回。',
+      confirmText: '确认重置',
+      cancelText: '取消',
+      danger: true,
+      icon: 'refresh',
+    });
+    if (!ok) {
+      UI.toast('已取消重置', '');
+      return;
+    }
+
     // 先清后端（ChromaDB 索引 + 上传文件），否则 AI 问答仍会命中旧资料并给出过时引用
     let backendOk = false;
     try {
@@ -1593,7 +1614,7 @@ const Student = (() => {
     Engine.reset();
     clearChat();
     A = null; P = null;
-    UI.toast(backendOk ? '演示数据已重置（含后端索引）' : '演示数据已重置（后端未连接，索引可能未清除）', backendOk ? 'ok' : 'warn');
+    UI.toast(backendOk ? '数据已重置（含后端索引）' : '数据已重置（后端未连接，索引可能未清除）', backendOk ? 'ok' : 'warn');
     App.go('#/student/dashboard');
   }
 

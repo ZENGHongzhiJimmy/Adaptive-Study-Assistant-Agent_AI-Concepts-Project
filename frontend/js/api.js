@@ -84,7 +84,7 @@ const API = (() => {
     });
   }
 
-  /* 清除全部演示数据：后端会一并清理 ChromaDB 索引与上传文件 */
+  /* 清除全部数据：后端会一并清理 ChromaDB 索引与上传文件 */
   async function resetMaterials() {
     return request('/api/materials/reset', { method: 'POST' });
   }
