@@ -116,7 +116,7 @@ const Student = (() => {
 
     /* ① 自主学习规划（总览，不在此处开始 Pre-test） */
     const planSteps = [
-      ['选择课程资料', '进入对应学习模块'],
+      ['选择课程资料', '选中后在规划里开始学习'],
       ['完成 Pre-test', '建立该资料的起点'],
       ['滚动学习', '按轮次推进全部知识点'],
       ['查看学习进度', '掌握度持续更新'],
@@ -142,13 +142,13 @@ const Student = (() => {
            </div>
            <span class="spacer"></span>
            <button class="btn btn-primary btn-sm" onclick="Student.openMaterial('${active.id}')">
-             进入该资料模块 ${I('arrowRight',14)}
+             开始学习 ${I('arrowRight',14)}
            </button>
          </div>`
       : `<div class="plan-current">
            <div>
              <div style="font-weight:700;font-size:13.5px">先选择一份课程资料</div>
-             <div class="text-xs" style="color:var(--text-3)">进入对应模块后，才会出现 Pre-test 与后续学习步骤。</div>
+             <div class="text-xs" style="color:var(--text-3)">选中资料后点「开始学习」，才会出现 Pre-test 与后续学习步骤。</div>
            </div>
          </div>`;
 
@@ -214,7 +214,7 @@ const Student = (() => {
     const materialSection = homeSection(
       'bookOpen', '我的课程资料',
       `${mine.length} 份资料 · ${parsed.length} 份已解析`,
-      '点击卡片选中 · 点「进入学习模块」开始',
+      '点击卡片选中 · 选中后在「自主学习规划」里点「开始学习」',
       `<div class="mat-grid">${cards}${addCard}</div>`
     );
 
@@ -274,13 +274,6 @@ const Student = (() => {
           ${statusBadge(m)}
         </div>
         ${stats}
-        <div class="mat-foot">
-          ${isActive ? `<span class="badge badge-primary">${I('check',12)} 已选中</span>` : '<span></span>'}
-          <button class="btn ${ready ? 'btn-primary' : 'btn-ghost'} btn-sm"
-                  onclick="event.stopPropagation();Student.openMaterial('${m.id}')">
-            ${ready ? '进入学习模块' : '查看资料'} ${I('arrowRight',13)}
-          </button>
-        </div>
       </div>`;
   }
 
@@ -411,7 +404,7 @@ const Student = (() => {
         <div class="focus-body">
           <div class="reason-line">${next.reason}　规则 <span class="reason-rule">${next.rule}</span></div>
           <div class="row mt-16">
-            <button class="btn btn-primary" onclick="Student.start('${next.activity.id}','${next.topic.id}')">${I('play',15)} 开始这一步</button>
+            <button class="btn btn-primary" onclick="Student.start('${next.activity.id}','${next.topic.id}')">${I('play',15)} 开始学习</button>
             <span class="spacer"></span>
             <button class="btn btn-ghost btn-sm" onclick="App.go('#/student/progress/${rec.id}')">查看本资料进度</button>
           </div>

@@ -93,7 +93,7 @@ const App = (() => {
       <aside class="sidebar">
         <div class="brand">
           <div class="brand-logo">${I('bookOpen', 17)}</div>
-          <div class="brand-name">Adaptive Study</div>
+          <div class="brand-name">Adaptive Study Assistant</div>
         </div>
         <div class="sidebar-scroll">
           <div class="nav-label">学生菜单</div>
