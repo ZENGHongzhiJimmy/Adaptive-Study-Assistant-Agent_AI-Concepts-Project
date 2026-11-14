@@ -324,7 +324,19 @@ def apply_result(
                 delta, note = 2.0, "重看讲解，只做少量巩固"
             else:
                 delta, note = 0.0, "再次重学讲解，不再计分"
-            updated = replace(topic, explain_runs=runs + 1, explain_done=True, need_help=False)
+            # Re-reading is a fresh start: the "two bad practices in a row"
+            # branch counts *consecutive* failures, so the streak has to be
+            # cleared here. Without this the next single failure re-triggers
+            # help immediately and the loop degenerates into
+            # practice -> explain -> practice -> explain, where every second
+            # activity teaches nothing.
+            updated = replace(
+                topic,
+                explain_runs=runs + 1,
+                explain_done=True,
+                need_help=False,
+                fail_streak=0,
+            )
 
     elif activity == PRACTICE:
         answers = outcome.get("answers")

@@ -111,6 +111,7 @@ def run_cli_session(
     config: dict[str, Any] | None = None,
     llm_mode: str | None = None,
     llm_client: Any | None = None,
+    responder: Any | None = None,
 ) -> SessionResult:
     """Execute one session and return its full event trace.
 
@@ -159,6 +160,7 @@ def run_cli_session(
             retriever=active_retriever,
             generator=generator,
             extended=(mode != "off"),
+            responder=responder,
         )
         graph = build_graph(runtime)
         initial_state: dict[str, Any] = {

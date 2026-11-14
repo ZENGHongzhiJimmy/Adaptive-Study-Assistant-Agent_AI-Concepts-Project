@@ -64,6 +64,12 @@ class AgentRuntime:
     retriever: Retriever | None = None
     generator: Any | None = None   # P4: injectable LLMContentGenerator
     extended: bool = False         # P4: enable Challenge / Review activities
+    # Who answers the question. When set, the answer is produced live from the
+    # learner's state (a simulated student in the experiment, a person in a
+    # study); when None the session replays ``answer_sequence``, which is what
+    # the original tests do. Without this hook every policy saw the same answers
+    # and the comparison was vacuous.
+    responder: Any | None = None
 
 
 def build_graph(runtime: AgentRuntime) -> Any:
@@ -103,11 +109,19 @@ def build_graph(runtime: AgentRuntime) -> Any:
         return {**result.as_state_update(), "started_at": time.perf_counter()}
 
     def evaluate_node(state: AgentState) -> dict[str, Any]:
-        answers = state["answer_sequence"]
-        # Index by question number, not loop step: Teach steps consume no answer.
-        question_number = max(int(state.get("mcq_index", 0)) - 1, 0)
-        raw = answers[question_number % len(answers)]
-        evaluation = evaluate_step(state.get("question"), raw)
+        question = state.get("question")
+        if runtime.responder is not None:
+            # Live answer: produced from the learner at this moment, so the
+            # answer depends on what was taught before it. A Teach step has no
+            # question, and then there is nothing to ask.
+            raw = runtime.responder(question) if question is not None else None
+        else:
+            # Replay path, kept for the offline tests: answers are indexed by
+            # question number because Teach steps consume no answer.
+            answers = state["answer_sequence"]
+            question_number = max(int(state.get("mcq_index", 0)) - 1, 0)
+            raw = answers[question_number % len(answers)]
+        evaluation = evaluate_step(question, raw)
         return {"student_answer": raw, "evaluation": evaluation.as_dict()}
 
     def state_update_node(state: AgentState) -> dict[str, Any]:
