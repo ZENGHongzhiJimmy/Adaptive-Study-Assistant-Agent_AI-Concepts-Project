@@ -13,13 +13,14 @@ mastery update rule. This module is now the single source of truth:
 
 * the product (``src/api`` -> ``src/agent/serve.py``) calls it through a
   LangGraph node, and
-* the experiment harness (``src/agent/run.py`` / future ``experiments/``)
-  calls the same functions.
+* the experiment harness (``experiments/methods.py`` /
+  ``experiments/run_experiment.py``) calls the same functions.
 
-``planner.py`` is kept deliberately and is *not* dead code: its threshold
-planner is the "fixed-strategy" baseline arm (B3) for the evaluation, and its
-``mastery.update_mastery`` is the baseline mastery model.  Baseline vs
-proposed method, not two half-finished copies.
+``planner.py`` is kept as the legacy threshold planner used by the LangGraph
+CLI (``graph.py``), but it is NOT one of the E1 baselines.  The three E1
+baselines are (content, planner) pairs defined in ``experiments/methods.py``;
+the fixed-strategy one is ``methods.CyclicPlanner``.  This module remains the
+single policy shared by the product and the adaptive arm of E1.
 
 Design notes
 ------------

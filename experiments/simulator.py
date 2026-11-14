@@ -175,14 +175,29 @@ class SimulatedStudent:
         self.theta[topic_id] = min(self.profile.theta_max, self.theta.get(topic_id, 0.0) + gained)
         return gained
 
-    def study(self, topic_id: str, activity: str, accuracy: float = 0.0, had_errors: bool = False) -> float:
-        """Apply one activity's learning effect and return the theta gain."""
+    def study(
+        self,
+        topic_id: str,
+        activity: str,
+        accuracy: float = 0.0,
+        had_errors: bool = False,
+        quality: float = 1.0,
+    ) -> float:
+        """Apply one activity's learning effect and return the theta gain.
+
+        ``quality`` is how much of the *tested* content the explanation actually
+        covered (the E2 coverage score). An explanation that never mentions what
+        the post-test asks about cannot produce the full learning gain, so the
+        gain is scaled by it. Practice is not scaled: the practice items come
+        from the frozen bank in every condition, so item quality is held constant
+        and only the explanation differs.
+        """
         gain = 0.0
         if activity == "explain":
             runs = self.explain_runs.get(topic_id, 0)
             factor = EXPLAIN_DECAY ** runs
             self.explain_runs[topic_id] = runs + 1
-            gain = self._grow(topic_id, RATE_EXPLAIN * factor)
+            gain = self._grow(topic_id, RATE_EXPLAIN * factor * max(0.0, quality))
         elif activity == "practice":
             # Learning by successful retrieval: an attempt that succeeds teaches,
             # an attempt that fails mostly does not. The alternative (gain peaks

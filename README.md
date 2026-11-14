@@ -31,6 +31,8 @@
 - [9. 实验与结果复现](#9-实验与结果复现)
 - [10. 已知限制](#10-已知限制)
 - [11. 开发约定](#11-开发约定)
+- [12. 示例输入](#12-示例输入example-inputs)
+- [13. 参考文献与外部资源](#13-参考文献与外部资源references--acknowledgements)
 
 ---
 
@@ -202,7 +204,7 @@ Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
 │   │   ├── learner_store.py        # learner_topic / learner_roll / learner_step
 │   │   ├── serve.py                # LangGraph 图 + 服务封装（产品实际调用）
 │   │   ├── graph.py                # 内容生成版闭环（CLI / 实验用，含 Teach 渲染）
-│   │   ├── planner.py              # 阈值规划器 = 固定策略 baseline（B3）
+│   │   ├── planner.py              # 旧 CLI 阈值规划器（E1 不用；E1 基线见 experiments/methods.py）
 │   │   └── run.py                  # CLI 驱动
 │   ├── ingestion/                  # PDF/TXT 解析与切片
 │   ├── retrieval/                  # 向量库与嵌入
@@ -318,13 +320,15 @@ curl -X POST http://127.0.0.1:8000/api/materials/parse \
 | 维度 | Method（被评估） | Baseline（仅对照） |
 | ---- | ---- | ---- |
 | 代码 | `src/agent/policy.py`（`adaptive-v1`） | `src/student_model/mastery.py` + `src/agent/planner.py` |
-| 谁在用 | 产品 `/api/agent/*`（`serve.py`）；后续实验的 adaptive 臂 | 仅 `src/agent/graph.py`（CLI / 基线臂 B0、B3） |
+| 谁在用 | 产品 `/api/agent/*`（`serve.py`）；实验里的 `adaptive` 方法 | 仅 `src/agent/graph.py`（旧 CLI 链路，E1 不使用） |
 | 掌握度标度 | 0–100 整数百分比 | 0–1 浮点 |
 | 更新式 | `Δ = clamp(round((正确率×100 − m) × 0.6), −10, +25)`；讲解首次 +10、重看 +2、封顶 55 | `m' = 0.7·m + 0.3·p` |
 | 达标条件 | `m ≥ 80` **且**错题本为空 | `m ≥ 0.85`（无错题概念） |
 | 决策输入 | 掌握度 + 错题本 + `failStreak` + 讲解次数 + 内容可用性 | 掌握度 + `recent_errors` + 上一步活动 |
 | 阈值来源 | 代码常量，随每次规划下发（`mastered_at` / `explain_cap`） | `config.yaml` 的 `mastery:` / `planner:` 段 |
-| 报告角色 | **method** | **B0 / B3 对照臂** |
+| 报告角色 | **method** | **遗留 CLI 基线实现（非 E1 对照）** |
+
+> E1 的三条对照（LLM-only / RAG / Fixed-strategy）定义在 `experiments/methods.py`，是 `(content, planner)` 配对；其中固定课程表用 `methods.CyclicPlanner`，**不是** `planner.py`。报告口径以 `policy.py` + `methods.py` 这一条链路为准。
 
 两条纪律：
 
@@ -361,96 +365,153 @@ python -m experiments.build_bank     # 默认读 experiments/data/source/Experim
 
 被丢弃的内容：课程行政信息（课件物流、roadmap、ICLR 关键词趋势）与 5 道残缺题（空题干 / 答案下标越界）。
 
-人工核对答案键：
+### 9.2 两种内容条件（LLM-only vs RAG）
+
+proposal 的三条基线里，有两条差的是**讲解从哪来**，不是怎么排活动。这一层单独做，因为它无法用冻结题库代替——题库只提供题，不提供讲解。
 
 ```bash
-python -m experiments.bank --check
+python -m experiments.content            # 生成缺失的部分
+python -m experiments.content --force    # 全部重新生成
 ```
 
-### 9.2 一次会话怎么跑
+做法：对 8 个知识点，用同一个任务、同一个模型（temperature 0）生成两次讲解：
+
+| 条件 | 提示词 | 上下文 |
+| ---- | ---- | ---- |
+| `rag` | `TEACH_SYSTEM`（"只用给出的讲义摘录"） | 检索到的 3 段讲义原文 |
+| `llm_only` | 换成"你没有课件，凭自身知识讲，不要编造页码" | 无 |
+
+检索优先用产品自己的 Chroma 检索器；索引在干净 clone 里通常不存在，因此回退到**从同一份 PDF 建的页级 800 字符 TF-IDF 索引**（与产品 `chunk_size` 一致）。实际用的后端记录在 `materials.json` 的 `retrieval_backend` 字段。
+
+生成结果连同两项离线打分冻结在 `experiments/data/materials.json`：
+
+| 指标 | 定义 | LLM-only | RAG |
+| ---- | ---- | ---- | ---- |
+| `coverage` | 讲解覆盖"探针题考点词"的比例 | 0.274 | **0.439** |
+| `grounding` | 讲解与检索到的讲义段落的最大 TF-IDF 余弦 | 0.141 | **0.289** |
+| tokens / 知识点 | 生成成本 | 568 | 1040 |
+| 平均延迟 | 单次调用 | 3.2 s | 3.0 s |
+
+`coverage` 是模拟学生实际消费的数：讲解没提到后测要考的内容，就不该产生完整的学习增益。`grounding` 用来解释前者——RAG 的讲解更贴讲义措辞，因此更容易覆盖考点。两者在个别知识点上会打架（如 `what is AI` 覆盖率持平但 grounding 差一倍），这一点保留在图 5 里，不粉饰。
+
+### 9.3 四个 tutor = 内容源 × 调度器
+
+| 方法 | 内容源 | 调度 | 相对上一行多出的能力 |
+| ---- | ---- | ---- | ---- |
+| `llm_only` | LLM-only | 每点 1 讲解 + 1 练习 | —（proposal 的 LLM-only Tutor） |
+| `rag` | RAG | 每点 1 讲解 + 1 练习 | 检索（proposal 的 RAG Tutor） |
+| `fixed` | RAG | 讲解→练习→练习，固定循环 | 教学流程（proposal 的 Fixed-strategy Tutor） |
+| `adaptive` | RAG | `policy.plan_material()` | 读学生状态（本方法） |
+
+相邻两行**只差一个变量**，所以任意相邻差值都能归因：
+
+- `llm_only → rag`：检索的贡献；
+- `rag → fixed`：有设计的学习流程比"检索+回答"多出什么；
+- `fixed → adaptive`：自适应本身的贡献。
+
+`adaptive` 直接调用 `src/agent/policy.py`，不是复制一份逻辑（`tests/test_p10_experiment.py` 用 monkeypatch 盯着这次调用）。
+
+### 9.4 一次会话怎么跑
 
 `experiments/simulator.py` 里的模拟学生持有**每个知识点各自的私有能力 θ**，Agent 看不到它，只能看到答对/答错。答对概率由能力与**题目难度**之差决定，再叠加 8% 手滑与 20% 蒙对。
 
-一次会话：前测（每点 1 道探针题，与产品一样用来定起点）→ 循环「策略选活动 → 学生现场作答 → `policy.apply_result` 更新掌握度 → 重新规划」→ 到预算或全部掌握为止 → 后测（同一组探针题的期望得分）。
+一次会话：前测（每点 1 道探针题定起点）→ 循环「调度器选活动 → 学生现场作答 → `policy.apply_result` 更新掌握度 → 重新规划」→ 到预算或全部掌握为止 → 后测（同一组探针题的期望得分）。
 
-关键点：**作答是现场生成的，不是回放脚本**。这是原 harness 的核心缺陷——`graph.py` 曾按题号取预设答案，导致四种策略结果必然相同。现在 `evaluate_node` 也支持注入 `responder`，CLI 闭环同样可以接真实作答者。
+讲解活动带来的能力增长会乘以该知识点的 `coverage`；练习活动的增益不缩放，因为四个方法用的是同一套练习题，题目质量被固定住，只有讲解在变。
 
-### 9.3 复现主结果
+### 9.5 复现主结果
 
 ```bash
+python -m experiments.content                            # 一次，结果已冻结，可跳过
 python -m experiments.run_experiment --seeds 8 --budget 32
+python -m experiments.plots
 ```
 
-离线、无网络、无 API Key，约 2 秒完成 160 次会话（4 臂 × 5 画像 × 8 种子）。输出写入 `experiments/results/e1_main.json`。
+离线、无网络、无 API Key（`content` 那一步除外，它只跑一次）。160 次会话（4 方法 × 5 画像 × 8 种子）约 2 秒完成，结果写入 `experiments/results/e1_main.json`。
 
 ```
-arm             pre   post    gain   nGain  learned  steps  mastery    MAE
-adaptive      0.501  0.717   0.216   0.455      4.5   30.3    0.643  0.097
-fixed         0.501  0.704   0.203   0.435      4.3   31.5    0.636  0.093
-random        0.501  0.644   0.143   0.313      3.5   32.0    0.512  0.150
-always_mcq    0.501  0.673   0.172   0.390      4.5   30.4    0.637  0.073
+method          pre   post    gain   nGain  learned  steps    eff  toTarget    cov    MAE
+llm_only      0.501  0.624   0.123   0.286      3.5   31.3  0.116      25.8  0.274  0.093
+rag           0.501  0.644   0.143   0.324      3.7   31.3  0.123      25.8  0.439  0.095
+fixed         0.501  0.664   0.163   0.367      4.1   31.0  0.140      25.8  0.439  0.086
+adaptive      0.501  0.672   0.171   0.377      4.1   30.7  0.143      25.8  0.439  0.097
 ```
 
 配对差值（同画像同种子，bootstrap 95% CI）：
 
-| 对照臂 | Δgain | 95% CI | 胜场 |
+| 对照 | Δgain | 95% CI | 胜场 |
 | ---- | ---- | ---- | ---- |
-| fixed | +0.013 | [+0.009, +0.018] | 33/40 |
-| random | +0.073 | [+0.061, +0.084] | 40/40 |
-| always_mcq | +0.043 | [+0.030, +0.057] | 33/40 |
+| LLM-only Tutor | +0.049 | [+0.040, +0.057] | 39/40 |
+| RAG Tutor | +0.029 | [+0.023, +0.035] | 38/40 |
+| Fixed-strategy Tutor | +0.008 | [+0.003, +0.013] | 26/40 |
 
-结论有三条，第三条最有信息量：
+四条结论：
 
-1. 在**等预算**下，自适应策略的学习增益高于三个对照臂，配对 CI 均不含 0。
-2. 它用更少的活动达成（30.3 vs 固定的 31.5），因为一旦知识点达标就停止安排。
-3. **优势集中在弱学生与 heterogeneous 学生身上**：`struggling` 画像下 adaptive 0.197、`always_mcq` 仅 0.088（只练不讲对新手几乎无效）；`strong` 画像下两者打平（0.079 vs 0.081）——这正是"专长反转"：新手需要讲解，熟手更受益于练习。
+1. **检索是单项收益最大的一步**：同样的调度器、同样的题，只把讲解从"模型自身知识"换成"检索讲义的讲解"，增益从 0.123 升到 0.143，覆盖率 0.274 → 0.439。
+2. **教学流程的收益与检索相当**：RAG Tutor 只是"检索+回答"，加上讲解→练习→练习的固定流程后升到 0.163。
+3. **自适应再进一步，但幅度小**：0.163 → 0.171，Δ=+0.008，CI 下限 0.003，胜场只有 26/40。这说明在 8 个难度相近的知识点上，一个设计良好的固定流程已经接近上限；自适应的价值更多体现在**用更少活动收工**（30.7 vs 31.0）和弱学生身上。
+4. **专长反转依然成立**：`struggling` 画像下 adaptive 0.122、LLM-only 只有 0.063；`strong` 画像下四者几乎打平（0.068–0.076）。新手吃"讲得对不对"，熟手吃"练不练"。
 
-`fixed` 臂只落后 0.013，说明**自适应本身不是万能药**：在知识点难度相近、且策略只能选活动类型的前提下，一个合理设计的固定课程表已经接近最优。这也是当前方法的主要局限（见 §10）。
+`activities_to_target` 四个方法都是 25.8——"全部 8 个知识点都达到 0.75"这件事由学生能力上限决定，不区分方法，所以效率指标改用 `eff`（达标知识点数 / 花掉的活动数）。
 
-### 9.4 指标定义
+### 9.6 指标定义
 
 | 指标 | 定义 |
 | ---- | ---- |
-| `pre` / `post` | 探针题期望得分均值（0–1） |
+| `pre` / `post` | 探针题期望得分均值（0–1）；`post` 即 Final Mastery |
 | `learning_gain` | `post − pre` |
 | `nGain` | 归一化增益 `(post − pre) / (1 − pre)` |
 | `learned` | 后测 ≥ 0.75 的知识点个数（与 Agent 内部达标线无关，避免自证） |
-| `mastery` | Agent 自己维护的掌握度均值（0–1） |
-| `MAE` | `|Agent 掌握度 − 学生真实水平|` 的均值，衡量记忆是否可信 |
-| `steps` | 实际用掉的活动数 |
+| `eff` | Learning Efficiency：`learned / steps`，每花一个活动换来多少达标知识点 |
+| `toTarget` | 全部知识点达到 0.75 所需活动数；未达到记满预算（因此会被截断） |
+| `cov` | 该方法所用讲解的平均覆盖率 |
+| `MAE` | `|Agent 掌握度 − 学生真实水平|`，衡量记忆是否可信 |
+| `tokens` / 延迟 | 生成整套讲解的 LLM 成本，来自 `materials.json` |
 
-### 9.5 出图
+### 9.7 出图
 
 ```bash
 python -m experiments.plots
 ```
 
-只读 `results/e1_main.json`，不重新模拟，因此图与提交的 JSON 一一对应。6 张 300 dpi PNG 写入 `experiments/results/figures/`，英文图注在同目录 `CAPTIONS.md`，可直接贴进报告：
+只读 `e1_main.json` 与 `materials.json`，不重新模拟，因此图与提交的 JSON 一一对应。6 张 300 dpi PNG 写入 `experiments/results/figures/`，英文图注在同目录 `CAPTIONS.md`：
 
 | 文件 | 内容 | 对应论点 |
 | ---- | ---- | ---- |
-| `fig1_learning_gain.png` | 四臂学习增益 + 95% CI | 主结果 |
+| `fig1_learning_gain.png` | 四方法学习增益 + 95% CI | 主结果 |
 | `fig2_learning_curve.png` | 探针分数随活动数的曲线 | 过程而不仅是终点 |
 | `fig3_gain_by_profile.png` | 按画像拆分的增益 | 专长反转 |
 | `fig4_paired_delta.png` | 配对差值 + bootstrap CI | 显著性 |
-| `fig5_activity_mix.png` | 各臂活动配比 | 机制 |
-| `fig6_calibration.png` | 掌握度估计 vs 真实水平 | 记忆可信度 |
+| `fig5_content_quality.png` | 覆盖率 / 贴讲义程度 / LLM 成本 | 检索到底买到了什么 |
+| `fig6_activity_mix.png` | 各方法活动配比 | 机制 |
 
-`fig2` 有一处实现细节值得写进报告：提前结束（全部掌握）的会话在后续 checkpoint 没有读数，若直接丢弃，缺数据的恰好是学得最快的会话，会让最先停的臂看起来最差。脚本改为把最终分数结转（LOCF）到剩余 checkpoint。
+`fig2` 有一处实现细节值得写进报告：提前结束（全部掌握）的会话在后续 checkpoint 没有读数，若直接丢弃，缺数据的恰好是学得最快的会话，会让最先停的方法看起来最差。脚本改为把最终分数结转（LOCF）到剩余 checkpoint。
 
-### 9.6 自我检查
+### 9.8 自我检查
 
 `run_experiment.self_check()` 会在三种情况下以非零码退出：
 
-- 四臂 `learning_gain` 完全相同；
-- 四臂活动配比完全相同；
-- 四臂活动序列集合完全相同。
+- 四个方法 `learning_gain` 完全相同；
+- 四个方法活动配比完全相同；
+- 四个方法活动序列集合完全相同。
 
 这正是原缺陷的回归测试——如果哪天作答又被写死，这条检查会立刻报 `[FAIL]`。
 
 ---
 
 ## 10. 已知限制
+
+实验层面（报告必须写明的部分）：
+
+- **模拟学生不是真人**：能力 θ、手滑 8%、蒙对 20%、讲解/练习的增益系数都是模型假设，实验检验的是"这些假设下四种方法谁更好"，不是人类学习曲线。
+- **内容质量按线性方式接入**：讲解增益乘以 `coverage` 是一次线性缩放，没有校准过真实学习者的"覆盖率→掌握度"映射。若这个映射是次线性的，RAG 与 LLM-only 的差距会被高估；若是超线性的，会被低估。这一点没有做敏感性扫描，属于可直接补的实验。
+- **`coverage` 是词面指标**：它数的是"探针考点的关键词有没有出现在讲解里"，同义改写会漏记，因此绝对值偏低（0.27–0.44）不代表讲解只有三成有效。它适合比较两个条件，不适合当绝对质量分。
+- **每个条件只生成一次**：temperature 0 下每个知识点只有一条讲解，没有做多次采样估计生成方差。16 次调用里出现过 3 次拒答/截断（已重试），说明单次生成本身有噪声。
+- **RAG 检索可能不是产品那套**：干净 clone 没有 Chroma 索引，脚本回退到同一份 PDF 的 TF-IDF 分块索引；只有 `retrieval_backend` 为 `product-chroma` 时才是产品链路。
+- **`toTarget` 被预算截断**：四个方法都停在 25.8 左右，达不到"全部 8 点 ≥ 0.75"就记满 32，所以效率指标改用 `eff`。
+- **自适应的增量很小**：对固定流程只有 +0.008（26/40 胜），在 8 个难度相近的知识点上，"固定课程表 + 讲解→练习→练习"已接近上限。这是结论的一部分，不是失败。
+
+产品层面：
 
 - **LLM 模型配置与限流**：默认主模型为 OpenRouter 免费模型 `(baidu/ernie-5.5-flash-preview:free)`，并在 `fallback_models` 中配置付费模型 `(deepseek/deepseek-v4.1-flash)` 作为兜底。主模型正常时只调用免费模型、不额外消耗付费额度；当主模型不可用（如被下架或限流返回 404/429）时，自动按序切换到付费兜底模型完成解析与问答。模型均可根据个人需求在 `config.yaml -> llm` 段自由更换（改 `model` 与 `fallback_models`）。
 - **学习状态存于后端 SQLite**：掌握度、错题本、滚动轮次与决策轨迹由 `learner_*` 表持久化；浏览器只缓存最近一次 agent 快照用于渲染。清浏览器数据不会丢学习记录，但**换机器/换浏览器**目前共享同一份状态（单用户原型，未做账号隔离）。
@@ -459,8 +520,8 @@ python -m experiments.plots
 - **单用户**：当前为课程原型，未实现多用户认证与数据隔离。
 - **实验是模拟，不是真人**：E1 的学习者是带私有能力的模拟体，三条增益假设（讲解收益递减、练习按成功检索计收益、复习只在有错时有效）写在 `experiments/simulator.py` 的模块 docstring 里。它保证"比较不是循环论证"，但不保证数值等于真人学习率。
 - **难度由人工标注**：`bank.json` 里的难度是手工三档，不是实证校准；且 `policy.decide()` 目前**不按难度选题**，只选活动类型。所以本实验衡量的是 activity-level adaptation，不是 difficulty-level adaptation。
-- **主实验不调用 LLM**：题库已冻结，内容质量（LLM 生成 vs 模板）不在主表之内，需要单独做小规模消融。
-- **固定课程表已接近最优**：`fixed` 臂仅落后 0.013，说明在知识点难度相近时自适应收益有限；要放大差异需要更异质的知识点集或难度级选择能力。
+- **主实验离线运行**：两种讲解由 `experiments.content` 生成一次后冻结在 `materials.json`（共 16 次调用），模拟阶段不联网、不需要 API Key；内容质量已以 `coverage` 进入主表与 fig5，不再是"待补的消融"。未做的是多次采样估计生成方差、`coverage → 增益` 映射的敏感性扫描。
+- **固定课程表已接近最优**：`fixed` 基线仅落后 0.008（26/40 胜），说明在知识点难度相近时自适应收益有限；要放大差异需要更异质的知识点集或难度级选择能力。
 
 ---
 
@@ -470,3 +531,41 @@ python -m experiments.plots
 - 敏感信息（`OPENROUTER_API_KEY`）只放在本地 `.env`，绝不写入代码 / README / 前端；提交前运行 `python -m src.utils.secret_guard`。
 - 阈值、模型、路径统一在 `config.yaml` 维护，`.env` 只放密钥与端点。
 - 提交信息建议格式：`feat:` / `fix:` / `docs:` / `exp:`。
+
+---
+
+## 12. 示例输入（Example inputs）
+
+课程 spec 要求源码包附带可直接试跑的输入。以下三种都不需要额外下载数据：
+
+**A. 产品（网页 / HTTP）**：把仓库自带的 `experiments/data/source/Experiment(Lecture 1 Intro 2026).pdf` 在页面「资料上传」上传后点「解析」。等价的 API 调用（把 `m_abc123` 换成 upload 返回的 `material_id`）：
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/materials/upload \
+  -F "file=@experiments/data/source/Experiment(Lecture 1 Intro 2026).pdf"
+curl -X POST http://127.0.0.1:8000/api/materials/parse \
+  -H "Content-Type: application/json" -d '{"material_id":"m_abc123"}'
+curl -X POST http://127.0.0.1:8000/api/agent/plan \
+  -H "Content-Type: application/json" -d '{"material_id":"m_abc123"}'
+```
+
+**B. 实验（离线，推荐）**：实验输入是两个已冻结的 JSON（`bank.json` + `materials.json`），不需要 API Key：
+
+```bash
+python -m experiments.bank --check                  # 打印 8 个知识点 / 56 道题及答案
+python -m experiments.run_experiment --seeds 8 --budget 32
+python -m experiments.plots
+```
+
+**C. 最小可复现单元**：`tests/test_p10_experiment.py` 用 `bank.json` 的单个知识点加一个 seed 构造 `SimulatedStudent`，`pytest -q` 即可观察前测 → 答题 → 能力增长 → 后测的完整链路。
+
+---
+
+## 13. 参考文献与外部资源（References / Acknowledgements）
+
+- COMP 5511 Artificial Intelligence Concepts, *Final Project Specifications*, Sem 1 2026/27（课程项目要求与评分口径）。
+- W. Fan, *Lecture 1 – Artificial Intelligence: An Introduction*, COMP 5511, 2026（实验讲义；版权与使用限制见 `experiments/data/README.md`）。
+- Ning, Liangbo et al., *A Survey of WebAgents: Towards Next-Generation AI Agents for Web Automation with Large Foundation Models*, arXiv:2503.23350, 2025（课程说明 [1]）。
+- 代码依赖：LangGraph（agent 编排）、FastAPI / Uvicorn（HTTP API）、ChromaDB（向量库）、PyMuPDF（PDF 解析）、scikit-learn（TF-IDF 打分）、matplotlib（出图）、OpenAI SDK / OpenRouter（LLM 调用）。版本约束见 `requirements.txt`。
+
+> 报告正文的 References 需按引用格式单独补齐，并覆盖正文实际引用到的每一篇文献与数据集；本表只列出代码包使用的外部资源。

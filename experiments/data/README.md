@@ -8,7 +8,8 @@ experiments/data/
 ├── source/
 │   └── Experiment(Lecture 1 Intro 2026).pdf   ← 课程发的实验用讲义（68 页，9.7 MB）
 ├── parse_raw.json                  ← 产品 EXTRACT 流程读这份 PDF 的输出（20 个知识点）
-└── bank.json                       ← 实验实际使用的题库（8 个知识点 × 7 题 = 56 题）
+├── bank.json                       ← 实验实际使用的题库（8 个知识点 × 7 题 = 56 题）
+└── materials.json                  ← 两种讲解条件（LLM-only / RAG）的原文与打分
 ```
 
 ## 1. 数据来源
@@ -46,7 +47,33 @@ bank.json             8 × (4 practice + 3 probe) = 56 题
 
 每题带一个 `difficulty` 字段（0.15–0.45，IRT 式难度参数 b），供模拟学生计算答对概率；策略本身看不到难度，只看作答结果。
 
-## 3. 复现 / 换数据
+## 3. 两种讲解条件（LLM-only / RAG）
+
+E1 的四个方法里，`llm_only` 与 `rag` 差的是**讲解从哪来**，不是怎么排活动。这一层无法用冻结题库代替（题库只有题，没有讲解），所以单独生成一次：
+
+| 条件 | 上下文 | 提示词 |
+| ---- | ---- | ---- |
+| `rag` | 检索到的 3 段讲义原文 | `TEACH_SYSTEM`：只用给出的摘录 |
+| `llm_only` | 无 | 换成"你没有课件，凭自身知识讲，不要编造页码" |
+
+```bash
+python -m experiments.content               # 只生成缺失的
+python -m experiments.content --force       # 全部重新生成
+python -m experiments.content --score-only  # 只重算分，不调模型
+```
+
+`materials.json` 里每条记录保存讲解原文、模型名、延迟、token 用量和调用次数，外加两项离线打分：
+
+| 指标 | 含义 | LLM-only | RAG |
+| ---- | ---- | ---- | ---- |
+| `coverage` | 讲解覆盖"探针题考点词"的比例 | 0.274 | 0.439 |
+| `grounding` | 与检索到的讲义段落的最大 TF-IDF 余弦 | 0.141 | 0.289 |
+
+模拟学生把讲解带来的能力增长乘以 `coverage`，所以这一层直接决定 E1 里 LLM-only 与 RAG 的差距。
+
+检索优先走产品自己的 Chroma 索引；干净 clone 里通常没有索引，脚本会回退到**用本目录 PDF 现建的 800 字符页级 TF-IDF 索引**（与产品 `chunk_size` 一致）。实际用的后端写在 `retrieval_backend` 字段里，不会含糊。
+
+## 4. 复现 / 换数据
 
 ```bash
 # 用仓库内的实验讲义重建抽取结果（需要 API key，会调用 LLM）
@@ -58,13 +85,19 @@ python -m experiments.build_bank --pdf "C:/path/another lecture.pdf"
 # 校验题库：id 唯一、答案下标合法、练习与探针互斥
 python -m experiments.bank --check
 
-# 跑实验（离线，不调用 LLM，读的是已冻结的 bank.json）
+# 生成/评分两种讲解条件（需要 API key，只跑一次）
+python -m experiments.content
+
+# 跑实验（离线，不调用 LLM，读的是已冻结的 bank.json 与 materials.json）
 python -m experiments.run_experiment --seeds 8 --budget 32
+
+# 出图
+python -m experiments.plots
 ```
 
 换成别的讲义同样适用：把 PDF 放进 `source/`，改 `--pdf` 参数即可，后续整理步骤不变。`parse_raw.json` 和 `bank.json` 是**冻结产物**，实验运行时不会重新调用模型——免费额度会限流，生成文本也不可复现，所以只在建库时调用一次。
 
-## 4. 使用限制
+## 5. 使用限制
 
 `source/Experiment(Lecture 1 Intro 2026).pdf` 是课程为本次实验提供的讲义，版权归课程与授课教师所有。放在本仓库仅用于：
 

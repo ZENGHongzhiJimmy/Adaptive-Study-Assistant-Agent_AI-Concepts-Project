@@ -24,7 +24,7 @@ EXPECTED_PACKAGES = {
 
 SKELETON_DIRS = (
     "src/utils", "src/ingestion", "src/retrieval", "src/student_model",
-    "src/agent/prompts", "experiments/baselines",
+    "src/agent/prompts", "experiments/data",
     "experiments/results", "tests", "report",
     "data/course_materials", "data/chroma_db",
 )
