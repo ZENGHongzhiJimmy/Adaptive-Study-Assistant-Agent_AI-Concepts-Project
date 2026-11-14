@@ -37,8 +37,6 @@
 - [9. 实验](#9-实验)
 - [10. 已知限制](#10-已知限制)
 - [11. 开发约定](#11-开发约定)
-- [12. 示例输入](#12-示例输入example-inputs)
-- [13. 参考文献与外部资源](#13-参考文献与外部资源references--acknowledgements)
 
 ---
 
@@ -530,40 +528,3 @@ python -m experiments.plots
 - 基础设施参数（模型、路径、检索、种子）在 `config.yaml`；method 的阈值与常量只在 `src/agent/policy.py`，不复制到 YAML。`.env` 只放密钥与端点。
 - 提交信息建议格式：`feat:` / `fix:` / `docs:` / `exp:`。
 
----
-
-## 12. 示例输入（Example inputs）
-
-课程 spec 要求源码包附带可直接试跑的输入。以下三种都不需要额外下载数据：
-
-**A. 产品（网页 / HTTP）**：把仓库自带的 `experiments/data/source/Experiment(Lecture 1 Intro 2026).pdf` 在页面「资料上传」上传后点「解析」。等价的 API 调用（把 `m_abc123` 换成 upload 返回的 `material_id`）：
-
-```bash
-curl -X POST http://127.0.0.1:8000/api/materials/upload \
-  -F "file=@experiments/data/source/Experiment(Lecture 1 Intro 2026).pdf"
-curl -X POST http://127.0.0.1:8000/api/materials/parse \
-  -H "Content-Type: application/json" -d '{"material_id":"m_abc123"}'
-curl -X POST http://127.0.0.1:8000/api/agent/plan \
-  -H "Content-Type: application/json" -d '{"material_id":"m_abc123"}'
-```
-
-**B. 实验（离线，推荐）**：实验输入是两个已冻结的 JSON（`bank.json` + `materials.json`），不需要 API Key：
-
-```bash
-python -m experiments.bank --check                  # 打印 8 个知识点 / 56 道题及答案
-python -m experiments.run_experiment --seeds 8 --budget 32
-python -m experiments.plots
-```
-
-**C. 最小可复现单元**：`tests/test_p10_experiment.py` 用 `bank.json` 的单个知识点加一个 seed 构造 `SimulatedStudent`，`pytest -q` 即可观察前测 → 答题 → 能力增长 → 后测的完整链路。
-
----
-
-## 13. 参考文献与外部资源（References / Acknowledgements）
-
-- COMP 5511 Artificial Intelligence Concepts, *Final Project Specifications*, Sem 1 2026/27（课程项目要求与评分口径）。
-- W. Fan, *Lecture 1 – Artificial Intelligence: An Introduction*, COMP 5511, 2026（实验讲义；版权与使用限制见 `experiments/data/README.md`）。
-- Ning, Liangbo et al., *A Survey of WebAgents: Towards Next-Generation AI Agents for Web Automation with Large Foundation Models*, arXiv:2503.23350, 2025（课程说明 [1]）。
-- 代码依赖：LangGraph（agent 编排）、FastAPI / Uvicorn（HTTP API）、ChromaDB（向量库）、PyMuPDF（PDF 解析）、scikit-learn（TF-IDF 打分）、matplotlib（出图）、OpenAI SDK / OpenRouter（LLM 调用）。版本约束见 `requirements.txt`。
-
-> 报告正文的 References 需按引用格式单独补齐，并覆盖正文实际引用到的每一篇文献与数据集；本表只列出代码包使用的外部资源。
