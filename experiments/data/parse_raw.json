@@ -1,0 +1,969 @@
+{
+  "summary": "",
+  "topics": [
+    {
+      "name": "Course motivation and related concepts",
+      "desc": "The lecture motivates AI study and lists related concepts.",
+      "explain": [
+        {
+          "t": "Why study AI?",
+          "items": [
+            "Understand what AI is and why it is popular",
+            "Explore AI infrastructure and techniques",
+            "Related concepts include CV, NLP, DM, ML",
+            "Build intelligent machines with mathematics and computing"
+          ],
+          "tip": "AI connects to many related fields."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Which related concept is mentioned?",
+          "opts": [
+            "Quantum Vision",
+            "Computer Vision",
+            "Data Visualization",
+            "Virtual Reality"
+          ],
+          "a": 1,
+          "why": "CV means Computer Vision."
+        },
+        {
+          "q": "What does the course aim to build?",
+          "opts": [
+            "Social network",
+            "Database",
+            "Intelligent machine",
+            "Operating system"
+          ],
+          "a": 2,
+          "why": "The slide says build an intelligent machine."
+        },
+        {
+          "q": "Which techniques are used to build it?",
+          "opts": [
+            "Cooking and art",
+            "Law and medicine",
+            "Music and dance",
+            "Mathematics and computing techniques"
+          ],
+          "a": 3,
+          "why": "Mathematics and computing techniques are specified."
+        }
+      ]
+    },
+    {
+      "name": "Course identity and logistics",
+      "desc": "Basic course information for Lecture 1.",
+      "explain": [
+        {
+          "t": "Course information",
+          "items": [
+            "Course: COMP 5511 Artificial Intelligence Concepts",
+            "Instructor: Prof. Wenqi Fan",
+            "Institution: The Hong Kong Polytechnic University",
+            "Semester 1, 2026/27; Lecture 1 introduction"
+          ],
+          "tip": "Identify the course context first."
+        }
+      ],
+      "quiz": [
+        {}
+      ]
+    },
+    {
+      "name": "Data-driven machine learning drivers",
+      "desc": "Machine learning advances through better models, stronger computing resources, and larger data volumes.",
+      "explain": [
+        {
+          "t": "Data-Driven Methods",
+          "items": [
+            "Rule-based methods evolved to statistical and deep learning.",
+            "More variables help fit data better.",
+            "Stronger RAM, CPU, and GPU support learning.",
+            "Large data volumes enable analytics and discovery."
+          ],
+          "tip": "Progress comes from models, compute, and data together."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Which progression is mentioned?",
+          "opts": [
+            "Rule-based to statistical to deep learning",
+            "Symbolic to fuzzy to quantum",
+            "Manual to hybrid to analog",
+            "Batch to stream to edge"
+          ],
+          "a": 0,
+          "why": "The text states rule-based to statistical to deep learning."
+        },
+        {
+          "q": "What computing resources are listed?",
+          "opts": [
+            "Tape, ROM, modem",
+            "RAM, CPU, GPU",
+            "Printer, scanner, disk",
+            "Sensor, camera, lidar"
+          ],
+          "a": 1,
+          "why": "The material names RAM, CPU, and GPU."
+        },
+        {
+          "q": "Why is more data important?",
+          "opts": [
+            "It removes computing limits",
+            "It replaces all models",
+            "It enables analytics and discovery",
+            "It reduces need for labels"
+          ],
+          "a": 2,
+          "why": "More data supports analytics and valuable discovery."
+        }
+      ]
+    },
+    {
+      "name": "Data volume and sources",
+      "desc": "Modern data comes from databases, web content, social media, sensors, and large platforms.",
+      "explain": [
+        {
+          "t": "How Much Data?",
+          "items": [
+            "IDC reported 2.7 billion terabytes in 2012.",
+            "IDC reported 8 billion terabytes in 2015.",
+            "Sources include corporate databases, webpages, blogs, social messages, sensors.",
+            "Google processes 20 PB daily; Facebook stores 100+ PB."
+          ],
+          "tip": "Data comes from structured systems and unstructured digital activity."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "How much data did IDC report for 2015?",
+          "opts": [
+            "2.7 billion terabytes",
+            "8 billion terabytes",
+            "20 PB",
+            "500 TB"
+          ],
+          "a": 1,
+          "why": "IDC reported 8 billion terabytes in 2015."
+        },
+        {
+          "q": "Which is an unstructured data source?",
+          "opts": [
+            "Structured corporate database",
+            "Social networking messages",
+            "Relational table",
+            "Fixed schema record"
+          ],
+          "a": 1,
+          "why": "Social networking messages are listed as unstructured data."
+        },
+        {
+          "q": "What daily Google figure is given?",
+          "opts": [
+            "2.7B likes",
+            "300M photos",
+            "105TB scanned",
+            "20 PB processed"
+          ],
+          "a": 3,
+          "why": "Google processes 20 PB of user-generated data daily."
+        }
+      ]
+    },
+    {
+      "name": "Big Data definition",
+      "desc": "Big data refers to data sets too large or complex for traditional processing tools.",
+      "explain": [
+        {
+          "t": "Related Concept: Big Data",
+          "items": [
+            "Big data is a collection of large, complex data sets.",
+            "It is difficult to process with on-hand database tools.",
+            "Traditional data processing applications may also struggle."
+          ],
+          "tip": "Big data exceeds ordinary processing capabilities."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Big data is difficult to process using what?",
+          "opts": [
+            "Only spreadsheets",
+            "Paper records",
+            "On-hand database tools",
+            "Single sensors"
+          ],
+          "a": 2,
+          "why": "The definition cites on-hand database management tools."
+        },
+        {
+          "q": "Which phrase describes big data?",
+          "opts": [
+            "Small and simple",
+            "Large and complex",
+            "Static and clean",
+            "Manual and local"
+          ],
+          "a": 1,
+          "why": "Big data is described as large and complex."
+        },
+        {
+          "q": "Big data challenges traditional what?",
+          "opts": [
+            "Network cables",
+            "User interfaces",
+            "Power supplies",
+            "Data processing applications"
+          ],
+          "a": 3,
+          "why": "Traditional data processing applications may struggle."
+        }
+      ]
+    },
+    {
+      "name": "Big Data 4V characteristics",
+      "desc": "Big data is commonly characterized by Volume, Velocity, Variety, and Veracity.",
+      "explain": [
+        {
+          "t": "Characteristics of Big Data: 4V",
+          "items": [
+            "Volume: terabytes to exabytes to zettabytes.",
+            "Velocity: batch, real-time, streaming, millisecond responses.",
+            "Variety: structured, semi-structured, unstructured, multimedia.",
+            "Veracity: uncertainty from inconsistency, incompleteness, ambiguity, deception."
+          ],
+          "tip": "Remember the four Vs: Volume, Velocity, Variety, Veracity."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Which V covers data inconsistency and uncertainty?",
+          "opts": [
+            "Volume",
+            "Velocity",
+            "Variety",
+            "Veracity"
+          ],
+          "a": 3,
+          "why": "Veracity refers to uncertainty and inconsistency."
+        },
+        {
+          "q": "Which V includes streaming and real-time data?",
+          "opts": [
+            "Veracity",
+            "Velocity",
+            "Volume",
+            "Variety"
+          ],
+          "a": 1,
+          "why": "Velocity covers speed and streaming data."
+        },
+        {
+          "q": "Which V includes text, images, audio, video?",
+          "opts": [
+            "Volume",
+            "Velocity",
+            "Variety",
+            "Veracity"
+          ],
+          "a": 2,
+          "why": "Variety covers different data types and formats."
+        },
+        {
+          "q": "What scale is mentioned for volume?",
+          "opts": [
+            "Bytes to kilobytes",
+            "Milliseconds to seconds",
+            "Likes to shares",
+            "Terabytes to zettabytes"
+          ],
+          "a": 3,
+          "why": "Volume ranges from terabytes to zettabytes."
+        }
+      ]
+    },
+    {
+      "name": "AI tasks, methods, areas, and applications",
+      "desc": "AI connects methods such as machine learning to tasks, areas, and application domains.",
+      "explain": [
+        {
+          "t": "Varying Tasks in AI",
+          "items": [
+            "Methods include machine learning and deep learning.",
+            "Areas include speech, language, image, video, vision, data mining.",
+            "Tasks include speech2text, text2speech, translation, semantics.",
+            "Applications include business, health, security, traffic, games."
+          ],
+          "tip": "AI maps methods to tasks and application domains."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Which is listed as an AI method?",
+          "opts": [
+            "Spreadsheets",
+            "Paper filing",
+            "Deep learning",
+            "Manual rules only"
+          ],
+          "a": 2,
+          "why": "Deep learning is listed as a method."
+        },
+        {
+          "q": "Which is an application area?",
+          "opts": [
+            "RAM",
+            "Health",
+            "GPU",
+            "HDFS"
+          ],
+          "a": 1,
+          "why": "Health is listed among AI applications."
+        },
+        {
+          "q": "Which task is mentioned?",
+          "opts": [
+            "Compilation",
+            "Printing",
+            "Booting",
+            "Translation"
+          ],
+          "a": 3,
+          "why": "Translation is listed as an AI task."
+        },
+        {
+          "q": "Which is listed as an AI area?",
+          "opts": [
+            "RAM",
+            "GPU",
+            "Image",
+            "HDFS"
+          ],
+          "a": 2,
+          "why": "Image is listed among AI areas."
+        }
+      ]
+    },
+    {
+      "name": "Machine Learning definition",
+      "desc": "Machine learning enables computers to learn from experience and is defined by performance, task, and experience.",
+      "explain": [
+        {
+          "t": "What is Machine Learning?",
+          "items": [
+            "Arthur Samuel: computers learn without explicit programming.",
+            "Tom Mitchell: algorithms improve performance P at task T with experience E.",
+            "A learning task is defined by <P, T, E>."
+          ],
+          "tip": "ML is defined by performance, task, and experience."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Who said ML lets computers learn without explicit programming?",
+          "opts": [
+            "Tom Mitchell",
+            "Arthur Samuel",
+            "Deng and Yu",
+            "IDC"
+          ],
+          "a": 1,
+          "why": "Arthur Samuel gave that definition."
+        },
+        {
+          "q": "What does P stand for in <P,T,E>?",
+          "opts": [
+            "Program",
+            "Pattern",
+            "Performance",
+            "Prediction"
+          ],
+          "a": 2,
+          "why": "P stands for performance."
+        },
+        {
+          "q": "What does E stand for?",
+          "opts": [
+            "Evaluation",
+            "Example",
+            "Epoch",
+            "Experience"
+          ],
+          "a": 3,
+          "why": "E stands for experience."
+        },
+        {
+          "q": "Which trio defines a learning task?",
+          "opts": [
+            "<X, Y, Z>",
+            "<P, T, E>",
+            "<A, B, C>",
+            "<I, O, Q>"
+          ],
+          "a": 1,
+          "why": "The text defines a task as <P, T, E>."
+        }
+      ]
+    },
+    {
+      "name": "Deep Learning definition",
+      "desc": "Deep learning is a machine learning class that uses multiple layers to extract higher-level features.",
+      "explain": [
+        {
+          "t": "What is Deep Learning?",
+          "items": [
+            "Deep learning is a class of machine learning algorithms.",
+            "It uses multiple layers.",
+            "Layers progressively extract higher-level features.",
+            "Input is raw output."
+          ],
+          "tip": "Deep learning builds features layer by layer."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Deep learning is a class of what?",
+          "opts": [
+            "Database tools",
+            "Network protocols",
+            "Machine learning algorithms",
+            "Sensors"
+          ],
+          "a": 2,
+          "why": "Deep learning is a class of machine learning algorithms."
+        },
+        {
+          "q": "What does deep learning leverage?",
+          "opts": [
+            "Single rule",
+            "Multiple layers",
+            "One table",
+            "Manual labels"
+          ],
+          "a": 1,
+          "why": "It leverages multiple layers."
+        },
+        {
+          "q": "What do layers extract?",
+          "opts": [
+            "Lower level cables",
+            "Raw electricity",
+            "Paper records",
+            "Higher level features"
+          ],
+          "a": 3,
+          "why": "Layers extract higher-level features."
+        },
+        {
+          "q": "From what does it extract features?",
+          "opts": [
+            "Final report",
+            "Printed page",
+            "Raw output",
+            "Manual summary"
+          ],
+          "a": 2,
+          "why": "It extracts features from raw output."
+        }
+      ]
+    },
+    {
+      "name": "ICLR conference",
+      "desc": "ICLR is the International Conference on Learning Representations.",
+      "explain": [
+        {
+          "t": "International Conference on Learning Representations",
+          "items": [
+            "ICLR stands for International Conference on Learning Representations.",
+            "The material links to ICLR information and statistics."
+          ],
+          "tip": "ICLR focuses on learning representations."
+        }
+      ]
+    },
+    {
+      "name": "ICLR keyword trends",
+      "desc": "ICLR keyword lists show changing research themes from 2023 to 2026.",
+      "explain": [
+        {
+          "t": "ICLR keyword trends",
+          "items": [
+            "2023-2024: reinforcement learning, representation learning, deep learning",
+            "2023-2024: graph neural networks, self-supervised learning",
+            "2025: large language models, diffusion models, benchmark, interpretability",
+            "2026: language models, diffusion models, agent, generation"
+          ],
+          "tip": "Reinforcement learning appears across multiple years."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Which keyword is listed for ICLR 2026?",
+          "opts": [
+            "Benchmark",
+            "Agent",
+            "Graph neural networks",
+            "Self supervised learning"
+          ],
+          "a": 1,
+          "why": "The 2026 list includes agent."
+        },
+        {
+          "q": "Which keyword is listed for ICLR 2025?",
+          "opts": [
+            "Generation",
+            "Agent",
+            "Interpretability",
+            "Graph neural networks"
+          ],
+          "a": 2,
+          "why": "The 2025 list includes interpretability."
+        },
+        {
+          "q": "Which keyword appears in 2023-2024 and 2025?",
+          "opts": [
+            "Reinforcement learning",
+            "Benchmark",
+            "Agent",
+            "Generation"
+          ],
+          "a": 0,
+          "why": "Reinforcement learning appears in both periods."
+        }
+      ]
+    },
+    {
+      "name": "Deep learning example: forecasting",
+      "desc": "Forecasting is presented as an example of deep learning.",
+      "explain": [
+        {
+          "t": "Example of Deep Learning",
+          "items": [
+            "Forecasting is an example of deep learning",
+            "Forecasting predicts future values",
+            "Material links to web traffic forecasting"
+          ],
+          "tip": "Forecasting is the shown deep learning example."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Which task is given as a deep learning example?",
+          "opts": [
+            "Image segmentation",
+            "Forecasting",
+            "Ranking",
+            "Classification"
+          ],
+          "a": 1,
+          "why": "Forecasting is the example."
+        },
+        {
+          "q": "Forecasting is about predicting what?",
+          "opts": [
+            "Past labels",
+            "Hidden layers",
+            "Future values",
+            "Webpage importance"
+          ],
+          "a": 2,
+          "why": "Forecasting predicts future values."
+        },
+        {
+          "q": "The example source mentions forecasting what?",
+          "opts": [
+            "Web traffic",
+            "Product sales",
+            "Image captions",
+            "Expert systems"
+          ],
+          "a": 0,
+          "why": "The source mentions web traffic forecasting."
+        }
+      ]
+    },
+    {
+      "name": "Course roadmap",
+      "desc": "The roadmap previews AI, machine learning, history, and learning types.",
+      "explain": [
+        {
+          "t": "Roadmap",
+          "items": [
+            "Roadmap includes a tour of artificial intelligence",
+            "Covers AI vs machine learning",
+            "Covers supervised, unsupervised, reinforcement learning"
+          ],
+          "tip": "Roadmap previews AI and ML taxonomy."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Which comparison is in the roadmap?",
+          "opts": [
+            "AI vs ML",
+            "CPU vs GPU",
+            "Python vs Java",
+            "Vision vs NLP"
+          ],
+          "a": 0,
+          "why": "The roadmap includes AI vs ML."
+        },
+        {
+          "q": "Which learning types are in the taxonomy?",
+          "opts": [
+            "Clustering, regression, ranking",
+            "Vision, speech, text",
+            "Supervised, unsupervised, reinforcement",
+            "Logic, geometry, checkers"
+          ],
+          "a": 2,
+          "why": "The taxonomy lists supervised, unsupervised, reinforcement."
+        },
+        {
+          "q": "The roadmap includes history of what?",
+          "opts": [
+            "Databases",
+            "Networks",
+            "Operating systems",
+            "AI"
+          ],
+          "a": 3,
+          "why": "The roadmap includes AI history."
+        }
+      ]
+    },
+    {
+      "name": "Early AI history: 1940-1970",
+      "desc": "Early AI includes foundational models, programs, and the Dartmouth meeting.",
+      "explain": [
+        {
+          "t": "A Short History of AI",
+          "items": [
+            "1943: McCulloch & Pitts Boolean circuit model",
+            "1950: Turing's Computing Machinery and Intelligence",
+            "1956: Dartmouth meeting adopted AI",
+            "1965: Robinson complete logical reasoning algorithm"
+          ],
+          "tip": "Dartmouth meeting named AI in 1956."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Who proposed the Boolean circuit model in 1943?",
+          "opts": [
+            "Turing",
+            "McCulloch & Pitts",
+            "Newell & Simon"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Speech technologies",
+      "desc": "Speech technologies include automatic speech recognition and text-to-speech synthesis.",
+      "explain": [
+        {
+          "t": "Speech technologies",
+          "items": [
+            "Automatic speech recognition converts speech to text",
+            "Text-to-speech synthesis generates spoken audio",
+            "Siri is an example speech technology"
+          ],
+          "tip": "Speech tech covers recognition and synthesis."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Which technology converts speech into text?",
+          "opts": [
+            "Text-to-speech",
+            "Automatic speech recognition",
+            "Machine translation",
+            "Spam filtering"
+          ],
+          "a": 1,
+          "why": "ASR converts speech to text."
+        },
+        {
+          "q": "What does TTS stand for?",
+          "opts": [
+            "Text-to-speech",
+            "Speech-to-text",
+            "Topic-to-sentence",
+            "Token-to-text"
+          ],
+          "a": 0,
+          "why": "TTS means text-to-speech."
+        },
+        {
+          "q": "Which is an example speech technology mentioned?",
+          "opts": [
+            "Deep Blue",
+            "BloombergGPT",
+            "Siri",
+            "AlphaGo"
+          ],
+          "a": 2,
+          "why": "Siri is listed as a speech technology."
+        }
+      ]
+    },
+    {
+      "name": "Language processing technologies",
+      "desc": "Language processing technologies include question answering, translation, search, and classification.",
+      "explain": [
+        {
+          "t": "Language processing technologies",
+          "items": [
+            "Question answering responds to user questions",
+            "Machine translation converts text between languages",
+            "Web search retrieves relevant information",
+            "Text classification includes spam filtering"
+          ],
+          "tip": "Language processing handles text understanding and generation tasks."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Which is a language processing technology?",
+          "opts": [
+            "Robotics control",
+            "Question answering",
+            "Mechanical engineering",
+            "Speech synthesis"
+          ],
+          "a": 1,
+          "why": "Question answering is listed under language processing."
+        },
+        {
+          "q": "Spam filtering is an example of what?",
+          "opts": [
+            "Speech recognition",
+            "Robotics planning",
+            "Text classification",
+            "Game playing"
+          ],
+          "a": 2,
+          "why": "Spam filtering is a text classification task."
+        },
+        {
+          "q": "Which task converts text between languages?",
+          "opts": [
+            "Web search",
+            "Machine translation",
+            "Text classification",
+            "Question answering"
+          ],
+          "a": 1,
+          "why": "Machine translation converts text between languages."
+        }
+      ]
+    },
+    {
+      "name": "General-purpose large language models",
+      "desc": "General-purpose LLMs include ChatGPT and Jukebox.",
+      "explain": [
+        {
+          "t": "General-purpose large language models",
+          "items": [
+            "ChatGPT is based on GPT3.5 and GPT4",
+            "OpenAI developed ChatGPT and Jukebox",
+            "Jukebox generates interesting music",
+            "LLMs are general purpose"
+          ],
+          "tip": "LLMs can support language and creative tasks."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Which models are named for ChatGPT?",
+          "opts": [
+            "Pong and Enduro",
+            "GPT3.5 and GPT4",
+            "Deep Blue and AlphaGo",
+            "ASR and TTS"
+          ],
+          "a": 1,
+          "why": "ChatGPT is associated with GPT3.5 and GPT4."
+        },
+        {
+          "q": "What is Jukebox associated with?",
+          "opts": [
+            "Chess",
+            "Robotics",
+            "Music",
+            "Spam filtering"
+          ],
+          "a": 2,
+          "why": "Jukebox is described as interesting music."
+        },
+        {
+          "q": "Which organization made ChatGPT and Jukebox?",
+          "opts": [
+            "DeepMind",
+            "IBM",
+            "OpenAI",
+            "Berkeley"
+          ],
+          "a": 2,
+          "why": "OpenAI is credited for both."
+        }
+      ]
+    },
+    {
+      "name": "BloombergGPT",
+      "desc": "BloombergGPT is a finance-focused large language model with 50 billion parameters.",
+      "explain": [
+        {
+          "t": "BloombergGPT",
+          "items": [
+            "BloombergGPT is a large language model for finance",
+            "It has 50 billion parameters",
+            "It was trained on about 700 billion tokens",
+            "Half of training tokens are financial domain"
+          ],
+          "tip": "BloombergGPT specializes in financial language."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "How many parameters does BloombergGPT have?",
+          "opts": [
+            "5 billion",
+            "50 billion",
+            "500 billion",
+            "700 billion"
+          ],
+          "a": 1,
+          "why": "BloombergGPT has 50 billion parameters."
+        },
+        {
+          "q": "How many tokens was BloombergGPT trained on?",
+          "opts": [
+            "~700 billion",
+            "~70 billion",
+            "~7 trillion",
+            "~50 billion"
+          ],
+          "a": 0,
+          "why": "It was trained on about 700 billion tokens."
+        },
+        {
+          "q": "What fraction of BloombergGPT tokens are financial?",
+          "opts": [
+            "One quarter",
+            "All",
+            "Half",
+            "None"
+          ],
+          "a": 2,
+          "why": "Half of the tokens are from the financial domain."
+        },
+        {
+          "q": "What domain is BloombergGPT for?",
+          "opts": [
+            "Music",
+            "Chess",
+            "Robotics",
+            "Finance"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Supervised Learning: Regression vs Classification",
+      "desc": "Supervised learning is linked to many features and split into regression and classification tasks.",
+      "explain": [
+        {
+          "t": "Supervised Learning and Task Types",
+          "items": [
+            "Supervised learning is presented with many features.",
+            "Regression predicts continuous numeric outputs.",
+            "Classification predicts discrete class labels."
+          ],
+          "tip": "Supervised tasks differ by output type."
+        },
+        {
+          "t": "Examples",
+          "items": [
+            "Price prediction is a regression example.",
+            "House or townhouse prediction is classification.",
+            "Residence type uses size and lot size."
+          ],
+          "tip": "Examples clarify output type."
+        }
+      ],
+      "quiz": [
+        {
+          "q": "What does regression predict?",
+          "opts": [
+            "Discrete labels",
+            "Continuous variables",
+            "Cluster centers",
+            "No labels"
+          ],
+          "a": 1,
+          "why": "Regression is defined for continuous variables."
+        },
+        {
+          "q": "Which is a classification example?",
+          "opts": [
+            "Price prediction",
+            "Lot size regression",
+            "House or townhouse prediction",
+            "K-means clustering"
+          ],
+          "a": 2,
+          "why": "Predicting residence type is classification."
+        },
+        {
+          "q": "What is the label type in classification?",
+          "opts": [
+            "Discrete",
+            "Continuous",
+            "Unlabeled",
+            "Real-valued"
+          ],
+          "a": 0,
+          "why": "Classification uses discrete labels."
+        },
+        {
+          "q": "Which phrase is associated with supervised learning?",
+          "opts": [
+            "No labels",
+            "A lot of features",
+            "Reinforcement signals",
+            "Domain adaptation"
+          ],
+          "a": 1,
+          "why": "The slide says supervised learning has many features."
+        }
+      ]
+    },
+    {
+      "name": "Machine Learning Taxonomy",
+      "desc": "A simplified taxonomy groups machine learning methods by task.",
+      "explain": [
+        {
+          "t": "Taxonomy Based on Tasks",
+          "items": [
+            "Taxonomy is a simplified view based on tasks.",
+            "It includes supervised learning.",
+            "It includes unsupervised learning."
+          ]
+        }
+      ]
+    }
+  ],
+  "_meta": {
+    "source_pdf": "Experiment(Lecture 1 Intro 2026).pdf",
+    "pages": 68,
+    "chars": 14821,
+    "slices": 5,
+    "failed_slices": [],
+    "model": "baidu/ernie-5.5-flash-preview:free"
+  }
+}

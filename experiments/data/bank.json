@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "source": {
+    "pdf": "Experiment(Lecture 1 Intro 2026).pdf",
+    "course": "COMP 5511 Artificial Intelligence Concepts - Lecture 1 (Intro)",
+    "pages": 68,
+    "raw_parse": "experiments/data/parse_raw.json",
+    "parse_model": "baidu/ernie-5.5-flash-preview:free",
+    "provenance": "Knowledge-point names and roughly half of the practice items are taken verbatim from the app's own EXTRACT output (parse_raw.json). Items marked ids starting with the topic id and no '-x' suffix in parse_raw were authored from the same slide text to reach 4 practice + 3 probe per topic. Administrative topics (course logistics, roadmap, ICLR keyword trends) and 5 malformed parsed items (empty stem / invalid answer index) were dropped.",
+    "verified": false,
+    "verified_note": "Answer keys were not checked by a human yet. Run `python -m experiments.bank --check` to print them for review."
+  },
+  "topics": [
+    {
+      "topic_id": "t01_what_is_ai",
+      "name": "What is AI",
+      "difficulty": 0.2,
+      "explain_pages": 2,
+      "practice": [
+        {"id": "t01-p1", "q": "According to the lecture, artificial intelligence is the ability of a computer program or a machine to ...", "opts": ["store large datasets", "think and learn", "follow encoded commands", "render images"], "a": 1, "why": "The lecture defines AI as the ability of a computer program or a machine to think and learn.", "difficulty": 0.15},
+        {"id": "t01-p2", "q": "What does the course aim to build?", "opts": ["Social network", "Database", "Intelligent machine", "Operating system"], "a": 2, "why": "The course sells itself as building an intelligent machine with mathematics and computing techniques.", "difficulty": 0.2},
+        {"id": "t01-p3", "q": "AI systems are described as working on their own without being ...", "opts": ["trained on data", "connected to the cloud", "encoded with commands", "evaluated by humans"], "a": 2, "why": "The lecture stresses that AI works without being encoded with explicit commands.", "difficulty": 0.3},
+        {"id": "t01-p4", "q": "Which set of disciplines is listed as contributing to AI?", "opts": ["Computer science, statistics, neuroscience, social science", "Physics, chemistry, biology, geology", "Law, medicine, economics, history", "Design, music, film, journalism"], "a": 0, "why": "Slide 'Multidisciplinary in AI' lists computer science, statistics, neuroscience and social science.", "difficulty": 0.25}
+      ],
+      "probe": [
+        {"id": "t01-x1", "q": "Which statement best matches the lecture's definition of AI?", "opts": ["A machine that only stores and retrieves facts", "A program or machine able to think and learn", "A handcrafted rule base", "A hardware accelerator for matrix maths"], "a": 1, "why": "AI is defined by the ability to think and learn, not by storage, rules or hardware.", "difficulty": 0.2},
+        {"id": "t01-x2", "q": "Early expert systems relied mostly on ...", "opts": ["handcrafted rules", "deep neural networks", "reinforcement learning", "crowdsourced labels"], "a": 0, "why": "The slide states expert systems were built 'mostly with handcrafted rules'.", "difficulty": 0.25},
+        {"id": "t01-x3", "q": "Why did the field move from rule-based systems toward data-driven methods?", "opts": ["Rules were too expensive to print", "More variables, more compute and more data became available", "Neural networks replaced all mathematics", "Labelled data became illegal to collect"], "a": 1, "why": "The data-driven slide lists better models with more variables, more powerful RAM/CPU/GPU, and huge volumes of data.", "difficulty": 0.4}
+      ]
+    },
+    {
+      "topic_id": "t02_ml_definition",
+      "name": "Machine Learning and the P-T-E framework",
+      "difficulty": 0.35,
+      "explain_pages": 2,
+      "practice": [
+        {"id": "t02-p1", "q": "Who said ML lets computers learn without explicit programming?", "opts": ["Tom Mitchell", "Arthur Samuel", "Deng and Yu", "IDC"], "a": 1, "why": "Arthur Samuel (1959) gave that formulation; Mitchell (1998) added the <P,T,E> definition.", "difficulty": 0.25},
+        {"id": "t02-p2", "q": "What does P stand for in <P,T,E>?", "opts": ["Program", "Pattern", "Performance", "Prediction"], "a": 2, "why": "P is the performance measure on task T.", "difficulty": 0.25},
+        {"id": "t02-p3", "q": "What does E stand for?", "opts": ["Evaluation", "Example", "Epoch", "Experience"], "a": 3, "why": "E is the experience the algorithm learns from.", "difficulty": 0.2},
+        {"id": "t02-p4", "q": "Which trio defines a learning task?", "opts": ["<X, Y, Z>", "<P, T, E>", "<A, B, C>", "<I, O, Q>"], "a": 1, "why": "A well-defined learning task is given by <P, T, E>.", "difficulty": 0.3}
+      ],
+      "probe": [
+        {"id": "t02-x1", "q": "In Mitchell's framework, what does P measure?", "opts": ["The size of the training set", "How well the task T is performed", "The number of model parameters", "The speed of the hardware"], "a": 1, "why": "P is the performance measure on the task, evaluated through experience E.", "difficulty": 0.35},
+        {"id": "t02-x2", "q": "A spam filter improves as users mark more messages as spam. What plays the role of E?", "opts": ["The labelled messages", "The filter's accuracy", "The task of filtering", "The email server"], "a": 0, "why": "Labelled examples are the experience; accuracy is P and filtering is T.", "difficulty": 0.4},
+        {"id": "t02-x3", "q": "Which element does 'predict tomorrow's temperature' correspond to?", "opts": ["P", "T", "E", "None of them"], "a": 1, "why": "Predicting is the task T; accuracy of the prediction would be P.", "difficulty": 0.45}
+      ]
+    },
+    {
+      "topic_id": "t03_deep_learning",
+      "name": "Deep learning and its relation to ML",
+      "difficulty": 0.35,
+      "explain_pages": 2,
+      "practice": [
+        {"id": "t03-p1", "q": "Deep learning is a class of what?", "opts": ["Database tools", "Network protocols", "Machine learning algorithms", "Sensors"], "a": 2, "why": "Deep learning is a class of machine learning algorithms (Deng and Yu 2013).", "difficulty": 0.2},
+        {"id": "t03-p2", "q": "What does deep learning leverage?", "opts": ["Single rule", "Multiple layers", "One table", "Manual labels"], "a": 1, "why": "It leverages multiple layers to extract progressively higher-level features.", "difficulty": 0.25},
+        {"id": "t03-p3", "q": "What do the layers extract?", "opts": ["Lower level cables", "Raw electricity", "Paper records", "Higher level features"], "a": 3, "why": "Each layer extracts progressively higher-level features from the raw input.", "difficulty": 0.3},
+        {"id": "t03-p4", "q": "From what does deep learning extract features?", "opts": ["Final report", "Printed page", "Raw output", "Manual summary"], "a": 2, "why": "The definition extracts features from raw input/output rather than curated summaries.", "difficulty": 0.3}
+      ],
+      "probe": [
+        {"id": "t03-x1", "q": "In deep learning, the word 'deep' refers to ...", "opts": ["the size of the dataset", "the number of hidden layers between input and output", "the depth of a decision tree", "the number of output classes"], "a": 1, "why": "'Deep' refers to the number of hidden layers between input and output.", "difficulty": 0.3},
+        {"id": "t03-x2", "q": "Which ordering from broadest to narrowest is correct?", "opts": ["Deep learning > machine learning > AI", "AI > machine learning > deep learning", "Machine learning > AI > deep learning", "AI > deep learning > machine learning"], "a": 1, "why": "Deep learning is a subfield of ML, which is a subfield of AI.", "difficulty": 0.35},
+        {"id": "t03-x3", "q": "A network with 20 hidden layers that learns features from raw pixels is best described as ...", "opts": ["a rule-based expert system", "deep learning", "unsupervised clustering", "a relational database"], "a": 1, "why": "Many hidden layers plus learned features is the definition of deep learning.", "difficulty": 0.25}
+      ]
+    },
+    {
+      "topic_id": "t04_big_data_4v",
+      "name": "Characteristics of Big Data (4V)",
+      "difficulty": 0.45,
+      "explain_pages": 2,
+      "practice": [
+        {"id": "t04-p1", "q": "Which V covers data inconsistency and uncertainty?", "opts": ["Volume", "Velocity", "Variety", "Veracity"], "a": 3, "why": "Veracity covers uncertainty due to inconsistency, incompleteness and ambiguity.", "difficulty": 0.4},
+        {"id": "t04-p2", "q": "Which V includes streaming and real-time data?", "opts": ["Veracity", "Velocity", "Volume", "Variety"], "a": 1, "why": "Velocity covers batch, real-time and streaming data.", "difficulty": 0.3},
+        {"id": "t04-p3", "q": "Which V includes text, images, audio and video?", "opts": ["Volume", "Velocity", "Variety", "Veracity"], "a": 2, "why": "Variety covers structured, semi-structured and unstructured data types.", "difficulty": 0.25},
+        {"id": "t04-p4", "q": "What scale is mentioned for volume?", "opts": ["Bytes to kilobytes", "Milliseconds to seconds", "Likes to shares", "Terabytes to zettabytes"], "a": 3, "why": "Volume is described as terabytes to exabytes to zettabytes.", "difficulty": 0.35}
+      ],
+      "probe": [
+        {"id": "t04-x1", "q": "Data that must be processed in milliseconds as it arrives illustrates ...", "opts": ["Volume", "Velocity", "Veracity", "Variety"], "a": 1, "why": "Millisecond-level response is the Velocity characteristic.", "difficulty": 0.35},
+        {"id": "t04-x2", "q": "Which four characteristics make up the 4V of big data?", "opts": ["Volume, Variety, Velocity, Veracity", "Volume, Value, Vision, Velocity", "Variety, Veracity, Validity, Volume", "Velocity, Volume, Variance, Value"], "a": 0, "why": "The slide lists Volume, Variety, Velocity and Veracity.", "difficulty": 0.3},
+        {"id": "t04-x3", "q": "Big data is defined as datasets so large and complex that they are hard to process with ...", "opts": ["on-hand database tools", "any programming language", "cloud storage", "graphical interfaces"], "a": 0, "why": "The definition points at on-hand database management tools and traditional processing applications.", "difficulty": 0.4}
+      ]
+    },
+    {
+      "topic_id": "t05_data_driven",
+      "name": "From expert systems to data-driven methods",
+      "difficulty": 0.4,
+      "explain_pages": 2,
+      "practice": [
+        {"id": "t05-p1", "q": "Which progression of models is mentioned?", "opts": ["Rule-based to statistical to deep learning", "Symbolic to fuzzy to quantum", "Manual to hybrid to analog", "Batch to stream to edge"], "a": 0, "why": "The slide shows rule-based -> statistical -> deep learning.", "difficulty": 0.3},
+        {"id": "t05-p2", "q": "Which computing resources are listed as drivers?", "opts": ["Tape, ROM, modem", "RAM, CPU, GPU", "Printer, scanner, disk", "Sensor, camera, lidar"], "a": 1, "why": "More powerful RAM, CPU and GPU are named explicitly.", "difficulty": 0.2},
+        {"id": "t05-p3", "q": "Why is more data important?", "opts": ["It removes computing limits", "It replaces all models", "It enables analytics and discovery", "It reduces the need for labels"], "a": 2, "why": "Huge volumes of data allow analytics and discovery of valuable information.", "difficulty": 0.35},
+        {"id": "t05-p4", "q": "What weakness of handcrafted rule-based systems does the lecture highlight?", "opts": ["They cannot be written in code", "They do not scale to complex, variable real-world data", "They need too much GPU memory", "They cannot represent any knowledge at all"], "a": 1, "why": "The rhetorical question 'what might be the problem?' points at the brittleness of handcrafted rules, which is what motivated data-driven learning.", "difficulty": 0.45}
+      ],
+      "probe": [
+        {"id": "t05-x1", "q": "Which factor is NOT listed as a driver of the data-driven turn?", "opts": ["More variables to fit the data", "More powerful RAM, CPU and GPU", "Huge volumes of available data", "Cheaper human labelling"], "a": 3, "why": "The slide lists models, hardware and data volume; cheap labelling is not among them.", "difficulty": 0.4},
+        {"id": "t05-x2", "q": "The lecture describes the evolution of models as ...", "opts": ["statistical -> rule-based -> deep learning", "rule-based -> statistical -> deep learning", "deep learning -> statistical -> rule-based", "rule-based -> deep learning -> statistical"], "a": 1, "why": "Rule-based came first, then statistical methods, then deep learning.", "difficulty": 0.35},
+        {"id": "t05-x3", "q": "Expert systems are characterised in the lecture as ...", "opts": ["mostly handcrafted rules", "purely statistical models", "unsupervised clustering methods", "end-to-end neural networks"], "a": 0, "why": "The slide says 'Mostly with handcrafted rules!'", "difficulty": 0.3}
+      ]
+    },
+    {
+      "topic_id": "t06_ai_tasks",
+      "name": "AI tasks, methods and application areas",
+      "difficulty": 0.3,
+      "explain_pages": 2,
+      "practice": [
+        {"id": "t06-p1", "q": "Which is listed as an AI method?", "opts": ["Spreadsheets", "Paper filing", "Deep learning", "Manual rules only"], "a": 2, "why": "The task/method/area diagram puts machine learning and deep learning in the method band.", "difficulty": 0.2},
+        {"id": "t06-p2", "q": "Which is listed as an application area?", "opts": ["RAM", "Health", "GPU", "HDFS"], "a": 1, "why": "Business, health, security, traffic and games are listed as application domains.", "difficulty": 0.25},
+        {"id": "t06-p3", "q": "Which task is mentioned?", "opts": ["Compilation", "Printing", "Booting", "Translation"], "a": 3, "why": "Translation is one of the language tasks in the diagram.", "difficulty": 0.2},
+        {"id": "t06-p4", "q": "Which is listed as an AI area rather than hardware?", "opts": ["RAM", "GPU", "Image", "HDFS"], "a": 2, "why": "Image and video processing are task areas; the others are hardware or storage.", "difficulty": 0.25}
+      ],
+      "probe": [
+        {"id": "t06-x1", "q": "Which task area converts speech into text?", "opts": ["Text-to-speech synthesis", "Automatic speech recognition", "Machine translation", "Spam filtering"], "a": 1, "why": "ASR converts speech to text; TTS does the reverse.", "difficulty": 0.3},
+        {"id": "t06-x2", "q": "Spam filtering is an example of ...", "opts": ["speech recognition", "text classification", "robotics control", "game playing"], "a": 1, "why": "The lecture lists spam filtering under text classification.", "difficulty": 0.3},
+        {"id": "t06-x3", "q": "Which group names AI application areas rather than hardware?", "opts": ["Health, security, traffic, games", "RAM, CPU, GPU", "HDFS, Hive, HBase", "Sensors, cameras, lidar"], "a": 0, "why": "The apps band lists business, health, security, traffic and games.", "difficulty": 0.35}
+      ]
+    },
+    {
+      "topic_id": "t07_regression_vs_classification",
+      "name": "Regression vs classification",
+      "difficulty": 0.45,
+      "explain_pages": 2,
+      "practice": [
+        {"id": "t07-p1", "q": "What does regression predict?", "opts": ["Discrete labels", "Continuous variables", "Cluster centers", "No labels"], "a": 1, "why": "Regression applies when y is a continuous variable, e.g. price prediction.", "difficulty": 0.3},
+        {"id": "t07-p2", "q": "Which is a classification example?", "opts": ["Price prediction", "Lot size regression", "House or townhouse prediction", "K-means clustering"], "a": 2, "why": "House-or-townhouse is a discrete label, so it is classification.", "difficulty": 0.3},
+        {"id": "t07-p3", "q": "What is the label type in classification?", "opts": ["Discrete", "Continuous", "Unlabeled", "Real-valued"], "a": 0, "why": "Classification predicts a discrete variable.", "difficulty": 0.25},
+        {"id": "t07-p4", "q": "Predicting a house price from size and lot size is which kind of task?", "opts": ["Regression", "Classification", "Clustering", "Reinforcement learning"], "a": 0, "why": "Price is continuous, so the task is regression even with several features.", "difficulty": 0.3}
+      ],
+      "probe": [
+        {"id": "t07-x1", "q": "Which task has a continuous output?", "opts": ["Predicting whether an email is spam", "Predicting tomorrow's temperature", "Grouping customers into segments", "Choosing a chess move"], "a": 1, "why": "Temperature is a continuous value, so it is regression.", "difficulty": 0.35},
+        {"id": "t07-x2", "q": "Deciding whether a tumour is benign or malignant is ...", "opts": ["regression", "classification", "clustering", "reinforcement learning"], "a": 1, "why": "Two discrete outcomes with labels is classification.", "difficulty": 0.3},
+        {"id": "t07-x3", "q": "The lecture distinguishes regression from classification by ...", "opts": ["the number of features", "whether the label is continuous or discrete", "whether labels exist at all", "the size of the dataset"], "a": 1, "why": "Regression: y in R (continuous). Classification: the label is discrete.", "difficulty": 0.4}
+      ]
+    },
+    {
+      "topic_id": "t08_ml_taxonomy",
+      "name": "Machine learning taxonomy",
+      "difficulty": 0.5,
+      "explain_pages": 2,
+      "practice": [
+        {"id": "t08-p1", "q": "Which three paradigms make up the lecture's machine learning taxonomy?", "opts": ["Supervised, unsupervised, reinforcement", "Classification, regression, ranking", "Vision, speech, language", "Rule-based, statistical, deep"], "a": 0, "why": "The taxonomy slide splits ML into supervised, unsupervised and reinforcement learning.", "difficulty": 0.25},
+        {"id": "t08-p2", "q": "Supervised learning requires ...", "opts": ["unlabeled data", "labelled data", "a reward signal", "no data at all"], "a": 1, "why": "Supervised learning is trained on labelled data to predict labels.", "difficulty": 0.2},
+        {"id": "t08-p3", "q": "Unsupervised learning aims to ...", "opts": ["predict labels", "find structures or patterns in unlabeled data", "maximise cumulative reward", "compress the model"], "a": 1, "why": "The goal is to find interesting structures or patterns without labels.", "difficulty": 0.3},
+        {"id": "t08-p4", "q": "Reinforcement learning learns from ...", "opts": ["labelled examples", "rewards for good actions", "cluster centroids", "handcrafted rules"], "a": 1, "why": "RL learns from rewards signalled for good actions, like dog training.", "difficulty": 0.35}
+      ],
+      "probe": [
+        {"id": "t08-x1", "q": "Grouping customers into segments without any labels is ...", "opts": ["supervised learning", "unsupervised learning", "reinforcement learning", "transfer learning"], "a": 1, "why": "No labels plus structure discovery is unsupervised learning (e.g. K-means).", "difficulty": 0.3},
+        {"id": "t08-x2", "q": "Which paradigm needs a reward signal instead of labelled answers?", "opts": ["Supervised", "Unsupervised", "Reinforcement", "Semi-supervised"], "a": 2, "why": "RL is driven by rewards, not by a labelled target for each input.", "difficulty": 0.3},
+        {"id": "t08-x3", "q": "The lecture compares reinforcement learning to ...", "opts": ["reading a textbook", "training a dog with rewards", "sorting a spreadsheet", "compiling code"], "a": 1, "why": "The taxonomy slide uses 'Dog Training' as the metaphor for RL.", "difficulty": 0.45}
+      ]
+    }
+  ]
+}
