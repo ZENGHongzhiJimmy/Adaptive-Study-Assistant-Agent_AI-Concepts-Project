@@ -46,10 +46,15 @@ const Student = (() => {
     App.go(`#/student/activity/${type}/${topicId}`);
   }
 
-  function finish(outcome) {
-    if (!A) return;
-    const r = Engine.applyResult(A.topicId, A.type, outcome || {});
+  /* 完成一次活动：掌握度与错题本由后端 agent 更新（/api/agent/observe），
+     返回后再渲染结果页。A.result 的结构与旧版一致，结果页无需改动。 */
+  async function finish(outcome) {
+    if (!A || A.pending) return;
+    A.pending = true;
+    const r = await Engine.applyResult(A.topicId, A.type, outcome || {});
+    A.pending = false;
     A.result = r;
+    if (r && r.failed) UI.toast('Agent 未连接，本次未计入掌握度', 'warn');
     Engine.setStage('replan');
     App.render();
   }
@@ -345,7 +350,7 @@ const Student = (() => {
 
     /* ② 该资料的自主学习路径（选择资料后才显示 Pre-test 等步骤）
        默认是「滚动学习」：按轮次把这份资料的所有知识点一起推进，
-       而不是把一个知识点学到 80% 再换下一个。 */
+       而不是把一个知识点学到掌握线再换下一个。 */
     const pathSteps = [
       ['完成 Pre-test', '建立该资料的初始掌握度'],
       ['滚动学习', '按轮次推进全部知识点'],
@@ -367,7 +372,7 @@ const Student = (() => {
         <div style="flex:1">
           <div class="notice-t">Pre-test 已完成 ${allMastered ? '· 全部知识点已掌握' : ''}</div>
           <div class="notice-d">${allMastered
-            ? `这 ${s.count} 个知识点都达到了 ${Engine.MASTERED}% 且错题已纠正，本资料的学习路径已完成。`
+            ? `这 ${s.count} 个知识点都达到了${Engine.masteryGoal(rec)}，且错题已纠正，本资料的学习路径已完成。`
             : `${s.count} 个知识点的起点已建立。下面由 Agent 按掌握度自动排定下一步，跟着走即可。`}</div>
         </div>
       </div>`;
@@ -405,11 +410,20 @@ const Student = (() => {
           ${UI.ring(s.avg, 68)}
         </div>
         <div class="focus-body">
-          <div class="reason-line">所有知识点都达到 ${Engine.MASTERED}% 且没有待纠正的错题，Agent 不再安排新的活动。</div>
+          <div class="reason-line">所有知识点都达到${Engine.masteryGoal(rec)}，且没有待纠正的错题，Agent 不再安排新的活动。</div>
           <div class="row mt-16">
             <button class="btn btn-primary" onclick="App.go('#/student/progress/${rec.id}')">查看学习进度</button>
             <button class="btn btn-ghost" onclick="Student.openTopic('${s.topics[0] ? s.topics[0].id : ''}')">回看知识点</button>
           </div>
+        </div>
+      </div>` : (roll && roll.pendingAgent ? `
+      <div class="notice mt-16">
+        <span class="notice-ico">${I('sparkles', 17)}</span>
+        <div style="flex:1">
+          <div class="notice-t">正在向 Agent 请求下一步</div>
+          <div class="notice-d">${roll.error
+            ? escapeHtml(roll.error)
+            : '规划由后端 LangGraph agent 实时生成，请稍候…'}</div>
         </div>
       </div>` : (roll && roll.blocked.length ? `
       <div class="notice mt-16">
@@ -419,7 +433,7 @@ const Student = (() => {
           <div class="notice-d">${escapeHtml(roll.blocked[0].name)}：解析结果里缺少可评估的内容，无法安排活动。</div>
         </div>
         <button class="btn btn-ghost btn-sm" onclick="Student.openTopic('${roll.blocked[0].id}')">查看</button>
-      </div>` : ''));
+      </div>` : '')));
 
     /* 不展示本轮队列：路径由 Agent 默认排定，学生只看「下一步」一个动作，
        不需要从多个知识点里挑谁先谁后。 */
@@ -788,9 +802,12 @@ const Student = (() => {
     App.render();
   }
 
-  function commitPretest() {
+  async function commitPretest() {
     const rec = Engine.findMaterial(P && P.recId);
-    Engine.applyPreTest(P.answers);
+    const answers = (P && P.answers) ? P.answers.slice() : [];
+    /* Pre-test 的起点分由 agent 决定（/api/agent/pre-test 内部调用
+       policy.apply_pre_test），返回值已写入本地快照，随后直接读 rollPlan。 */
+    await Engine.applyPreTest(answers);
     P = null;
     UI.toast('已建立该资料的初始掌握度，开始学习', 'ok');
     /* 默认就是自主规划学习：Pre-test 一结束，直接进入 Agent 排好的第一步，
@@ -868,7 +885,7 @@ const Student = (() => {
                 : (r.re && r.re.mastered ? '这个知识点已掌握' : '这个知识点暂无后续活动')}</div>
             </div>
             <div class="text-sm mt-8" style="color:var(--text-2)">${rollNow && rollNow.done
-              ? `所有知识点都达到 ${Engine.MASTERED}% 且错题已纠正，Agent 不再安排新的活动。`
+              ? `所有知识点都达到${Engine.masteryGoal(Engine.materialOfTopic(r.topic))}，且错题已纠正，Agent 不再安排新的活动。`
               : (r.re ? r.re.reason : '')}</div>
             <div class="row mt-16">
               <button class="btn btn-primary" onclick="App.go('${back}')">

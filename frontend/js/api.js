@@ -113,5 +113,42 @@ const API = (() => {
     });
   }
 
-  return { base, health, isNetworkFailure, getMaterial, uploadMaterial, parseMaterial, deleteMaterial, resetMaterials, generateQuiz, ask };
+  /* ---------- 自适应 Agent（LangGraph + policy.py） ----------
+     前端不再自己算「下一步」，规划与状态更新全部由后端 agent 决定。
+     返回结构与 engine.js 的快照翻译一一对应。 */
+
+  async function agentPolicy() {
+    return request('/api/agent/policy');
+  }
+
+  async function agentPlan(materialId, topics) {
+    return request('/api/agent/plan', {
+      method: 'POST',
+      body: JSON.stringify({ material_id: materialId, topics: topics || [] }),
+    });
+  }
+
+  async function agentObserve(materialId, payload) {
+    return request('/api/agent/observe', {
+      method: 'POST',
+      body: JSON.stringify(Object.assign({ material_id: materialId }, payload || {})),
+    });
+  }
+
+  async function agentPreTest(materialId, payload) {
+    return request('/api/agent/pre-test', {
+      method: 'POST',
+      body: JSON.stringify(Object.assign({ material_id: materialId }, payload || {})),
+    });
+  }
+
+  async function agentState(materialId) {
+    return request('/api/agent/state/' + encodeURIComponent(materialId));
+  }
+
+  return {
+    base, health, isNetworkFailure, getMaterial, uploadMaterial, parseMaterial,
+    deleteMaterial, resetMaterials, generateQuiz, ask,
+    agentPolicy, agentPlan, agentObserve, agentPreTest, agentState,
+  };
 })();

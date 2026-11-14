@@ -33,7 +33,9 @@ const Engine = (() => {
       streak: 5,
       uploads: [],                  // 学生自主上传的资料（含后端解析结果）
       activeMaterialId: null,       // 当前选中的资料（uploads[].id）
-      rolls: {},                    // 各资料的滚动学习轮次：{ [materialKey]: { round, visited[] } }
+      // Agent 快照：{ policy, plans: { [materialKey]: planPayload }, error }
+      // 规划结果的唯一来源是后端 LangGraph agent；这里只是渲染用的缓存。
+      agent: { policy: null, plans: {}, error: null },
     };
   }
 
@@ -84,10 +86,15 @@ const Engine = (() => {
     if (state.activeMaterialId && !findMaterial(state.activeMaterialId)) {
       state.activeMaterialId = null;
     }
-    /* 滚动学习的轮次状态：按资料分别记录，旧数据补一个空表 */
-    if (!state.rolls || typeof state.rolls !== 'object' || Array.isArray(state.rolls)) {
-      state.rolls = {};
+    /* Agent 快照：旧版本把轮次状态存在 state.rolls 里（本地规则时代），
+       现在轮次由 agent 服务端保存，本地只缓存它返回的计划快照。
+       旧字段直接清掉，避免两套轮次状态并存。 */
+    if (state.rolls) delete state.rolls;
+    if (!state.agent || typeof state.agent !== 'object' || Array.isArray(state.agent)) {
+      state.agent = { policy: null, plans: {}, error: null };
     }
+    if (!state.agent.plans || typeof state.agent.plans !== 'object') state.agent.plans = {};
+    if (typeof state.agent.error === 'undefined') state.agent.error = null;
     /* 旧版本把 LLM 生成的「材料解读/摘要」写进了资料记录，界面已不再展示，
        统一清掉，保证所有资料（PDF / TXT / MD）的记录结构与显示完全一致。 */
     state.uploads.forEach(u => { if (u && 'summary' in u) delete u.summary; });
@@ -210,10 +217,30 @@ const Engine = (() => {
   }
 
   /* ---------------- 掌握判定 ----------------
-     MASTERED：达到 80% 且没有未纠正的错题，才算「学会了」。到这一步就不再推荐活动。
-     EXPLAIN_CAP：只看讲解最多到 55%。讲解没有任何检核，不能单独把掌握度刷满。 */
-  const MASTERED = 80;
-  const EXPLAIN_CAP = 55;
+     判定只有一处：policy.py::is_mastered（≥ MASTERED 且错题本为空）。
+     前端不再自带阈值，直接读 agent 快照里的 by_topic[topic_id].mastered。
+     没有快照时返回 false —— 「不知道」不能当作「已掌握」，界面会显示
+     Agent 未连接，也不会因此少排活动。
+     阈值本身（80 / 55）随快照下发（mastered_at / explain_cap），
+     文案统一走 masteryGoal()，前端一个数字都不写。 */
+  function masteredThreshold(ref) {
+    const snap = agentSnapshot(ref);
+    const value = snap ? Number(snap.mastered_at) : NaN;
+    return Number.isFinite(value) && value > 0 ? value : null;
+  }
+
+  /* 文案用的掌握线：有快照就显示服务端的数字，没有就用文字，不猜数值 */
+  function masteryGoal(ref) {
+    const value = masteredThreshold(ref);
+    return value === null ? '掌握线' : `${value}%`;
+  }
+
+  function isMastered(t) {
+    if (!t) return false;
+    const snap = agentSnapshot(materialOfTopic(t));
+    const d = snap && snap.by_topic ? snap.by_topic[t.id] : null;
+    return !!(d && d.mastered);
+  }
 
   /* 可作答的题目：必须有题干、至少 2 个选项、且正确答案下标合法。
      解析结果偶尔会缺 a（-1）或选项不足，这类题「怎么选都判错」，
@@ -226,10 +253,6 @@ const Engine = (() => {
 
   function explainPages(t) { return (t && t.content && t.content.explain) || []; }
   function mistakesOf(t) { return (t && Array.isArray(t.mistakes)) ? t.mistakes : []; }
-
-  function isMastered(t) {
-    return !!t && t.mastery >= MASTERED && mistakesOf(t).length === 0 && !(t.errors > 0);
-  }
 
   /* 复习卡片来自「错题本」，而不是讲解页的 tip */
   function reviewCards(topicId) {
@@ -245,129 +268,141 @@ const Engine = (() => {
      自适应规划（学生端 3 种活动）
      ========================================================= */
 
-  /* 规划一条真正有终点的路径：
-       连续失败 → 重学讲解（explain）
-       错题 ≥ 2 道 → 错题复习（review）
-       没看过讲解 → 学讲解（explain，一次）
-       有题可做 → 练习（practice，按正确率结算）
-       已掌握 / 没有可学内容 → 不再推荐（activity 为 null）
-     不再用「mastery < 45 / < 80」这种只看分数的阈值来决定活动类型。 */
+  /* =========================================================
+     自适应规划 —— 决策来自后端 LangGraph agent，前端只负责渲染
+     ---------------------------------------------------------
+     这里不再有任何规划规则：plan() / rollPlan() 只读 agent 返回的快照
+     （state.agent.plans[materialKey]）。规则的唯一实现在
+     src/agent/policy.py，由 /api/agent/* 暴露，实验脚本用同一份函数。
+     快照缺失时返回 null / pendingAgent，界面显示「正在询问 Agent」，
+     绝不会退回到另一套本地规则——那正是这个重构要消除的东西。
+     ========================================================= */
+
+  /* agent 请求可能在途：同一个资料只允许一次并发请求 */
+  const inflight = new Map();
+
+  function agentKeyOf(ref) {
+    const rec = findMaterial(ref);
+    return rec ? String(rec.materialId || rec.id) : null;
+  }
+
+  /* 把本地知识点打包成 policy.TopicState 需要的形状 */
+  function agentTopics(ref) {
+    return pathTopics(ref).map((t, i) => ({
+      topic_id: t.id,
+      name: t.name || '',
+      mastery: Number(t.mastery) || 0,
+      attempts: Number(t.attempts) || 0,
+      errors: Number(t.errors) || 0,
+      mistakes: mistakesOf(t),
+      explain_done: !!t.explainDone,
+      explain_runs: Number.isFinite(t.explainRuns) ? t.explainRuns : 0,
+      fail_streak: Number(t.failStreak) || 0,
+      need_help: !!t.needHelp,
+      pretested: !!t.pretested,
+      explain_pages: explainPages(t).length,
+      quiz_count: quizBank(t).length,
+      order: i,
+    }));
+  }
+
+  function agentSnapshot(ref) {
+    const key = agentKeyOf(ref);
+    if (!key || !state.agent || !state.agent.plans) return null;
+    return state.agent.plans[key] || null;
+  }
+
+  /* 把 agent 返回的权威状态合并回本地知识点（mastery / 错题本 / 计数） */
+  function applySnapshot(ref, payload) {
+    if (!payload) return null;
+    (payload.topics || []).forEach(x => {
+      const t = topic(x.topic_id);
+      if (!t) return;
+      t.mastery = x.mastery;
+      t.attempts = x.attempts;
+      t.errors = x.errors;
+      t.mistakes = x.mistakes || [];
+      t.explainDone = !!x.explain_done;
+      t.explainRuns = x.explain_runs || 0;
+      t.failStreak = x.fail_streak || 0;
+      t.needHelp = !!x.need_help;
+      t.pretested = !!x.pretested;
+    });
+    const key = agentKeyOf(ref);
+    if (!state.agent) state.agent = { policy: null, plans: {}, error: null };
+    if (!state.agent.plans) state.agent.plans = {};
+    if (payload.policy) state.agent.policy = payload.policy;
+    state.agent.error = null;
+    if (key) state.agent.plans[key] = payload;
+    state.hasPreTest = state.topics.length > 0 && state.topics.every(t => t.pretested);
+    save();
+    return payload;
+  }
+
+  function agentError(message) {
+    if (!state.agent) state.agent = { policy: null, plans: {}, error: null };
+    state.agent.error = message || 'Agent 未连接';
+  }
+
+  /* 问 agent「下一步做什么」。同一资料并发请求会复用同一个 promise。 */
+  async function syncAgent(ref) {
+    const rec = findMaterial(ref);
+    const key = agentKeyOf(rec);
+    if (!key) return null;
+    if (inflight.has(key)) return inflight.get(key);
+    if (!topicsOf(rec).length) return null;
+
+    const run = (async () => {
+      const r = await API.agentPlan(key, agentTopics(rec));
+      if (!r || !r.ok) {
+        agentError(r && r.error);
+        save();
+        return null;
+      }
+      return applySnapshot(rec, r.data);
+    })().finally(() => inflight.delete(key));
+
+    inflight.set(key, run);
+    return run;
+  }
+
+  /* 单个知识点的推荐活动（知识点列表 / 详情页的「推荐」徽标） */
   function plan(topicId) {
     const t = topic(topicId);
     if (!t) return null;
-
-    const wrong = mistakesOf(t).length;
-    const pages = explainPages(t);
-    const bank = quizBank(t);
-
-    if (isMastered(t)) {
-      return {
-        topic: t, activity: null, mastered: true,
-        rule: `≥ ${MASTERED}% 且无错题`,
-        reason: `掌握度 ${t.mastery}%，错题已全部纠正，这个知识点已经完成。`,
-      };
-    }
-
-    /* 连续两次练习正确率不足一半：说明讲解没吃透，先重学再看错题，
-       否则会在「练习→错题复习→再练习」之间原地打转。 */
-    if (t.needHelp && pages.length) {
-      return {
-        topic: t,
-        activity: DATA.activities.explain,
-        rule: `连续 ${t.failStreak} 次练习未达标`,
-        reason: `最近 ${t.failStreak} 次练习正确率都不足一半，先回到讲解把概念重新过一遍，再回来做题。`,
-      };
-    }
-
-    if (wrong >= 2) {
-      return {
-        topic: t,
-        activity: DATA.activities.review,
-        rule: `错题本还有 ${wrong} 道题`,
-        reason: `练习中有 <b>${wrong} 道题</b>还没答对，先用错题复习纠正概念，再回到练习。`,
-      };
-    }
-
-    if (!t.explainDone && pages.length) {
-      return {
-        topic: t,
-        activity: DATA.activities.explain,
-        rule: '尚未学习讲解',
-        reason: `还没看过这个知识点的讲解（${pages.length} 页），先建立概念再练习。`,
-      };
-    }
-
-    if (bank.length) {
-      return {
-        topic: t,
-        activity: DATA.activities.practice,
-        rule: `掌握度 ${t.mastery}% < ${MASTERED}%`,
-        reason: `掌握度 ${t.mastery}%，用练习检验是否真的掌握：答对越多提升越快，答错会回落。`,
-      };
-    }
-
+    const rec = materialOfTopic(t);
+    const snap = agentSnapshot(rec);
+    const d = snap && snap.by_topic ? snap.by_topic[topicId] : null;
+    if (!d) return null;
     return {
-      topic: t, activity: null, blocked: true,
-      rule: '没有可评估的内容',
-      reason: pages.length
-        ? `这份资料只为它生成了讲解、没有测验题，读完讲解后无法继续评估掌握度。`
-        : `解析结果里既没有讲解也没有测验题，这个知识点暂时无法学习。`,
+      topic: t,
+      activity: d.activity ? (DATA.activities[d.activity] || null) : null,
+      rule: d.rule,
+      reason: d.reason,
+      mastered: !!d.mastered,
+      blocked: !!d.blocked,
     };
   }
 
-  /* 只在「已完成 Pre-test 且尚未掌握」的知识点里选：先补最薄弱的
-     （mastery 升序），同分时错题多的优先。不能让 95% 但有 1 道旧错题
-     的知识点压过 30% 的新知识点。
-     连续失败 3 次的知识点会被排到后面（暂时换一个知识点），
-     避免整条路径卡在同一个学不会的知识点上。 */
-  function nextTopic(list) {
-    const arr = pathTopics(list).filter(t => t && t.pretested && !isMastered(t));
-    const key = t => t.mastery + ((t.failStreak || 0) >= 3 ? 100 : 0);
-    const sorted = [...arr].sort((a, b) => {
-      const d = key(a) - key(b);
-      if (d !== 0) return d;
-      return mistakesOf(b).length - mistakesOf(a).length;
-    });
-    return sorted[0] || null;
-  }
-
-  /* 传入资料 rec/id 时，只在该资料范围内推荐下一步 */
-  function nextPlan(arg) {
-    const t = nextTopic(arg);
-    return t ? plan(t.id) : null;
-  }
-
   /* =========================================================
-     滚动学习（Rolling Plan）—— 一份资料的默认路径
+     滚动学习（Rolling Plan）—— agent 排好的本轮路径
      ---------------------------------------------------------
-     不再「一个知识点学到掌握再换下一个」，而是按轮次把整份资料的
-     知识点一起推进：
-       第 r 轮 = 所有「已评估且未掌握」的知识点，每个各安排 1 个活动
-       一轮里某个知识点只出现一次（做完就记入 visited）
-       本轮全部走过 → 轮次 +1，按最新掌握度重新排下一轮
-     活动类型仍由 plan(topicId) 决定：连续失败→重学讲解、错题≥2→复习、
-     没学讲解→讲解、其余→练习。
-
-     这是「默认」路径：界面只暴露 rollPlan().next 一个动作，
-     不列本轮队列、不让学生在多个知识点之间挑先后（那属于学生自主决策，
-     由下面的单知识点路径承担）。
-     单知识点路径保留：知识点详情页 / 知识点卡片里的「开始学习」
-     仍然直接调用 plan() + start()，随时可以只学一个知识点。
+     排序与轮次推进都由 policy.plan_material() / advance_round() 在服务端
+     完成（一轮里每个未掌握知识点各排一次，本轮走完再进入下一轮）。
+     前端只把快照翻译成界面需要的形状：topic / activity 对象、blocked 列表。
      ========================================================= */
 
-  const STAGE_ORDER = { help: 0, review: 1, explain: 2, practice: 3 };
-
-  /* 这个知识点此刻处在哪一步（用于排序与展示） */
   function stageOf(t) {
     if (!t) return 'none';
     if (!t.pretested) return 'pretest';
-    if (isMastered(t)) return 'done';
-    const p = plan(t.id);
-    if (!p) return 'none';
-    if (p.blocked) return 'blocked';
-    if (!p.activity) return 'done';
-    if (p.activity.id === 'explain' && t.needHelp) return 'help';
-    return p.activity.id;
+    const rec = materialOfTopic(t);
+    const snap = agentSnapshot(rec);
+    const d = snap && snap.by_topic ? snap.by_topic[t.id] : null;
+    if (!d) return 'none';
+    if (d.mastered || (!d.activity && !d.blocked)) return 'done';
+    if (d.blocked) return 'blocked';
+    if (d.activity === 'explain' && t.needHelp) return 'help';
+    return d.activity;
   }
 
   function rollKey(ref) {
@@ -376,248 +411,133 @@ const Engine = (() => {
     return typeof ref === 'string' ? ref : 'all';
   }
 
-  /* 取（并按需初始化）某份资料的轮次状态 */
-  function rollOf(ref) {
-    if (!state.rolls || typeof state.rolls !== 'object') state.rolls = {};
-    const key = rollKey(ref);
-    let r = state.rolls[key];
-    if (!r || typeof r !== 'object') {
-      r = state.rolls[key] = { round: 1, visited: [], startedAt: Date.now() };
-    }
-    if (!Number.isFinite(r.round) || r.round < 1) r.round = 1;
-    if (!Array.isArray(r.visited)) r.visited = [];
-    return r;
-  }
-
-  /* 只返回「能被推荐」的知识点（已评估、未掌握、有下一步活动） */
-  function rollCandidates(ts) {
-    return ts.filter(t => t.pretested && !isMastered(t));
-  }
-
-  /* 一份资料的滚动计划：
-       { round, total, mastered, remaining, pendingPretest,
-         steps: [{ topic, activity, rule, reason, stage, nextRound, order }],
-         next, blocked, done }
-     steps 已按「本轮还没轮到的 → 阶段 → 掌握度」排好序。 */
+  /* 一份资料的滚动计划：把 agent 快照翻译成界面需要的形状。
+     agent 还没返回时返回 pendingAgent，界面会提示「正在询问 Agent」，
+     而不是本地猜一个下一步。 */
   function rollPlan(arg, opts) {
     const ts = pathTopics(arg);
-    const rs = rollOf(arg);
-    const visited = rs.visited || [];
+    const snap = agentSnapshot(arg);
+    if (!snap) {
+      return {
+        round: 1,
+        total: ts.length,
+        mastered: ts.filter(t => isMastered(t)).length,
+        remaining: 0,
+        pendingPretest: ts.filter(t => !t.pretested).length,
+        visited: 0, steps: [], more: 0, next: null,
+        lastRoundDone: false, blocked: [], done: false,
+        pendingAgent: true,
+        policy: null,
+        error: (state.agent && state.agent.error) || null,
+      };
+    }
 
-    const pendingPretest = ts.filter(t => !t.pretested).length;
-    const cands = rollCandidates(ts);
-
-    const steps = [];
-    cands.forEach(t => {
-      const p = plan(t.id);
-      if (!p || !p.activity) return;
-      const stage = stageOf(t);
-      steps.push({
+    const byId = id => ts.find(t => t.id === id) || null;
+    const steps = (snap.steps || []).map(s => {
+      const t = byId(s.topic_id);
+      if (!t) return null;
+      return {
         topic: t,
-        activity: p.activity,
-        rule: p.rule,
-        reason: p.reason,
-        stage: stage,
-        nextRound: visited.indexOf(t.id) !== -1,
-        order: [
-          STAGE_ORDER[stage] == null ? 9 : STAGE_ORDER[stage],
-          t.mastery,
-          -mistakesOf(t).length,
-          ts.indexOf(t),          // 最终按资料里的原始顺序，读起来符合解析顺序
-        ],
-      });
-    });
-
-    steps.sort((a, b) => {
-      /* 本轮还没轮到的优先；同组内先处理最紧急（重学 > 错题 > 讲解 > 练习） */
-      if (a.nextRound !== b.nextRound) return a.nextRound ? 1 : -1;
-      for (let i = 0; i < a.order.length; i++) {
-        if (a.order[i] !== b.order[i]) return a.order[i] - b.order[i];
-      }
-      return 0;
-    });
+        activity: DATA.activities[s.activity] || null,
+        rule: s.rule,
+        reason: s.reason,
+        stage: s.stage,
+        nextRound: !!s.next_round,
+      };
+    }).filter(Boolean);
 
     const limit = opts && opts.limit;
     const listed = limit ? steps.slice(0, limit) : steps;
 
     return {
-      round: rs.round,
-      total: ts.length,
-      mastered: ts.filter(t => isMastered(t)).length,
-      remaining: cands.length,
-      pendingPretest,
-      visited: visited.filter(id => cands.some(t => t.id === id)).length,
+      round: snap.round || 1,
+      total: snap.total == null ? ts.length : snap.total,
+      mastered: snap.mastered || 0,
+      remaining: snap.remaining || 0,
+      pendingPretest: snap.pending_pretest || 0,
+      visited: snap.visited || 0,
       steps: listed,
       more: Math.max(0, steps.length - listed.length),
       next: steps[0] || null,
-      lastRoundDone: steps.length > 0 && steps.every(s => s.nextRound),
-      blocked: ts.filter(t => stageOf(t) === 'blocked'),
-      done: ts.length > 0 && pendingPretest === 0 && cands.length === 0,
+      lastRoundDone: !!snap.last_round_done,
+      blocked: (snap.blocked || []).map(byId).filter(Boolean),
+      done: !!snap.done,
+      pendingAgent: false,
+      policy: snap.policy || (state.agent && state.agent.policy) || null,
+      error: null,
     };
   }
 
-  /* 一次活动完成后推进轮次：本轮每个知识点只排一次，全部走过就进入下一轮 */
-  function noteRoll(t) {
-    const rec = materialOfTopic(t);
-    if (!rec) return;
-    const rs = rollOf(rec);
-    if (rs.visited.indexOf(t.id) === -1) rs.visited.push(t.id);
-    const cands = rollCandidates(topicsOf(rec));
-    if (!cands.length) {
-      rs.visited = [];              // 全部掌握：轮次停在当前，不再累加
-      return;
-    }
-    const allVisited = cands.every(x => rs.visited.indexOf(x.id) !== -1);
-    if (allVisited) {
-      rs.round = (rs.round || 1) + 1;
-      rs.visited = [];
-    }
-  }
-
-  /* ---------------- 活动完成 → 状态更新 ----------------
-     分数跟着「表现」走，不跟着「次数」走：
-       explain  首次完成 +10（最高到 55%）；重学 +2；再往后 0
-       practice delta = round((正确率 × 100 − 当前掌握度) × 0.6)，限制在 [−10, +25]
-                —— 全对会快速上升，半对停在 50% 附近，全错会掉分
-       review   只清错题、不涨分（翻看错题不等于学会，由练习判定）
-     没有内容可学的活动一律 0 分，不再出现「点一下完成就加分」。 */
-  function applyResult(topicId, actId, outcome) {
+  /* ---------------- 活动完成 → 交给 Agent 更新状态 ----------------
+     掌握度公式与错题本的维护现在唯一存在于 src/agent/policy.py::apply_result；
+     前端只把逐题结果打包发给 /api/agent/observe，再把权威状态合并回来。
+     返回结构与旧版保持一致：{ topic, before, after, delta, note, re }，
+     这样结果页（Re-plan 卡片）不需要改渲染逻辑。 */
+  async function applyResult(topicId, actId, outcome) {
     const t = topic(topicId);
     if (!t) return null;
+    const out = outcome || {};
+    const rec = materialOfTopic(t);
+    const key = agentKeyOf(rec);
+    const answers = Array.isArray(out.answers) ? out.answers : null;
+    const total = Number.isFinite(out.total) ? out.total
+      : (answers ? answers.length : quizBank(t).length);
+    const correct = Number.isFinite(out.correct) ? out.correct
+      : (out.quizCorrect === true ? total : 0);
 
-    const before = t.mastery;
-    let delta = 0;
-    let note = '';
-
-    switch (actId) {
-      case 'explain': {
-        const pages = explainPages(t);
-        if (!pages.length) {
-          delta = 0;
-          note = '该知识点没有讲解内容，未计分';
-          break;
-        }
-        /* 讲解只给一次学分：首次 +10，重学 +2，再往后 0 分。
-           否则「反复点完成讲解」就能把掌握度一点点堆上去。 */
-        const runs = Number.isFinite(t.explainRuns) ? t.explainRuns : (t.explainDone ? 1 : 0);
-        delta = runs === 0 ? 10 : (runs === 1 ? 2 : 0);
-        note = runs === 0 ? '完成首次讲解学习'
-          : (runs === 1 ? '重看讲解，只做少量巩固' : '再次重学讲解，不再计分');
-        t.explainRuns = runs + 1;
-        t.explainDone = true;
-        t.needHelp = false;          // 已经重学过，把下一次机会还给练习
-        break;
-      }
-      case 'practice': {
-        const answers = Array.isArray(outcome.answers) ? outcome.answers : null;
-        const total = Number.isFinite(outcome.total) ? outcome.total
-          : (answers ? answers.length : quizBank(t).length);
-        const correct = Number.isFinite(outcome.correct) ? outcome.correct
-          : (outcome.quizCorrect === true ? total : 0);
-
-        if (!total) {
-          delta = 0;
-          note = '没有可作答的题目，未计分';
-          break;
-        }
-
-        const score = correct / total;
-        /* 掌握度向「本次正确率」靠近：答对越多涨得越快，正确率低于当前
-           掌握度时反而回落（例如一直答错不会涨到 100%）。 */
-        const raw = Math.round((score * 100 - before) * 0.6);
-        delta = Math.max(-10, Math.min(25, raw));
-
-        if (score >= 0.6) {
-          t.failStreak = 0;
-          t.needHelp = false;
-        } else if (score < 0.5) {
-          t.failStreak = (t.failStreak || 0) + 1;
-          if (t.failStreak >= 2) t.needHelp = true;
-        }
-
-        /* 错题本：答错的进、答对的出。这样「复习」纠正的正是练错的题，
-           而不是讲解页里的 tip。 */
-        if (answers) {
-          const list = quizBank(t);
-          const bucket = mistakesOf(t).slice();
-          answers.forEach(a => {
-            const q = list[a && a.i];
-            if (!q || !q.q) return;
-            const key = String(q.q).slice(0, 160);
-            const at = bucket.findIndex(m => m.q === key);
-            if (a.ok && at !== -1) bucket.splice(at, 1);
-            if (!a.ok && at === -1) {
-              bucket.push({ q: key, opts: q.opts || [], a: q.a, why: q.why || '' });
-            }
-          });
-          t.mistakes = bucket;
-        } else if (score < 0.8) {
-          /* 旧调用方没传逐题结果时，至少保证有错题信号可复习 */
-          const bucket = mistakesOf(t).slice();
-          quizBank(t).forEach(q => {
-            const key = String(q.q).slice(0, 160);
-            if (!bucket.some(m => m.q === key)) {
-              bucket.push({ q: key, opts: q.opts || [], a: q.a, why: q.why || '' });
-            }
-          });
-          t.mistakes = bucket;
-        } else {
-          t.mistakes = [];
-        }
-
-        note = `答对 ${correct} / ${total} 题`;
-        break;
-      }
-      case 'review': {
-        const cards = mistakesOf(t);
-        if (!cards.length) {
-          delta = 0;
-          note = '没有待纠正的错题，未计分';
-          break;
-        }
-        /* 复习不计掌握度：翻看错题不等于学会，是否真的掌握由随后的练习判定。
-           它只负责把错题清掉，让路径回到练习。 */
-        delta = 0;
-        t.mistakes = [];
-        note = `已重新讲解 ${cards.length} 道错题，回到练习验证`;
-        break;
-      }
-      default:
-        delta = 0;
-        note = '未知活动，未计分';
+    if (!key) {
+      agentError('该知识点没有关联资料，Agent 无法记录');
+      return { topic: t, before: t.mastery, after: t.mastery, delta: 0, note: '未关联资料，本次未计分', re: plan(topicId), failed: true };
     }
 
-    /* 讲解没有检核，不能把掌握度推高过 55%；但也不能把已掌握的知识点往下拉 */
-    const capped = actId === 'explain'
-      ? Math.max(before, Math.min(EXPLAIN_CAP, before + delta))
-      : before + delta;
-    t.mastery = Math.max(0, Math.min(100, capped));
+    const r = await API.agentObserve(key, {
+      topic_id: topicId,
+      activity: actId,
+      outcome: {
+        total,
+        correct,
+        answers: answers || undefined,
+      },
+      // 错题本需要题目原文与选项：只有练习需要
+      quiz: actId === 'practice' ? quizBank(t) : [],
+      topics: agentTopics(rec),
+    });
 
-    const after = t.mastery;
-    const realDelta = after - before;      // 以真实变化为准：100% 时不再显示 +7
+    if (!r || !r.ok) {
+      agentError(r && r.error);
+      save();
+      return {
+        topic: t, before: t.mastery, after: t.mastery, delta: 0,
+        note: 'Agent 未连接，本次未计入掌握度', re: plan(topicId), failed: true,
+      };
+    }
 
-    t.errors = mistakesOf(t).length;
-    t.attempts += 1;
-    t.lastActivity = DATA.activities[actId] ? DATA.activities[actId].name : actId;
+    applySnapshot(rec, r.data);
+    const res = (r.data && r.data.result) || {};
+    const before = Number.isFinite(res.before) ? res.before : t.mastery;
+    const after = Number.isFinite(res.after) ? res.after : t.mastery;
+    const delta = Number.isFinite(res.delta) ? res.delta : (after - before);
 
     state.completed += 1;
-    state.lastActivity = { topicId, actId, delta: realDelta, ts: Date.now() };
-
+    state.lastActivity = { topicId, actId, delta: delta, ts: Date.now() };
     state.trace.unshift({
       ts: Date.now(),
       topicId, topicName: t.name,
       actId, actName: DATA.activities[actId] ? DATA.activities[actId].name : actId,
-      delta: realDelta, before, after,
-      ok: realDelta >= 0,
+      delta: delta, before: before, after: after,
+      ok: delta >= 0,
     });
     if (state.trace.length > 30) state.trace.pop();
-
-    /* 滚动学习：本次活动的知识点记入本轮；本轮走完自动进入下一轮 */
-    noteRoll(t);
-
-    const re = plan(topicId);
     save();
-    return { topic: t, before, after, delta: realDelta, note, re };
+
+    return {
+      topic: t,
+      before: before,
+      after: after,
+      delta: delta,
+      note: res.note || '',
+      re: plan(topicId),
+    };
   }
 
   /* ---------------- Pre-test（按资料独立评估） ----------------
@@ -628,23 +548,37 @@ const Engine = (() => {
      Pre-test 只确定起点，不算「错题」：答错记的是 20% 的起点分，
      不应该让学生一进来就被要求去复习错题本（那时还没有错题卡）。 */
   function applyPreTest(answers) {
+    /* Pre-test 的起点分（45 / 20）与「跳过不改分」也由 Agent 决定，
+       这里按资料分组发过去，再把权威状态合并回来。按资料分组是因为
+       一次 Pre-test 只覆盖一份资料，而 agent 的接口是按资料划分的。 */
+    const groups = new Map();
     (answers || []).forEach(a => {
       const t = topic(a.topicId);
       if (!t) return;
-      if (a.correct === null || typeof a.correct === 'undefined') {
-        t.pretested = true;          // 保留解析初值（30%），只是不再挡路
-        return;
-      }
-      t.mastery = a.correct ? 45 : 20;
-      t.attempts += 1;
-      t.errors = 0;
-      t.mistakes = [];
-      t.pretested = true;
+      const rec = materialOfTopic(t);
+      const key = agentKeyOf(rec);
+      if (!key) return;
+      if (!groups.has(key)) groups.set(key, { rec: rec, answers: [] });
+      groups.get(key).answers.push({
+        topic_id: a.topicId,
+        correct: (a.correct === null || typeof a.correct === 'undefined') ? null : !!a.correct,
+      });
     });
-    // 兼容字段：仅当全部资料的知识点都评估完才为 true
-    state.hasPreTest = state.topics.length > 0 && state.topics.every(t => t.pretested);
-    state.loopStage = 'plan';
-    save();
+
+    if (!groups.size) { save(); return Promise.resolve(null); }
+
+    return Promise.all([...groups.entries()].map(async ([key, group]) => {
+      const r = await API.agentPreTest(key, {
+        answers: group.answers,
+        topics: agentTopics(group.rec),
+      });
+      if (!r || !r.ok) { agentError(r && r.error); return null; }
+      return applySnapshot(group.rec, r.data);
+    })).then(results => {
+      state.loopStage = 'plan';
+      save();
+      return results;
+    });
   }
 
   function pretestDone(ref) {
@@ -839,10 +773,11 @@ const Engine = (() => {
   return {
     state, init, reset, save,
     topics, topic, overallMastery, topicContent,
-    plan, nextTopic, nextPlan, applyResult, applyPreTest, pretestDone,
-    rollPlan, rollOf, stageOf,
-    isMastered, quizBank, explainPages, reviewCards, mistakesOf,
-    MASTERED, EXPLAIN_CAP,
+    plan, applyResult, applyPreTest, pretestDone,
+    rollPlan, stageOf,
+    // Agent：唯一决策来源（/api/agent/*），前端不再自带规则
+    syncAgent, agentSnapshot, agentError, agentTopics,
+    isMastered, masteredThreshold, masteryGoal, quizBank, explainPages, reviewCards, mistakesOf,
     setStage, stage, setRole, role,
     published, pathTopics, pathGroups, pendingTopics,
     dismissAppend,

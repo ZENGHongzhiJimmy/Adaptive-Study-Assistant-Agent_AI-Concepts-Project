@@ -95,13 +95,47 @@ const App = (() => {
     return Student.dashboard();
   }
 
+  /* ---------------- Agent 快照 ----------------
+     页面上的「下一步」由后端 LangGraph agent 决定，前端只做缓存渲染。
+     进入页面时如果没有这个资料的快照（首次进入 / 刚解析完 / 知识点数量变了），
+     就向 agent 要一次；拿到后再渲染一次。请求失败不会循环重试。 */
+  let agentInflight = null;
+
+  function routeMaterial(h) {
+    const seg = h.replace('#/', '').split('/');
+    if (seg[1] === 'material') return Engine.findMaterial(decodeSeg(seg[2]));
+    if (seg[1] === 'topic') return Engine.materialOfTopic(Engine.topic(decodeSeg(seg[2])));
+    if (seg[1] === 'activity') return Engine.materialOfTopic(Engine.topic(decodeSeg(seg[3])));
+    if (seg[1] === 'pretest') return Engine.findMaterial(decodeSeg(seg[2]));
+    return Engine.activeMaterial();
+  }
+
+  function needsAgent(rec) {
+    const snap = Engine.agentSnapshot(rec);
+    if (!snap) return true;
+    return Number(snap.total) !== Engine.topicsOf(rec).length;
+  }
+
+  function ensureAgent(h) {
+    const rec = routeMaterial(h);
+    if (!rec || !Engine.topicsOf(rec).length) return;
+    if (!needsAgent(rec)) return;
+    const key = String(rec.materialId || rec.id);
+    if (agentInflight === key) return;
+    agentInflight = key;
+    Engine.syncAgent(rec).then(snap => {
+      agentInflight = null;
+      // 路由已经变了就不再打扰用户（避免把 A 资料的渲染结果刷到 B 页面）
+      if (snap && (location.hash || '#/student/dashboard') === h) render();
+    });
+  }
+
   /* ---------------- 渲染 ---------------- */
   function render() {
     const h = location.hash || '#/student/dashboard';
     const title = titleFor(h);
     const u = USER;
     const active = Engine.activeMaterial();
-
     const sidebar = `
       <aside class="sidebar">
         <div class="brand">
@@ -170,6 +204,9 @@ const App = (() => {
           <div class="content-inner page-in">${view()}</div>
         </div>
       </main>`;
+
+    // 首屏先用缓存/空态渲染，agent 快照到达后再补一次（见 ensureAgent）
+    ensureAgent(h);
   }
 
   /* ---------------- 用户菜单 ---------------- */

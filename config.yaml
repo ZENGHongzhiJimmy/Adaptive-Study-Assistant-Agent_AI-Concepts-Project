@@ -1,6 +1,10 @@
 # Adaptive Study Assistant Agent - canonical non-sensitive configuration.
 #
-# This file is the SINGLE source of truth for experiment-relevant knobs.
+# This file is the SINGLE source of truth for infrastructure knobs (models,
+# paths, retrieval, chunking, seeds). It is NOT the source of truth for the
+# evaluated method: the adaptive policy's constants live in
+# src/agent/policy.py and are deliberately not duplicated here. See the
+# BASELINE block below.
 # Secrets / endpoints are the only things allowed in .env (see .env.example).
 # NEVER put a real API key here: this file is committed to GitHub.
 # P6 freeze: do not modify this file during E1-E3; every run logs
@@ -45,13 +49,36 @@ retrieval:
   chunk_overlap: 100
   top_k: 3
 
-# P2 student state model: new = alpha*old + (1-alpha)*performance.
+# ---------------------------------------------------------------------------
+# BASELINE configuration - NOT the method under evaluation.
+#
+# The adaptive policy being evaluated lives in CODE: src/agent/policy.py
+# (POLICY_ID = "adaptive-v1", MASTERED = 80, EXPLAIN_CAP = 55,
+#  PRACTICE_GAIN = 0.6, delta clamp [-10, +25], 0-100 scale).
+# Do NOT mirror those numbers here - a second copy in YAML is exactly how the
+# product and the experiment drifted apart before.
+#
+# The two blocks below serve the BASELINE arms only:
+#   mastery -> src/student_model/mastery.py  (B0: 0-1 scale, alpha*old + ...)
+#   planner -> src/agent/planner.py          (B3: fixed threshold planner, 0-1)
+# They are read by src/agent/graph.py (CLI / baseline harness). Nothing under
+# src/api/ or src/agent/serve.py may read them - guarded by
+# tests/test_p9_single_method.py so the two scales can never sneak back in.
+# ---------------------------------------------------------------------------
+
+# BASELINE B0 student state model: new = alpha*old + (1-alpha)*performance.
+# 0-1 scale; the method uses an integer percentage instead.
 mastery:
   alpha: 0.7
   initial: 0.0
   recent_errors_window: 3
 
-# P3 minimal loop thresholds; P4 reuses them for Challenge / Review routing.
+# BASELINE B3 threshold planner: Teach / MCQ / Challenge / Review / Done.
+# Thresholds and target are 0-1 (the method's are 0-100 percentages), so these
+# numbers are NOT comparable with policy.MASTERED. Kept frozen for the baseline
+# arm; `target_mastery` stays at 0.85 even though the baseline estimator
+# saturates below it - that saturation is a reported finding, not a knob to
+# tune after the fact.
 planner:
   mode: rule                 # rule | llm
   thresholds:

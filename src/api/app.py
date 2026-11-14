@@ -9,6 +9,7 @@ Exposes the existing P1/P4 capabilities (RAG + LLM) as a REST API for the
     POST /api/quiz/generate         基于已上传资料生成 quiz（可选独立入口）
     POST /api/qa/ask                RAG + LLM 问答，带引用出处
     GET  /api/progress              学习进度（SQLite 可选；前端本地状态兜底）
+    *    /api/agent/*               自适应 agent（LangGraph + policy.py，见 api/agent.py）
 
 Design:
   * Reuses src.utils.llm_client.LLMClient, src.retrieval.* and
@@ -29,6 +30,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from ..utils.config import get_config, resolve_path
+from .agent import close_agent, get_agent, router as agent_router
 from .services import (
     MaterialService,
     key_status,
@@ -52,6 +54,7 @@ async def lifespan(app: FastAPI):
     svc = _material_service
     if svc is not None:
         svc.close()
+    close_agent()
 
 
 app = FastAPI(
@@ -67,6 +70,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 自适应 agent 的 HTTP 入口（/api/agent/*）。前端不再自己决定下一步，
+# 规划与状态更新都由这里的 LangGraph agent 产出。
+app.include_router(agent_router)
 
 
 class ParseRequest(BaseModel):
@@ -151,15 +158,23 @@ def delete_material(
     lecture topic when the in-memory record was lost to a backend restart.
     Missing records are NOT a 404 -- the file and index are still cleaned.
     """
-    return get_material_service().delete_material(
+    result = get_material_service().delete_material(
         material_id, material_name=name
     )
+    # 资料删掉后，它的掌握度/错题本/轮次也必须清掉，否则重新上传同名资料
+    # 会立刻"继承"上次的进度，看起来像没删干净。
+    get_agent().reset(material_id)
+    return result
 
 
 @app.post("/api/materials/reset")
 def reset_materials() -> dict[str, Any]:
     """清除全部数据（含 ChromaDB 索引与上传文件），供前端"重置数据"调用。"""
-    return get_material_service().reset()
+    result = get_material_service().reset()
+    # 学习状态现在由 agent 存在 SQLite 里，重置必须一起清，否则重传同名
+    # 资料会带着旧掌握度回来。
+    get_agent().reset()
+    return result
 
 
 @app.post("/api/quiz/generate")

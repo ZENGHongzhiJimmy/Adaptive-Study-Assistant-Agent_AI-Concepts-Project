@@ -63,15 +63,16 @@
 
 > **按资料隔离**：每个知识点通过 `_materialId` 绑定所属资料，Pre-test 状态、掌握度、推荐活动与学习记录都只在该资料模块内生效，不同资料之间互不干扰。
 
-三种学习活动（由自适应规划 Agent 依据掌握度分派）：
+三种学习活动（由 `src/agent/policy.py` 按「错题本 + 连续失败 + 是否学过讲解」分派，不是单纯的分数阈值）：
 
-| 活动 | 触发条件 | 说明 |
+| 活动 | 触发条件（policy.decide 的分支顺序） | 说明 |
 | ---- | ---- | ---- |
-| **知识点讲解** | 掌握度低（< 45%） | 基于上传资料生成的分页讲解，可随时暂停提问（提问由 RAG + LLM 现场作答，并附引用出处） |
-| **练习测验** | 有一定基础（45–80%） | 针对资料内容生成的测验题，检验掌握度 |
-| **知识复习** | 反复出错 / 已达熟练 | 针对历史错误的闪卡回顾 |
+| **知识点讲解** | 连续 2 次练习正确率 < 50%（重学）／ 从未看过讲解 | 基于上传资料生成的分页讲解，可随时暂停提问（RAG + LLM 现场作答，并附引用出处）；看完最多到 55% |
+| **知识复习** | 错题本还有 ≥ 2 道题 | 针对历史错误的闪卡回顾，只清错题、不涨掌握度 |
+| **练习测验** | 上面都不满足，且题库非空 | 针对资料内容生成的测验题；`Δ = clamp(round((正确率×100 − 掌握度)×0.6), −10, +25)` |
+| **收尾** | 掌握度 ≥ 80% 且错题清空 | 该知识点结束，不再推荐活动 |
 
-自适应规划遵循 `Plan → Act → Observe → Update → Re-plan` 闭环：每次作答后按活动类型增减掌握度，Agent 重新决定下一项活动。
+自适应规划遵循 `Plan → Act（浏览器）→ Observe → Update → Re-plan` 闭环：每次作答后由 agent 更新掌握度与错题本，再重新排出本轮下一步。
 
 ---
 
@@ -81,13 +82,21 @@
 flowchart LR
     subgraph FE["浏览器 · 原生 HTML / CSS / JS"]
         PAGES["学习主页 · 资料学习模块<br/>问答 · 进度 · Pre-test / 学习活动"]
-        STATE[("localStorage<br/>掌握度 · 轨迹 · 资料状态")]
+        STATE[("localStorage<br/>资料 / 知识点 · Agent 计划快照")]
         PAGES <--> STATE
+    end
+
+    subgraph AGENT["Agent 运行时 · src/agent/"]
+        GRAPH["LangGraph<br/>observe → planner"]
+        POLICY["policy.py<br/>唯一的规划 + 掌握度规则"]
+        LEARN[("SQLite learner_*<br/>掌握度 · 错题本 · 轮次 · 决策轨迹")]
+        GRAPH --> POLICY --> LEARN
     end
 
     subgraph API["FastAPI · src/api/ · /api/*"]
         UP["上传 · 解析<br/>upload / parse / quiz/generate"]
         QA["RAG 问答<br/>qa/ask"]
+        AG["Agent 接口<br/>agent/plan · observe · pre-test"]
         MG["资料管理<br/>health / status / progress / delete / reset"]
     end
 
@@ -100,16 +109,21 @@ flowchart LR
 
     FE -->|"fetch · REST"| API
     API -->|"解析 · 生成 · 检索"| CAP
+    AG -->|"invoke graph"| AGENT
 
     classDef fe stroke:#6366f1,stroke-width:2px
     classDef api stroke:#0ea5e9,stroke-width:2px
     classDef cap stroke:#10b981,stroke-width:2px
+    classDef ag stroke:#f59e0b,stroke-width:2px
     class PAGES,STATE fe
-    class UP,QA,MG api
+    class UP,QA,AG,MG api
     class DOC,VEC,LLM cap
+    class GRAPH,POLICY,LEARN ag
 ```
 
-上传 → 切片向量化入库 → LLM 生成知识点 / 讲解 / quiz → 前端按资料归属并本地维护学习状态；问答时检索相关片段 + LLM 作答并附引用。
+上传 → 切片向量化入库 → LLM 生成知识点 / 讲解 / quiz → 前端按资料归属；问答时检索相关片段 + LLM 作答并附引用。
+
+**规划只有一条路径**：页面上的「下一步」不再是前端算出来的，而是 `POST /api/agent/plan` 调用 LangGraph agent，由 `src/agent/policy.py` 决策后返回。前端只缓存与渲染这份快照（`localStorage` 里的 `agent.plans`），没有任何备用规则——后端不可用时界面显示「Agent 未连接」，不会偷偷换一套逻辑。
 
 ---
 
@@ -132,8 +146,8 @@ flowchart LR
 ```
 js/ui.js              # 图标 + 通用 UI 组件（toast / bar / ring / card）
 js/data.js            # 活动类型 + 问答欢迎语（后端不可用时的演示兜底）
-js/engine.js          # 按资料隔离的知识模型 + 自适应规划 Agent + 上传状态
-js/api.js             # 后端 HTTP API 封装
+js/engine.js          # 按资料隔离的知识模型 + Agent 计划快照（规则在服务端）
+js/api.js             # 后端 HTTP API 封装（含 /api/agent/*）
 js/views-student.js   # 学习主页 / 资料模块 / 问答 / 进度 / Pre-test / 活动视图
 js/app.js             # 应用外壳 + hash 路由（含资料模块与资料级路由参数）
 ```
@@ -149,7 +163,9 @@ js/app.js             # 应用外壳 + hash 路由（含资料模块与资料级
 | 向量检索 | **ChromaDB** | 上传资料的切片向量存储与语义检索 |
 | 文本向量化 | **Hashing（确定性词袋哈希）** | 无外部模型依赖，离线可复现的文本向量 |
 | 资料解析 | **PyMuPDF** + 纯文本 | PDF / TXT / MD 提取正文 |
-| 实验侧编排 | **LangGraph** | 仅 `src/agent/` 的 CLI 闭环使用；学生端 API 不调用，规划由前端 `engine.js` 承担 |
+| Agent 编排 | **LangGraph** | `observe → planner` 两个节点：先更新状态，再重新规划；`/api/agent/*` 直接 invoke 这个图 |
+| 规划策略 | **`src/agent/policy.py`** | 唯一实现（讲解 / 练习 / 复习 / 收尾 + 滚动轮次），无 LLM、纯函数，实验脚本复用同一份 |
+| 学习状态 | **SQLite（`learner_*` 表）** | 掌握度、错题本、轮次、决策轨迹（`learner_step`）由服务端持久化 |
 
 ---
 
@@ -176,13 +192,20 @@ Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
 │       └── app.js                  # 应用外壳 + 路由
 ├── src/
 │   ├── api/                        # ★ 学生端 HTTP API
-│   │   ├── app.py                  # FastAPI 应用与路由
+│   │   ├── app.py                  # FastAPI 应用与路由（资料 / 问答 / 进度）
+│   │   ├── agent.py                # /api/agent/*：规划、状态更新、Pre-test、轨迹
 │   │   ├── services.py             # 资料解析 / quiz 生成 / RAG 问答
 │   │   └── run.py                  # 启动入口
-│   ├── agent/                      # 实验侧 CLI 编排（LangGraph）
+│   ├── agent/                      # Agent 运行时
+│   │   ├── policy.py               # ★ 唯一的自适应策略（决策 + 掌握度 + 滚动轮次）
+│   │   ├── learner_store.py        # learner_topic / learner_roll / learner_step
+│   │   ├── serve.py                # LangGraph 图 + 服务封装（产品实际调用）
+│   │   ├── graph.py                # 内容生成版闭环（CLI / 实验用，含 Teach 渲染）
+│   │   ├── planner.py              # 阈值规划器 = 固定策略 baseline（B3）
+│   │   └── run.py                  # CLI 驱动
 │   ├── ingestion/                  # PDF/TXT 解析与切片
 │   ├── retrieval/                  # 向量库与嵌入
-│   ├── student_model/              # 学生状态模型
+│   ├── student_model/              # 学生状态模型（CLI/实验侧）+ events 日志
 │   └── utils/                      # 配置 / LLM 客户端 / 密钥守卫
 ├── data/
 │   ├── course_materials/           # 课程 PDF（不入库）
@@ -264,7 +287,20 @@ npm start        # 或 node server.js
 | POST | `/api/materials/reset` | 重置全部数据（上传资料、课程材料、ChromaDB 索引与向量库文件），平台回到初始状态 |
 | POST | `/api/quiz/generate` | 基于资料生成 quiz（可选独立入口） |
 | POST | `/api/qa/ask` | RAG + LLM 问答，返回 `{ answer, sources, grounded, mode }`；可选 `material_id` / `material_name`（限定检索资料）与 `topic` / `focus`（知识点讲解页随堂提问：当前知识点名 + 当页讲解内容，答案按助教讲解方式组织，`mode="tutor"`） |
-| GET | `/api/progress` | 已解析知识点列表（掌握度由前端本地维护） |
+| GET | `/api/progress` | 已解析知识点列表（掌握度由 agent 在 SQLite 中维护，见 8.1） |
+
+### 8.1 Agent 接口（页面上的「下一步」唯一来源）
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | `/api/agent/policy` | 当前服务的策略与引擎：`{policy:"adaptive-v1", engine:"langgraph"}` |
+| POST | `/api/agent/plan` | 重新规划：返回 `{round, steps, next, by_topic, topics}`；`next` 就是界面上的「下一步」 |
+| POST | `/api/agent/observe` | 一次活动结束后更新状态并重新规划：返回 `{result:{before,after,delta,note}, ...plan}` |
+| POST | `/api/agent/pre-test` | 写入各知识点的起点分（答对 45% / 答错 20% / 跳过不变） |
+| GET | `/api/agent/state/{material_id}` | 该资料的权威学习状态 + 最近 20 条决策轨迹 |
+| POST | `/api/agent/reset` | 清空某份资料（或全部）的学习状态 |
+
+`plan` 请求里的 `topics` 只在**首次接触**时用于播种（浏览器升级前已有进度不会丢）；之后以 SQLite 为准，浏览器清缓存不会清掉学习记录。
 
 示例（解析资料）：
 
@@ -274,12 +310,32 @@ curl -X POST http://127.0.0.1:8000/api/materials/parse \
   -d '{"material_id": "<上传返回的 id>"}'
 ```
 
+### 8.2 方法 vs 基线（报告口径）
+
+报告里只能有一个 method。当前仓库里确实存在两套掌握度模型，但它们不是"两份没写完的实现"，而是 **method 与 baseline**，边界由 `tests/test_p9_single_method.py` 守着：
+
+| 维度 | Method（被评估） | Baseline（仅对照） |
+| ---- | ---- | ---- |
+| 代码 | `src/agent/policy.py`（`adaptive-v1`） | `src/student_model/mastery.py` + `src/agent/planner.py` |
+| 谁在用 | 产品 `/api/agent/*`（`serve.py`）；后续实验的 adaptive 臂 | 仅 `src/agent/graph.py`（CLI / 基线臂 B0、B3） |
+| 掌握度标度 | 0–100 整数百分比 | 0–1 浮点 |
+| 更新式 | `Δ = clamp(round((正确率×100 − m) × 0.6), −10, +25)`；讲解首次 +10、重看 +2、封顶 55 | `m' = 0.7·m + 0.3·p` |
+| 达标条件 | `m ≥ 80` **且**错题本为空 | `m ≥ 0.85`（无错题概念） |
+| 决策输入 | 掌握度 + 错题本 + `failStreak` + 讲解次数 + 内容可用性 | 掌握度 + `recent_errors` + 上一步活动 |
+| 阈值来源 | 代码常量，随每次规划下发（`mastered_at` / `explain_cap`） | `config.yaml` 的 `mastery:` / `planner:` 段 |
+| 报告角色 | **method** | **B0 / B3 对照臂** |
+
+两条纪律：
+
+1. `config.yaml` 的 `mastery:` 与 `planner:` 两段已显式标注 **BASELINE**，且不含 method 的任何常量——method 的数字只在 `policy.py` 里有一份。
+2. 前端不保存任何阈值：`isMastered()` 读快照的 `by_topic[topic_id].mastered`，文案里的百分比读 `mastered_at`。所以界面上的"已掌握"与报告里的判定永远是同一个函数算的。
+
 ---
 
 ## 9. 已知限制
 
 - **LLM 模型配置与限流**：默认主模型为 OpenRouter 免费模型 `(baidu/ernie-5.5-flash-preview:free)`，并在 `fallback_models` 中配置付费模型 `(deepseek/deepseek-v4.1-flash)` 作为兜底。主模型正常时只调用免费模型、不额外消耗付费额度；当主模型不可用（如被下架或限流返回 404/429）时，自动按序切换到付费兜底模型完成解析与问答。模型均可根据个人需求在 `config.yaml -> llm` 段自由更换（改 `model` 与 `fallback_models`）。
-- **学习状态存于前端**：掌握度与学习轨迹由前端 `localStorage` 维护，后端不持久化学生作答状态。
+- **学习状态存于后端 SQLite**：掌握度、错题本、滚动轮次与决策轨迹由 `learner_*` 表持久化；浏览器只缓存最近一次 agent 快照用于渲染。清浏览器数据不会丢学习记录，但**换机器/换浏览器**目前共享同一份状态（单用户原型，未做账号隔离）。
 - **嵌入后端**：固定为 `hashing`（确定性词袋哈希 + L2 归一化 cosine），无外部模型依赖、离线可复现；属于词面匹配而非语义嵌入，同义改写与跨语言检索能力有限。
 - **资料格式**：支持 PDF / TXT / MD；PPT 暂不支持（可先导出为 PDF）。
 - **单用户**：当前为课程原型，未实现多用户认证与数据隔离。
