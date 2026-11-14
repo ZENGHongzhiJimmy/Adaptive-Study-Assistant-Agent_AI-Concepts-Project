@@ -8,7 +8,6 @@ from __future__ import annotations
 import json
 import re
 import subprocess
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -18,13 +17,13 @@ from src.utils import llm_client as lc
 
 EXPECTED_PACKAGES = {
     "langgraph", "langchain-openrouter", "openai", "pymupdf",
-    "chromadb", "pandas",
+    "chromadb", "numpy",
     "scikit-learn", "matplotlib", "python-dotenv", "PyYAML", "pytest",
 }
 
 SKELETON_DIRS = (
     "src/utils", "src/ingestion", "src/retrieval", "src/student_model",
-    "src/agent/prompts", "experiments/baselines",
+    "src/agent/prompts", "experiments/data",
     "experiments/results", "tests", "report",
     "data/course_materials", "data/chroma_db",
 )

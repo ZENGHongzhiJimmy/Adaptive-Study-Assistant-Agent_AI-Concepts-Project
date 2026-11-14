@@ -7,10 +7,7 @@ same rules: if a number here changes, the report's method section changed too.
 
 from __future__ import annotations
 
-import pytest
-
 from src.agent.policy import (
-    EXPLAIN_CAP,
     MASTERED,
     TopicState,
     advance_round,

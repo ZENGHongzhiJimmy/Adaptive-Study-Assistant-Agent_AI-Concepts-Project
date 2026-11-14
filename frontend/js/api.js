@@ -4,12 +4,15 @@
    （可用 window.ASA_API_BASE 或 localStorage.asa_api_base 覆盖）
 
    接口：
-   - GET  /api/health                    健康检查
-   - POST /api/materials/upload          上传资料（multipart）
-   - POST /api/materials/parse           解析资料 → 知识点 + quiz
-   - POST /api/quiz/generate             基于资料生成 quiz
-   - POST /api/qa/ask                    RAG + LLM 问答（带引用）
-   - GET  /api/progress                  学习进度（可选，前端本地状态兜底）
+   - GET    /api/materials/<id>          查询资料状态与解析缓存
+   - POST   /api/materials/upload        上传资料（multipart）
+   - POST   /api/materials/parse         解析资料 → 知识点 + quiz
+   - DELETE /api/materials/<id>          删除资料并清理索引
+   - POST   /api/materials/reset         清空全部资料
+   - POST   /api/qa/ask                  RAG + LLM 问答（带引用）
+   - POST   /api/agent/plan              取当前学习计划
+   - POST   /api/agent/observe           提交一次作答
+   - POST   /api/agent/pre-test          提交前测
    ============================================================ */
 
 const API = (() => {
@@ -50,10 +53,6 @@ const API = (() => {
      都是后端明确返回的错误，仍应按真实失败处理。 */
   function isNetworkFailure(r) { return !!r && !r.ok && !!r.network; }
 
-  async function health() {
-    return request('/api/health');
-  }
-
   /* 刷新后查询后端资料真实状态：是否已解析、以及缓存的解析结果 */
   async function getMaterial(materialId) {
     return request('/api/materials/' + encodeURIComponent(materialId));
@@ -89,14 +88,6 @@ const API = (() => {
     return request('/api/materials/reset', { method: 'POST' });
   }
 
-  /* 基于资料生成 quiz（可作为独立入口） */
-  async function generateQuiz(payload) {
-    return request('/api/quiz/generate', {
-      method: 'POST',
-      body: JSON.stringify(payload || {}),
-    });
-  }
-
   /* RAG + LLM 问答，返回 { answer, sources, grounded, mode }
      可选传入当前选中的课程资料，后端会把检索限定在该资料范围内。
      extra 支持 { topic, focus }：知识点讲解页随堂提问时，把当前知识点与
@@ -116,10 +107,6 @@ const API = (() => {
   /* ---------- 自适应 Agent（LangGraph + policy.py） ----------
      前端不再自己算「下一步」，规划与状态更新全部由后端 agent 决定。
      返回结构与 engine.js 的快照翻译一一对应。 */
-
-  async function agentPolicy() {
-    return request('/api/agent/policy');
-  }
 
   async function agentPlan(materialId, topics) {
     return request('/api/agent/plan', {
@@ -142,13 +129,9 @@ const API = (() => {
     });
   }
 
-  async function agentState(materialId) {
-    return request('/api/agent/state/' + encodeURIComponent(materialId));
-  }
-
   return {
-    base, health, isNetworkFailure, getMaterial, uploadMaterial, parseMaterial,
-    deleteMaterial, resetMaterials, generateQuiz, ask,
-    agentPolicy, agentPlan, agentObserve, agentPreTest, agentState,
+    base, isNetworkFailure, getMaterial, uploadMaterial, parseMaterial,
+    deleteMaterial, resetMaterials, ask,
+    agentPlan, agentObserve, agentPreTest,
   };
 })();

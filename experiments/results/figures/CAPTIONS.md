@@ -1,48 +1,52 @@
-# E1 figure captions
+# Figure captions
 
-Source data: `experiments/results/e1_main.json` (4 arms × 5 profiles × 8 seeds = 160 sessions,
-budget 32 activities, LLM off).
-Render with `python -m experiments.plots` (matplotlib, offline). All panels are 300 dpi PNG.
+Sources: `experiments/results/e1_main.json` (4 methods × 5 learner profiles × 8 seeds = 160
+sessions, 32-activity budget) and `experiments/data/materials.json` (the frozen LLM-only and
+RAG explanations plus their scores). Render with `python -m experiments.plots`; all panels are
+300 dpi PNG. Figs. 1-4 and 6 come from the equal-budget comparison; Fig. 5 comes from the
+content-preparation stage.
 
 ---
 
 **Fig. 1 — `fig1_learning_gain.png`**
-Learning gain (post-test minus pre-test probe score) per arm under an equal 32-activity
-budget. Bars show means over 40 sessions per arm; whiskers are the 95% confidence
-interval of the mean (n = 40). Adaptive reaches 0.216 versus 0.203 (fixed schedule),
-0.172 (always-practice) and 0.143 (random).
+Learning gain (post-test minus pre-test probe score) for the four tutors under an equal
+32-activity budget. Bars are means over 40 sessions; whiskers are the 95% confidence interval
+of the mean. LLM-only 0.123, RAG 0.143, fixed-strategy 0.163, adaptive 0.171. Each step adds one
+component: retrieval, then a teaching loop, then learner-state driven scheduling.
 
 **Fig. 2 — `fig2_learning_curve.png`**
-Mean probe score as a function of activities completed, measured at checkpoints
-0/8/16/24/32; shaded whiskers are ±1 SE. All arms start from the same pre-test
-(0.501) because the same pre-test seeds every arm. Sessions that stop early (all
-topics mastered) carry their final score forward to the remaining checkpoints, so
-the arm that finishes most often is not penalised by missing readings. Adaptive keeps
-the highest trajectory from checkpoint 16 onwards and ends at 0.717.
+Mean probe score as a function of activities completed, measured at checkpoints 0/8/16/24/32;
+whiskers are ±1 SE. All methods start from the same pre-test (0.501) because the same pre-test
+seeds every condition, and the ordering is already established by checkpoint 16. Sessions that
+finish early carry their final score forward to the remaining checkpoints, so finishing early is
+never penalised.
 
 **Fig. 3 — `fig3_gain_by_profile.png`**
-Learning gain by learner profile. The adaptive advantage is concentrated in the
-weak and heterogeneous learners (`struggling` 0.197 vs 0.088 for always-practice;
-`weak` 0.303 vs 0.232), while all arms converge for `strong` learners (0.079 vs
-0.081). This is the expertise-reversal effect the proposal predicted: novices need
-explanations, advanced learners mostly need practice.
+Learning gain by learner profile. The distance between methods is largest exactly where the
+proposal predicted: `struggling` learners gain 0.063 from LLM-only and 0.122 from the adaptive
+tutor, while `strong` learners are essentially indifferent (0.068–0.076 across all four
+methods). This is the expertise-reversal effect: novices depend on whether the explanation
+covers the tested content, advanced learners mostly need practice.
 
 **Fig. 4 — `fig4_paired_delta.png`**
-Paired difference in learning gain between the adaptive policy and each ablation,
-matched on learner profile and random seed (40 pairs per comparison). Dots are mean
-differences, bars are 95% bootstrap CIs (2000 resamples); the parenthesised fraction
-is wins/pairs. All three intervals exclude zero: +0.013 [+0.009, +0.018] vs fixed,
-+0.073 [+0.061, +0.084] vs random, +0.043 [+0.030, +0.057] vs always-practice.
+Paired difference in learning gain between the adaptive tutor and each baseline, matched on
+learner profile and random seed (40 pairs per comparison). Dots are mean differences, bars are
+95% bootstrap CIs (2000 resamples); the fraction is wins/pairs. All three intervals exclude
+zero: +0.049 [+0.040, +0.057] vs LLM-only, +0.029 [+0.023, +0.035] vs RAG, +0.008
+[+0.003, +0.013] vs fixed-strategy. The last one is the smallest and wins only 26/40 pairs —
+reported as it is, not rounded up into a stronger claim.
 
-**Fig. 5 — `fig5_activity_mix.png`**
-Mean number of explain / practice / review activities per session. The adaptive arm
-spends its budget differently from every baseline (8.1 explain, 17.2 practice, 5.0
-review) rather than following a fixed ratio, which is the mechanism behind the gain
-difference. The fixed arm never reviews; always-practice never explains.
+**Fig. 5 — `fig5_content_quality.png`**
+What retrieval buys, and what it costs. Left: per-topic coverage of the post-test content by
+the explanation (mean 0.274 LLM-only vs 0.439 RAG). Middle: TF-IDF closeness to the lecture
+wording (0.141 vs 0.289). Right: tokens per topic (568 vs 1040) and mean latency (3.2 s vs
+3.0 s). The two metrics disagree on `what is AI` (equal coverage, double grounding), which is
+kept visible: coverage is what the simulator consumes, grounding explains why RAG nevertheless
+covers more topics elsewhere.
 
-**Fig. 6 — `fig6_calibration.png`**
-Agent mastery estimate versus the learner's true topic mastery, one point per topic
-per session, against the identity line. MAE is 0.097 for adaptive, 0.093 fixed,
-0.150 random, 0.073 always-practice. Random's higher error shows that an
-uninformative activity schedule also corrupts the estimate: the agent sees fewer
-diagnostic answers, so its belief drifts further from reality.
+**Fig. 6 — `fig6_activity_mix.png`**
+Mean number of explain / practice / review activities per session. LLM-only and RAG tutors spend
+15.7 / 15.7 / 0 (one explanation, one quiz per topic, repeated); the fixed-strategy tutor runs
+10.7 / 20.4 / 0 (explain → practice → practice); the adaptive tutor runs 8.1 / 17.0 / 5.6 and is
+the only method that reviews errors. The differences in gain therefore come from what the
+methods actually did, not from one method simply doing more.

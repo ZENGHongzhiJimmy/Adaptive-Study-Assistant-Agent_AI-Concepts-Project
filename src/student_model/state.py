@@ -89,13 +89,6 @@ class StudentStateStore:
         state["recent_errors"] = json.loads(state["recent_errors"] or "[]")
         return state
 
-    def state_snapshot(self, student_id: str) -> list[dict[str, Any]]:
-        rows = self._conn.execute(
-            "SELECT topic FROM student_topic_state WHERE student_id = ? ORDER BY topic",
-            (student_id,),
-        ).fetchall()
-        return [self.get_state(student_id, row["topic"]) for row in rows]
-
     # --- events --------------------------------------------------------------
 
     def _insert_event(self, fields: dict[str, Any]) -> dict[str, Any]:
@@ -261,7 +254,7 @@ class StudentStateStore:
         return [dict(row) for row in self._conn.execute(sql, params).fetchall()]
 
     def reset(self, student_id: str | None = None) -> None:
-        """Clear state/events for reproducible experiment runs (E2)."""
+        """Clear state/events for reproducible experiment runs."""
         with self._conn:
             if student_id is None:
                 self._conn.execute("DELETE FROM events")

@@ -1,0 +1,349 @@
+{
+  "generated_at": "2026-11-14 23:46:11",
+  "model": "baidu/ernie-5.5-flash-preview:free",
+  "temperature": 0.0,
+  "retrieval_backend": "tfidf-chunks",
+  "top_k": 3,
+  "conditions": [
+    "llm_only",
+    "rag"
+  ],
+  "topics": [
+    {
+      "topic_id": "t01_what_is_ai",
+      "name": "What is AI",
+      "query": "What is AI According to the lecture, artificial intelligence is the ability of a computer program or a machine to ... What does the course aim to build? Which statement best matches the lecture's definition of AI?",
+      "retrieved": [
+        "Lecture 1, Page 8",
+        "Lecture 1, Page 1",
+        "Lecture 1, Page 32"
+      ],
+      "llm_only": {
+        "text": "AI, or artificial intelligence, is the field of computer science focused on building systems that can perform tasks normally associated with human intelligence, such as learning from data, recognizing patterns, reasoning, making decisions, understanding language, or perceiving the environment.\n\nAI is usually divided into narrow AI, which is designed for a specific task like spam filtering or image recognition, and general AI, which would be able to handle many different tasks at a human-like level. Most current AI systems are narrow AI.\n\nMachine learning is a major part of modern AI: instead of being explicitly programmed with every rule, systems learn patterns from examples or data.",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 3900.09,
+        "tokens": 609,
+        "attempts": 1,
+        "wall_ms": 3900.13,
+        "context_chars": 79
+      },
+      "rag": {
+        "text": "AI has two senses that exam questions usually test. As a capability, artificial intelligence is the ability of a computer program or a machine to think and learn. As a discipline, it is the field of study that tries to make computers \"smart\" — building an intelligent machine using mathematics and computer science. If a question asks what AI *is*, the safest answer covers both: a property of machines and the research field pursuing it.\n\nAI is not the same as machine learning, and the course treats the AI vs. ML distinction as a separate",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 3518.93,
+        "tokens": 1066,
+        "attempts": 1,
+        "wall_ms": 3518.97,
+        "context_chars": 1871
+      }
+    },
+    {
+      "topic_id": "t02_ml_definition",
+      "name": "Machine Learning and the P-T-E framework",
+      "query": "Machine Learning and the P-T-E framework Who said ML lets computers learn without explicit programming? What does P stand for in <P,T,E>? In Mitchell's framework, what does P measure?",
+      "retrieved": [
+        "Lecture 1, Page 8",
+        "Lecture 1, Page 21",
+        "Lecture 1, Page 5"
+      ],
+      "llm_only": {
+        "text": "The user wants a concise university-level tutor explanation of \"Machine Learning and the P-T-E framework\" — P-T-E = Perception, Training, Execution? Actually in AI concepts courses, P-T-E often stands for \"Perceive, Think, Act\" — but that's the classic agent loop. Hmm. In the context of machine learning, there's a known framework: \"Perception, Training, Execution\"? Let me think.\n\nActually, there's a well-known framing in AI/ML education: the \"P-T-E\" framework = \"Perceive, Think, Act\" (the intelligent agent loop). But paired with Machine Learning... Another possibility: \"Problem, Training, Evaluation\"? Or \"Perception, Training, Execution\"?\n\nHmm, there's also the \"PTE\" in the context of machine learning pipeline: \"Preprocessing, Training, Evaluation\". That's plausible for an ML course.\n\nGiven ambiguity, I should be honest: I don't have the slides, and P-T-E has multiple expansions.",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 3438.4,
+        "tokens": 614,
+        "attempts": 1,
+        "wall_ms": 3438.45,
+        "context_chars": 79
+      },
+      "rag": {
+        "text": "Machine Learning is the field of study that gives computers the ability to learn without being explicitly programmed. The classic phrasing comes from Arthur Samuel (1959), and the formal definition comes from Tom Mitchell (1998): a machine learns when a computer program improves its performance at some task through experience.\n\nThe P-T-E framework captures this definition with three elements, written as the triple <P, T, E>:\n- P (Performance): the measure by which we judge how well the program does. Improvement is defined relative to this metric.\n- T (Task): the specific problem or activity the program is trying to accomplish.\n- E (Experience): the data or interactions the program learns from over time.\n\nThe key idea for a multiple-choice question is the relationship among the three: learning means performance",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 2598.91,
+        "tokens": 1042,
+        "attempts": 1,
+        "wall_ms": 2598.94,
+        "context_chars": 1871
+      }
+    },
+    {
+      "topic_id": "t03_deep_learning",
+      "name": "Deep learning and its relation to ML",
+      "query": "Deep learning and its relation to ML Deep learning is a class of what? What does deep learning leverage? In deep learning, the word 'deep' refers to ...",
+      "retrieved": [
+        "Lecture 1, Page 27",
+        "Lecture 1, Page 21",
+        "Lecture 1, Page 8"
+      ],
+      "llm_only": {
+        "text": "Machine learning is the broader field of building systems that learn patterns from data instead of following only explicitly programmed rules. It includes many methods, such as decision trees, support vector machines, linear models, and neural networks.\n\nDeep learning is a subset of machine learning that uses artificial neural networks with many layers to learn features and patterns directly from raw data. Instead of relying heavily on hand-designed features, deep learning models can learn representations automatically, especially when given large amounts of data and computing power.\n\nThe key relationship is: all deep learning is machine learning, but not all machine learning is deep learning.",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 2569.0,
+        "tokens": 527,
+        "attempts": 1,
+        "wall_ms": 2569.03,
+        "context_chars": 79
+      },
+      "rag": {
+        "text": "The user wants a concise university-level tutor explanation of deep learning and its relation to ML, using only the provided excerpts. No citations, no source lines. 2-4 short paragraphs or bullets. End with one concrete takeaway. Plain text.\n\nLet me extract what's in the excerpts:\n\n[1] Deep learning is multi-layered neural networks, where \"deep\" refers to the number of hidden layers between input and output. Also mentions keywords: language models, diffusion models, reinforcement learning, agent, generation; benchmark, interpretability; ICLR conferences.\n\n[2] Machine Learning is the field of study that gives the computer the ability to learn without being explicitly programmed (Arthur Samuel, 1959). Tom Mitchell (1998): ML is the study of algorithms that improve their performance P at some task T with experience E. A well-defined learning task is <P, T, E>.",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 3102.92,
+        "tokens": 1052,
+        "attempts": 1,
+        "wall_ms": 3102.96,
+        "context_chars": 1872
+      }
+    },
+    {
+      "topic_id": "t04_big_data_4v",
+      "name": "Characteristics of Big Data (4V)",
+      "query": "Characteristics of Big Data (4V) Which V covers data inconsistency and uncertainty? Which V includes streaming and real-time data? Data that must be processed in milliseconds as it arrives illustrates ...",
+      "retrieved": [
+        "Lecture 1, Page 17",
+        "Lecture 1, Page 19",
+        "Lecture 1, Page 33"
+      ],
+      "llm_only": {
+        "text": "Big Data is commonly described by the 4V characteristics:\n\n- Volume: the large scale of data, far beyond what traditional databases can easily store or process.\n- Velocity: the speed at which data is generated, collected, and processed, often in real time or near real time.\n- Variety: the different types and formats of data, such as structured tables, text, images, audio, video, and sensor data.\n- Veracity: the trustworthiness, quality, and reliability of the data, since big data may contain errors, noise, or inconsistencies.\n\nFor a multiple-choice question, remember that the 4V model focuses on scale, speed, diversity, and reliability of data.\n\nTakeaway: The 4V of Big Data are Volume, Velocity, Variety, and Veracity.",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 2307.35,
+        "tokens": 519,
+        "attempts": 1,
+        "wall_ms": 2307.38,
+        "context_chars": 79
+      },
+      "rag": {
+        "text": "We need answer user's request. Need produce final answer. Need use only lecture excerpts. Topic Characteristics of Big Data (4V). Need explain concept for MCQ. No citations, no source lines. 2-4 short paragraphs or bullets, same language as topic text (English). End with one concrete takeaway. Plain text only. Need not mention AI. Need only facts from excerpts. Excerpts include Volume, Velocity, Variety? Excerpt [2] has Veracity, Velocity, Volume, maybe Variety? It says \"s, multimedia Veracity ... Velocity ... Volume Tex t Video s Image s Audio s\". It likely includes Variety but truncated? Need only provided. We can mention 4V: Volume, Velocity, Variety, Veracity? Excerpt [2] includes Veracity, Velocity, Volume, and maybe Variety implied by text/video/images/audio? It says \"s, multimedia\" maybe Variety. Need be careful: use only excerpts. It explicitly lists Veracity, Velocity, Volume.",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 2709.29,
+        "tokens": 1090,
+        "attempts": 1,
+        "wall_ms": 2709.34,
+        "context_chars": 1873
+      }
+    },
+    {
+      "topic_id": "t05_data_driven",
+      "name": "From expert systems to data-driven methods",
+      "query": "From expert systems to data-driven methods Which progression of models is mentioned? Which computing resources are listed as drivers? Which factor is NOT listed as a driver of the data-driven turn?",
+      "retrieved": [
+        "Lecture 1, Page 14",
+        "Lecture 1, Page 33",
+        "Lecture 1, Page 5"
+      ],
+      "llm_only": {
+        "text": "Expert systems are rule-based AI programs that encode human expertise as explicit if-then rules, facts, and an inference engine. They were useful in narrow domains such as medical diagnosis or fault detection, but they often struggled with uncertainty, incomplete knowledge, and the difficulty of extracting and maintaining rules from experts.\n\nData-driven methods shift the focus from hand-written rules to learning patterns from examples. Instead of a programmer encoding every rule, a model is trained on data to make predictions or decisions, using statistical or machine-learning techniques.",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 2853.32,
+        "tokens": 581,
+        "attempts": 1,
+        "wall_ms": 2853.35,
+        "context_chars": 79
+      },
+      "rag": {
+        "text": "The user wants a teaching explanation of \"From expert systems to data-driven methods\" using only the provided excerpts. I need 2-4 short paragraphs or bullets, plain text, no citations, ending with one concrete takeaway. Same language as topic text (English).\n\nLet me extract what's in the excerpts:\n\n[1] Expert systems: mostly handcrafted rules. Question posed: \"What might be the problem?\" Data-driven methods = machine learning. Three drivers: better models (more variables to fit data; progression rule-based → statistical → deep learning), better computing resources (more powerful RAM, CPU, GPU), and importantly more data (huge volume available for analytics and discovering valuable information).",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 3269.93,
+        "tokens": 1056,
+        "attempts": 1,
+        "wall_ms": 3269.97,
+        "context_chars": 1872
+      }
+    },
+    {
+      "topic_id": "t06_ai_tasks",
+      "name": "AI tasks, methods and application areas",
+      "query": "AI tasks, methods and application areas Which is listed as an AI method? Which is listed as an application area? Which task area converts speech into text?",
+      "retrieved": [
+        "Lecture 1, Page 47",
+        "Lecture 1, Page 19",
+        "Lecture 1, Page 51"
+      ],
+      "llm_only": {
+        "text": "AI tasks are the kinds of problems AI systems are designed to solve, such as classification, prediction, clustering, optimization, planning, perception, language understanding, and decision-making.\n\nAI methods are the techniques used to solve those tasks, including rule-based systems, search and planning, machine learning, deep learning, reinforcement learning, probabilistic reasoning, and knowledge representation.\n\nApplication areas are the domains where AI is used, such as healthcare, finance, transportation, manufacturing, education, robotics, security, agriculture, and entertainment.\n\nTakeaway: AI can be understood as a combination of tasks, methods, and application areas: what the system does, how it does it, and where it is used.",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 2758.06,
+        "tokens": 538,
+        "attempts": 1,
+        "wall_ms": 2758.09,
+        "context_chars": 79
+      },
+      "rag": {
+        "text": "Three layers to keep separate, since multiple-choice items usually test exactly this distinction:\n\nTasks are what the AI is asked to do with a given data type. The excerpts list speech processing and natural language processing, with speech processing covering speech-to-text, text-to-speech, and translation, alongside image and video tasks. Machine learning, including deep",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 3121.92,
+        "tokens": 1022,
+        "attempts": 1,
+        "wall_ms": 3121.95,
+        "context_chars": 1873
+      }
+    },
+    {
+      "topic_id": "t07_regression_vs_classification",
+      "name": "Regression vs classification",
+      "query": "Regression vs classification What does regression predict? Which is a classification example? Which task has a continuous output?",
+      "retrieved": [
+        "Lecture 1, Page 59",
+        "Lecture 1, Page 51",
+        "Lecture 1, Page 38"
+      ],
+      "llm_only": {
+        "text": "Regression predicts a continuous numeric value, such as price, temperature, age, or expected demand. The model learns a function that maps inputs to a real-valued output, and errors are usually measured with metrics such as mean squared error, mean absolute error, or R-squared.\n\nClassification predicts a category or label, such as spam vs not spam, disease vs no disease, or digit 0 through 9. The model learns decision boundaries or class probabilities, and performance is usually measured with accuracy, precision, recall, F1 score, or area under the ROC curve.\n\nA useful way to distinguish them in a multiple-choice question is to ask what the output is: if the answer is a number on a continuous scale, it is regression; if the answer is a discrete class or label, it is classification.\n\nTakeaway: Regression predicts continuous values; classification predicts discrete categories.",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 4729.98,
+        "tokens": 544,
+        "attempts": 1,
+        "wall_ms": 4730.01,
+        "context_chars": 79
+      },
+      "rag": {
+        "text": "Both regression and classification are supervised learning tasks: the data comes with labels, and the goal is to predict labels for new inputs. The distinction between them is entirely about the type of the output variable y.\n\nRegression applies when y ∈ R, meaning the target is a continuous variable. The lecture's example is price prediction, and the related framing question is about price trends: increase or decrease, and how fast. Because the output is a real number, the answer is a quantity on a scale rather than a category.\n\nClassification applies when the label is a discrete variable, meaning the output is one of a finite set of categories. The lecture's example is predicting the type of residence from features like size and lot size: house or townhouse? The output is a class label, not a measurement.\n\nSo for a multiple-choice question, check the answer space of y first.",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 2777.26,
+        "tokens": 992,
+        "attempts": 1,
+        "wall_ms": 2777.29,
+        "context_chars": 1873
+      }
+    },
+    {
+      "topic_id": "t08_ml_taxonomy",
+      "name": "Machine learning taxonomy",
+      "query": "Machine learning taxonomy Which three paradigms make up the lecture's machine learning taxonomy? Supervised learning requires ... Grouping customers into segments without any labels is ...",
+      "retrieved": [
+        "Lecture 1, Page 5",
+        "Lecture 1, Page 8",
+        "Lecture 1, Page 51"
+      ],
+      "llm_only": {
+        "text": "We need answer user's request. Need produce final answer. Need follow constraints: concise university-level tutor for AI concepts. No access to slides. No invent page numbers etc. 2-4 short paragraphs or bullets, same language as topic text. Topic: Machine learning taxonomy. Activity: Teach. Student weak points none. Lecture excerpts none. Explain concept so student can answer MCQ. Plain text only: no markdown fences, no JSON, no preamble about being AI. End with one concrete takeaway. Need likely English. Need maybe bullets. Ensure no markdown? Plain text can include bullets with hyphen? It says plain text only: no markdown fences, no JSON. Bullets okay? It says 2-4 short paragraphs or bullets. Use simple bullets maybe. Need no source.",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 3065.8,
+        "tokens": 609,
+        "attempts": 1,
+        "wall_ms": 3065.85,
+        "context_chars": 79
+      },
+      "rag": {
+        "text": "Machine learning taxonomy is a simplified way to organize machine learning methods by the type of task they perform.\n\nSupervised learning uses labeled data to predict labels, such as price prediction. Unsupervised learning uses unlabeled data to discover structure, such as clusters or topic discovery. Reinforcement learning uses rewards to learn good actions, such as dog training.\n\nTakeaway: If a question mentions labeled data and predicting labels, choose supervised learning; if it mentions unlabeled data and clusters, choose unsupervised learning; if it mentions rewards and good actions, choose reinforcement learning.",
+        "model": "baidu/ernie-5.5-flash-preview:free",
+        "latency_ms": 2797.93,
+        "tokens": 999,
+        "attempts": 1,
+        "wall_ms": 2797.96,
+        "context_chars": 1871
+      }
+    }
+  ],
+  "scores": {
+    "per_topic": [
+      {
+        "topic_id": "t01_what_is_ai",
+        "name": "What is AI",
+        "llm_only": {
+          "coverage": 0.1673,
+          "grounding": 0.1603
+        },
+        "rag": {
+          "coverage": 0.1667,
+          "grounding": 0.3445
+        }
+      },
+      {
+        "topic_id": "t02_ml_definition",
+        "name": "Machine Learning and the P-T-E framework",
+        "llm_only": {
+          "coverage": 0.0,
+          "grounding": 0.1094
+        },
+        "rag": {
+          "coverage": 0.3889,
+          "grounding": 0.2694
+        }
+      },
+      {
+        "topic_id": "t03_deep_learning",
+        "name": "Deep learning and its relation to ML",
+        "llm_only": {
+          "coverage": 0.5,
+          "grounding": 0.2132
+        },
+        "rag": {
+          "coverage": 0.75,
+          "grounding": 0.3298
+        }
+      },
+      {
+        "topic_id": "t04_big_data_4v",
+        "name": "Characteristics of Big Data (4V)",
+        "llm_only": {
+          "coverage": 0.3426,
+          "grounding": 0.1871
+        },
+        "rag": {
+          "coverage": 0.3611,
+          "grounding": 0.1213
+        }
+      },
+      {
+        "topic_id": "t05_data_driven",
+        "name": "From expert systems to data-driven methods",
+        "llm_only": {
+          "coverage": 0.3127,
+          "grounding": 0.1416
+        },
+        "rag": {
+          "coverage": 0.5214,
+          "grounding": 0.347
+        }
+      },
+      {
+        "topic_id": "t06_ai_tasks",
+        "name": "AI tasks, methods and application areas",
+        "llm_only": {
+          "coverage": 0.0972,
+          "grounding": 0.1642
+        },
+        "rag": {
+          "coverage": 0.0556,
+          "grounding": 0.1945
+        }
+      },
+      {
+        "topic_id": "t07_regression_vs_classification",
+        "name": "Regression vs classification",
+        "llm_only": {
+          "coverage": 0.6667,
+          "grounding": 0.0888
+        },
+        "rag": {
+          "coverage": 0.6944,
+          "grounding": 0.274
+        }
+      },
+      {
+        "topic_id": "t08_ml_taxonomy",
+        "name": "Machine learning taxonomy",
+        "llm_only": {
+          "coverage": 0.1032,
+          "grounding": 0.0652
+        },
+        "rag": {
+          "coverage": 0.5714,
+          "grounding": 0.4304
+        }
+      }
+    ],
+    "summary": {
+      "llm_only": {
+        "coverage_mean": 0.2737,
+        "coverage_sd": 0.2116,
+        "grounding_mean": 0.1412
+      },
+      "rag": {
+        "coverage_mean": 0.4387,
+        "coverage_sd": 0.2281,
+        "grounding_mean": 0.2889
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {
   "name": "adaptive-study-assistant-platform",
   "version": "0.1.0",
-  "description": "Frontend prototype of an AI-driven Adaptive Study Assistant Platform (COMP5241 Software Engineering project).",
+  "description": "Frontend prototype of an AI-driven Adaptive Study Assistant Platform (COMP5511 AI Concepts project).",
   "private": true,
   "scripts": {
     "start": "node server.js",

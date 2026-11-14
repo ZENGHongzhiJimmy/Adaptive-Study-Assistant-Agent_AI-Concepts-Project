@@ -186,7 +186,7 @@ def test_same_initial_state_reproduces_same_trajectory(tmp_path):
     assert trajectories[0] == trajectories[1]
     assert all(math.isfinite(value) for value in trajectories[0])
 
-    # reset() returns a store to its initial condition for a fresh E2 run.
+    # reset() returns a store to its initial condition for a fresh experiment run.
     with StudentStateStore(tmp_path / "state_0.db") as state:
         state.reset("profile_a")
         assert state.get_state("profile_a", "Bayes Theorem")["attempts"] == 0

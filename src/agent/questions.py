@@ -1,6 +1,6 @@
 """Minimal deterministic MCQ bank for the P3 self-test loop ONLY.
 
-This is NOT the experiment question bank: E1 builds the real knowledge points,
+This is NOT the experiment question bank: the experiment harness builds the real knowledge points,
 questions and predefined student profiles. P4 replaces these items with
 LLM-generated, RAG-grounded questions. Keeping a tiny static bank here lets
 the P3 closed loop run with zero LLM calls and be perfectly reproducible.

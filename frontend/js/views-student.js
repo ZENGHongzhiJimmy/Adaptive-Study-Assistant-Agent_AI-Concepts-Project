@@ -402,7 +402,8 @@ const Student = (() => {
             </div>
           </div>
           <div class="row mt-16">
-            <button class="btn btn-primary" onclick="Student.start('${next.activity.id}','${next.topic.id}')">${I('play',15)} 开始学习</button>
+            <button class="btn btn-primary" onclick="Student.start('${next.activity.id}','${next.topic.id}')"
+                    title="Agent 按你的掌握度排定的下一步，完成这个活动后会自动重排">${I('play',15)} 按推荐路径开始学习</button>
             <span class="spacer"></span>
             <button class="btn btn-ghost btn-sm" onclick="App.go('#/student/progress/${rec.id}')">查看本资料进度</button>
           </div>

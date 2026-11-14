@@ -405,12 +405,6 @@ const Engine = (() => {
     return d.activity;
   }
 
-  function rollKey(ref) {
-    const rec = findMaterial(ref);
-    if (rec) return String(rec.materialId || rec.id);
-    return typeof ref === 'string' ? ref : 'all';
-  }
-
   /* 一份资料的滚动计划：把 agent 快照翻译成界面需要的形状。
      agent 还没返回时返回 pendingAgent，界面会提示「正在询问 Agent」，
      而不是本地猜一个下一步。 */

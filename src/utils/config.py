@@ -76,7 +76,7 @@ def resolve_path(value: str | Path) -> Path:
 def config_for_log(config: dict[str, Any] | None = None) -> dict[str, Any]:
     """Flat, secret-free snapshot for the events table / experiment metadata.
 
-    Keep this shape stable from P0 onwards: P6 and E2 depend on it.
+    Keep this shape stable from P0 onwards: later stages depend on it.
     """
     cfg = config or get_config()
     planner = cfg["planner"]
