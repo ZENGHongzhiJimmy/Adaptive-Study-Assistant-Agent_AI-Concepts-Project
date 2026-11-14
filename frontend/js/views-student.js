@@ -391,7 +391,16 @@ const Student = (() => {
           ${UI.ring(next.topic.mastery, 68)}
         </div>
         <div class="focus-body">
-          <div class="reason-line">${next.reason}　规则 <span class="reason-rule">${next.rule}</span></div>
+          <div class="focus-why">
+            <span class="focus-why-ico">${I('sparkles', 15)}</span>
+            <div class="focus-why-main">
+              <div class="focus-why-t">${next.reason}</div>
+              <div class="focus-why-basis">
+                <span class="focus-why-k">判定依据</span>
+                ${ruleTags(next.rule)}
+              </div>
+            </div>
+          </div>
           <div class="row mt-16">
             <button class="btn btn-primary" onclick="Student.start('${next.activity.id}','${next.topic.id}')">${I('play',15)} 开始学习</button>
             <span class="spacer"></span>
@@ -410,7 +419,12 @@ const Student = (() => {
           ${UI.ring(s.avg, 68)}
         </div>
         <div class="focus-body">
-          <div class="reason-line">所有知识点都达到${Engine.masteryGoal(rec)}，且没有待纠正的错题，Agent 不再安排新的活动。</div>
+          <div class="focus-why focus-why-ok">
+            <span class="focus-why-ico">${I('check', 15)}</span>
+            <div class="focus-why-main">
+              <div class="focus-why-t">所有知识点都达到${Engine.masteryGoal(rec)}，且没有待纠正的错题，Agent 不再安排新的活动。</div>
+            </div>
+          </div>
           <div class="row mt-16">
             <button class="btn btn-primary" onclick="App.go('#/student/progress/${rec.id}')">查看学习进度</button>
             <button class="btn btn-ghost" onclick="Student.openTopic('${s.topics[0] ? s.topics[0].id : ''}')">回看知识点</button>
@@ -496,6 +510,21 @@ const Student = (() => {
         <div class="mini-stat-v">${val}</div>
         <div class="mini-stat-l">${label}</div>
       </div>`;
+  }
+
+  /* Agent 的规则串是写给机器看的（「掌握度 30% < 80%」「错题本还有 2 道题」），
+     原样摊在界面上像调试信息。这里统一翻译成胶囊标签：
+     带比较关系的拆成「掌握度 30% → 目标 80%」，其余保持原文但加同样的壳。 */
+  function ruleTags(rule) {
+    const txt = String(rule || '').trim();
+    if (!txt) return '';
+    const cmp = txt.match(/^掌握度\s*(\d+)%\s*[<＜]\s*(\d+)%$/);
+    if (cmp) {
+      return `<span class="rule-tag">掌握度 <b>${cmp[1]}%</b></span>`
+        + `<span class="rule-arrow">${I('arrowRight', 12)}</span>`
+        + `<span class="rule-tag rule-tag-goal">目标 <b>${cmp[2]}%</b></span>`;
+    }
+    return `<span class="rule-tag">${escapeHtml(txt)}</span>`;
   }
 
   /* 单个知识点：折叠面板展示解析内容 */
@@ -866,9 +895,11 @@ const Student = (() => {
             </div>
             <div class="text-sm mt-8" style="color:var(--text-2)">
               本资料还有 <b>${rollNow.remaining}</b> 个知识点未掌握，Agent 按掌握度继续滚动到
-              <b>${step.activity.name} · ${escapeHtml(step.topic.name)}</b>
-              （当前 ${step.topic.mastery}%），规则命中
-              <span class="reason-rule">${step.rule}</span>。
+              <b>${step.activity.name} · ${escapeHtml(step.topic.name)}</b>（当前 ${step.topic.mastery}%）。
+            </div>
+            <div class="basis-line">
+              <span class="focus-why-k">判定依据</span>
+              ${ruleTags(step.rule)}
             </div>
             <div class="row mt-16">
               <button class="btn btn-primary" onclick="Student.start('${step.activity.id}','${step.topic.id}')">
@@ -1451,6 +1482,29 @@ const Student = (() => {
     Array.from(dt.files).slice(0, 5).forEach(f => uploadAndParse(f));
   }
 
+  /* 解析过程中被移除的资料 id。
+     上传/解析是长请求，前端「移除」时服务端线程仍在跑：请求回来后必须重新
+     确认这条记录是否还在，不在就丢弃结果——否则会把知识点写回一个已删除的
+     资料，还会在右下角弹出「解析出 N 个知识点」。 */
+  const CANCELLED = new Set();
+
+  function isRemoved(rec) {
+    if (!rec) return true;
+    if (CANCELLED.has(rec.id)) return true;
+    return !Engine.uploads().some(u => u && u.id === rec.id);
+  }
+
+  /* 清理已移除资料在服务端留下的文件/向量：上传请求可能晚于 DELETE 落地，
+     这时服务端刚创建的文件与索引需要用真实 material id 再删一次。 */
+  async function purgeIfRemoved(rec, materialId) {
+    if (!isRemoved(rec)) return false;
+    if (materialId) {
+      await API.deleteMaterial(materialId, rec && rec.name);
+    }
+    if (rec) CANCELLED.delete(rec.id);
+    return true;
+  }
+
   /* 上传资料 → 后端解析 → 生成知识点与 quiz */
   async function uploadAndParse(file) {
     const rec = Engine.addUpload(file);
@@ -1466,6 +1520,8 @@ const Student = (() => {
 
     // 1) 上传
     const up = await API.uploadMaterial(file);
+    // 上传途中就被移除：服务端可能已经写好了文件与向量，按真实 id 清掉
+    if (await purgeIfRemoved(rec, up && up.ok ? (up.data.id || up.data.material_id) : null)) return;
     if (!up.ok) {
       if (API.isNetworkFailure(up)) {
         // 页面刷新/网络瞬断导致请求被中断：不是失败，转为可恢复状态
@@ -1486,6 +1542,7 @@ const Student = (() => {
     Engine.markUpload(rec.id, { status: 'parsing' });
     App.render();
     const parsed = await API.parseMaterial(materialId);
+    if (await purgeIfRemoved(rec, materialId)) return;
     if (!parsed.ok) {
       if (API.isNetworkFailure(parsed)) {
         Engine.markUpload(rec.id, { status: 'interrupted' });
@@ -1502,6 +1559,8 @@ const Student = (() => {
 
   /* 解析结果落地：知识点去重入库、标记已解析、保证该资料的问答桶存在 */
   function finishParse(rec, data) {
+    // 资料已被移除：丢弃整份解析结果，不写回知识点、不弹提示
+    if (isRemoved(rec)) { if (rec) CANCELLED.delete(rec.id); return; }
     const added = Engine.ingestParsed({
       ...data,
       source: rec.name,
@@ -1537,6 +1596,7 @@ const Student = (() => {
     App.render();
 
     const info = await API.getMaterial(rec.materialId);
+    if (isRemoved(rec)) { CANCELLED.delete(rec.id); return; }
     if (!info.ok) {
       if (info.status === 404) {
         Engine.markUpload(id, {
@@ -1560,6 +1620,7 @@ const Student = (() => {
     }
 
     const parsed = await API.parseMaterial(rec.materialId);
+    if (isRemoved(rec)) { CANCELLED.delete(rec.id); return; }
     if (!parsed.ok) {
       if (API.isNetworkFailure(parsed)) {
         Engine.markUpload(id, { status: 'interrupted' });
@@ -1585,6 +1646,11 @@ const Student = (() => {
 
   async function rmUpload(id) {
     const rec = Engine.uploads().find(x => x.id === id);
+    // 先打取消标记：上传/解析是长请求，服务端线程无法中断，请求回来时要靠
+    // 这个标记丢弃结果（不写知识点、不弹「解析出 N 个知识点」）。
+    const cancelParse = !!(rec && (rec.status === 'uploading' || rec.status === 'uploaded' ||
+      rec.status === 'parsing' || rec.status === 'interrupted'));
+    if (cancelParse) CANCELLED.add(id);
     // 始终请求后端清理：即使后端重启过（内存资料表已空），后端也会按
     // 资料 id / 文件名兜底删除磁盘文件与向量，避免「界面消失但数据残留」。
     // 上传中断还没回填 materialId 时，用本地记录 id 兜底（至少能按文件名清理索引）。
@@ -1605,7 +1671,9 @@ const Student = (() => {
       Q = next ? next.id : null;
       saveQ();
     }
-    UI.toast('已移除该资料（含索引与知识点）', 'warn');
+    UI.toast(cancelParse
+      ? '已移除该资料：解析已取消，索引与知识点均已清理'
+      : '已移除该资料（含索引与知识点）', 'warn');
     App.render();
   }
 

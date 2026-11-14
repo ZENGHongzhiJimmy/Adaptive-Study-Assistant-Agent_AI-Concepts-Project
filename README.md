@@ -281,9 +281,9 @@ npm start        # 或 node server.js
 | ---- | ---- | ---- |
 | GET | `/api/health` | 健康检查，返回 LLM 配置状态 |
 | POST | `/api/materials/upload` | 上传资料（multipart，PDF/TXT/MD） |
-| POST | `/api/materials/parse` | LLM 解析资料 → 抽取知识点 + 生成讲解与 quiz |
+| POST | `/api/materials/parse` | LLM 解析资料 → 抽取知识点 + 生成讲解与 quiz；解析途中资料被删除时返回 **410**（结果整体丢弃，不写缓存） |
 | GET | `/api/materials/{material_id}` | 查询资料解析状态与缓存结果（刷新后恢复） |
-| DELETE | `/api/materials/{material_id}` | 删除指定资料 |
+| DELETE | `/api/materials/{material_id}` | 删除指定资料：磁盘文件、ChromaDB 向量、解析缓存、知识点与 agent 学习状态一并清理；在跑的解析线程随后会看到删除标记并丢弃结果 |
 | POST | `/api/materials/reset` | 重置全部数据（上传资料、课程材料、ChromaDB 索引与向量库文件），平台回到初始状态 |
 | POST | `/api/quiz/generate` | 基于资料生成 quiz（可选独立入口） |
 | POST | `/api/qa/ask` | RAG + LLM 问答，返回 `{ answer, sources, grounded, mode }`；可选 `material_id` / `material_name`（限定检索资料）与 `topic` / `focus`（知识点讲解页随堂提问：当前知识点名 + 当页讲解内容，答案按助教讲解方式组织，`mode="tutor"`） |

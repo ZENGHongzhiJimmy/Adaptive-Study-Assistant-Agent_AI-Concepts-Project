@@ -723,12 +723,21 @@ const Engine = (() => {
   }
 
   function removeUpload(id) {
-    // 找到该资料对应的知识点来源，一并清除，避免残留
+    // 删除资料必须连带清掉它的所有派生数据：知识点、学习轨迹，以及
+    // 「已解析出 N 个知识点」这类提示，避免界面里留下无主内容。
     const rec = state.uploads.find(x => x.id === id);
     if (rec) {
       const keys = [rec.materialId, rec.id].filter(Boolean);
-      state.topics = state.topics.filter(t =>
-        !t._materialId || keys.indexOf(t._materialId) === -1);
+      const gone = new Set(
+        state.topics
+          .filter(t => t._materialId && keys.indexOf(t._materialId) !== -1)
+          .map(t => t.id)
+      );
+      state.topics = state.topics.filter(t => !gone.has(t.id));
+      state.trace = state.trace.filter(x => !gone.has(x.topicId));
+      if (state.lastAppend && keys.indexOf(state.lastAppend.materialId) !== -1) {
+        state.lastAppend = null;
+      }
       if (state.activeMaterialId === rec.id) state.activeMaterialId = null;
     }
     state.uploads = state.uploads.filter(x => x.id !== id);

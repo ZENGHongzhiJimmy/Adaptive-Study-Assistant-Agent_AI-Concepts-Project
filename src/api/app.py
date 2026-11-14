@@ -129,6 +129,9 @@ def parse_material(req: ParseRequest) -> dict[str, Any]:
         result = svc.parse_material(req.material_id)
     except svc.MissingKey as exc:
         raise HTTPException(status_code=503, detail=str(exc))
+    except svc.MaterialRemoved as exc:
+        # 解析期间资料被删除：结果已丢弃，前端无需提示任何「解析成功」。
+        raise HTTPException(status_code=410, detail=str(exc))
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=f"解析失败：{type(exc).__name__}: {exc}")
     return result

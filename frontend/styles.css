@@ -358,14 +358,48 @@ input, textarea, select { font: inherit; color: inherit; }
 .focus-title { font-size: 19px; font-weight: 800; letter-spacing: -.01em; margin-top: 2px; }
 .focus-meta  { font-size: 12.5px; color: var(--text-2); margin-top: 2px; }
 .focus-body { padding: 16px 20px; }
-.reason-line { font-size: 13px; color: var(--text-2); line-height: 1.65; }
-.reason-line b { color: var(--text); }
-.reason-rule {
-  font-family: ui-monospace, Menlo, Consolas, monospace;
-  font-size: 11.5px; background: var(--surface-2);
-  border: 1px solid var(--border); border-radius: 6px;
-  padding: 1px 6px; color: var(--primary-600);
+
+/* Agent 的判定说明：左侧一条淡紫（完成态为淡绿）竖线 + 灰底，读作「推荐理由」，
+   而不是一行贴在卡片里的灰色小字。规则串改成胶囊标签，避免 "<" 这类日志式写法。 */
+.focus-why {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px;
+  background: #f7f8fc;
+  border: 1px solid #e8eaf4;
+  border-left: 3px solid rgba(79,70,229,.55);
+  border-radius: 10px;
 }
+.focus-why-ok { border-left-color: rgba(22,163,74,.55); }
+.focus-why-ico {
+  width: 26px; height: 26px; flex: 0 0 26px;
+  display: grid; place-items: center; border-radius: 8px;
+  background: rgba(79,70,229,.12); color: var(--primary-600);
+}
+.focus-why-ok .focus-why-ico { background: rgba(22,163,74,.12); color: var(--success); }
+.focus-why-ico svg { display: block; }
+.focus-why-main { min-width: 0; padding-top: 1px; }
+.focus-why-t { font-size: 13px; line-height: 1.62; color: var(--text-2); }
+.focus-why-basis, .basis-line {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  margin-top: 9px;
+}
+.focus-why-k {
+  font-size: 10.5px; font-weight: 600; letter-spacing: .04em;
+  color: var(--text-3);
+}
+.rule-tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 9px; border-radius: 999px;
+  font-size: 11.5px; line-height: 1.7; color: var(--text-2);
+  background: var(--surface); border: 1px solid #e2e4ee;
+}
+.rule-tag b { color: var(--primary-600); font-weight: 700; }
+.rule-tag-goal { background: rgba(79,70,229,.07); border-color: rgba(79,70,229,.24); }
+/* 结果页的 Re-plan 卡本身就是淡紫底，这里把胶囊提到纯白并加深描边，避免糊在底色里 */
+.basis-line .rule-tag { background: #fff; border-color: rgba(79,70,229,.20); }
+.basis-line .focus-why-k { color: var(--text-2); }
+.rule-arrow { display: inline-flex; color: var(--text-3); }
+.rule-arrow svg { display: block; }
 
 /* 教师发布的学习路径条 */
 .pub-card { padding: 14px 18px; margin-bottom: 18px; }

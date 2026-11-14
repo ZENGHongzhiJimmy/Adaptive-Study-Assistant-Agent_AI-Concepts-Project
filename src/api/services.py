@@ -335,6 +335,15 @@ class MaterialService:
     class MissingKey(RuntimeError):
         """LLM key absent/placeholder; endpoints map this to HTTP 503."""
 
+    class MaterialRemoved(RuntimeError):
+        """资料在解析过程中被删除；解析结果必须整体丢弃，不再写回任何一层。
+
+        FastAPI 的同步端点在线程池里跑，前端删资料时 LLM 调用不会中断。
+        没有这个信号，解析完成后会把知识点、解析缓存、状态重新写回一个已经
+        删除的资料，表现为「资料已移除，界面却又提示解析出 N 个知识点」，
+        并且内存里留下无主数据。端点把它映射成 HTTP 410。
+        """
+
     def __init__(self, config: dict[str, Any]) -> None:
         self.config = config
         self.upload_dir = resolve_path(
@@ -357,6 +366,9 @@ class MaterialService:
         # same material can return the cached result instead of a second LLM
         # call. Front-end recovery reads this via material_status().
         self._parse_results: dict[str, dict[str, Any]] = {}
+        # Tombstones: materials deleted while their parse was still running.
+        # A late parse result must be dropped instead of resurrecting the data.
+        self._removed: set[str] = set()
         self._llm: LLMClient | None = None
 
     @property
@@ -386,6 +398,9 @@ class MaterialService:
             raise ValueError("文件过大（上限 20MB）")
 
         mid = "m_" + re.sub(r"[^a-zA-Z0-9]", "_", str(abs(hash(name + str(len(data))))))
+        # 同一份文件重新上传：清掉上一次的删除标记，否则新上传会被当成
+        # 「已删除的资料」而拒绝解析。
+        self._removed.discard(mid)
         path = self.upload_dir / f"{mid}{suffix}"
         path.write_bytes(data)
 
@@ -517,6 +532,8 @@ class MaterialService:
         self._topics.clear()
         self._parse_results.clear()
         self._materials.clear()
+        # 全部数据清空后，仍需保留墓碑：此刻在跑的解析线程同样不能把结果写回。
+        self._removed.update(material_ids)
         return {
             "reset": True,
             "materials_removed": len(material_ids),
@@ -546,6 +563,10 @@ class MaterialService:
         """
         rec = self._materials.get(material_id)
         name = material_name or (rec.get("name") if rec else None)
+
+        # 0) 打上删除标记：若此时还有解析线程在跑，它完成后会看到这个标记并
+        #    丢弃结果，不会把知识点/缓存写回一个已删除的资料。
+        self._removed.add(material_id)
 
         # 1) ChromaDB chunks
         removed = self.store.delete_where({"material_id": material_id})
@@ -596,6 +617,15 @@ class MaterialService:
         }
 
     # ---- 解析：LLM 抽取知识点 + 生成讲解与 quiz ----
+    def _assert_alive(self, material_id: str) -> None:
+        """解析流程的取消检查点：资料已删除就抛 MaterialRemoved。
+
+        检查两件事：删除墓碑（DELETE 已经进来过）和内存记录是否还在。
+        任意一条成立都意味着这次解析结果属于「不存在」的资料，必须整体丢弃。
+        """
+        if material_id in self._removed or material_id not in self._materials:
+            raise self.MaterialRemoved("资料已被移除，解析已取消")
+
     def _material_text(self, material_id: str) -> str:
         rec = self.get_material(material_id)
         if rec is None:
@@ -612,6 +642,7 @@ class MaterialService:
         rec = self.get_material(material_id)
         if rec is None:
             raise ValueError("资料不存在")
+        self._assert_alive(material_id)
         # Refreshing the page aborts the browser request, but FastAPI's sync
         # endpoint keeps running in its thread pool. Serve the cached result
         # on retry so recovery is instant and does not pay for another LLM call.
@@ -654,6 +685,10 @@ class MaterialService:
         topics = payload.get("topics") or []
         if not isinstance(topics, list) or not topics:
             raise ValueError("LLM 未返回有效知识点")
+
+        # LLM 调用期间资料可能已被前端删除（DELETE 无法中断这次调用）。
+        # 在写回任何数据之前必须再确认一次：资料还在，才允许落库。
+        self._assert_alive(material_id)
 
         # 合并去重：按知识点名称归一化去重，保留首次出现顺序
         seen: set[str] = set()
