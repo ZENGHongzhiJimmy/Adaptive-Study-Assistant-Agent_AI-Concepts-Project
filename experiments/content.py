@@ -1,4 +1,4 @@
-"""E2: the two content conditions, generated once and frozen.
+"""Content preparation: the two content conditions, generated once and frozen.
 
 Why a separate stage
 --------------------
@@ -21,9 +21,10 @@ Conditions
 Retrieval backend
 -----------------
 The product retriever (Chroma + hashing embeddings) is used when its index
-exists. It usually does not in a fresh clone, so the fallback is a page-level
-TF-IDF index built from the committed lecture PDF. Both are deterministic; the
-backend actually used is recorded in the output so a run is never ambiguous.
+exists. It usually does not in a fresh clone, so the fallback is a TF-IDF index
+over the committed lecture PDF, chunked exactly like the product (800 chars,
+100 overlap). Both are deterministic; the backend actually used is recorded in
+the output so a run is never ambiguous.
 
 Scoring
 -------
@@ -48,12 +49,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import re
 import statistics
 import sys
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -105,7 +105,7 @@ class Passage:
     text: str
 
 
-class PageIndex:
+class ChunkIndex:
     """Chunk-level TF-IDF index over the committed lecture PDF.
 
     Chunks follow the product's retrieval config (800 chars, 100 overlap) so the
@@ -163,7 +163,7 @@ class PageIndex:
 
 
 def build_index(config: dict[str, Any]) -> tuple[Any, str]:
-    """Prefer the product retriever; fall back to the deterministic page index."""
+    """Prefer the product retriever; fall back to the deterministic chunk index."""
     try:
         from src.agent.actions import build_retriever
 
@@ -172,7 +172,8 @@ def build_index(config: dict[str, Any]) -> tuple[Any, str]:
             return retriever, "product-chroma"
     except Exception:
         pass
-    return PageIndex(SOURCE_PDF), "tfidf-pages"
+    index = ChunkIndex(SOURCE_PDF)
+    return index, index.name
 
 
 def _as_passages(hits: Sequence[Any]) -> list[Passage]:
@@ -369,7 +370,7 @@ def probe_terms(bank: Bank) -> dict[str, list[set[str]]]:
 
 
 def score_all(bank: Bank, rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
-    index = PageIndex(SOURCE_PDF)
+    index = ChunkIndex(SOURCE_PDF)
     terms = probe_terms(bank)
     per_condition: dict[str, dict[str, float]] = {c: {} for c in CONDITIONS}
     rows_out = []
@@ -426,7 +427,7 @@ def quality_by_condition(materials: dict[str, Any]) -> dict[str, dict[str, float
 # --------------------------------------------------------------------------
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="E2 content conditions")
+    parser = argparse.ArgumentParser(description="content conditions (frozen)")
     parser.add_argument("--force", action="store_true", help="regenerate every topic")
     parser.add_argument("--score-only", action="store_true", help="rescore frozen text")
     args = parser.parse_args(argv)

@@ -1,4 +1,4 @@
-"""The four tutors compared in E1/E2.
+"""The four tutors compared in the equal-budget experiment.
 
 Each method is a pair: **where the explanation comes from** and **how the next
 activity is chosen**. Splitting the two is what makes the proposal's three
@@ -30,7 +30,7 @@ the (content, planner) pair.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Protocol, Sequence
+from typing import Protocol, Sequence
 
 from src.agent import policy as P
 

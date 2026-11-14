@@ -2,7 +2,7 @@
   "generated_at": "2026-11-14 23:46:11",
   "model": "baidu/ernie-5.5-flash-preview:free",
   "temperature": 0.0,
-  "retrieval_backend": "tfidf-pages",
+  "retrieval_backend": "tfidf-chunks",
   "top_k": 3,
   "conditions": [
     "llm_only",

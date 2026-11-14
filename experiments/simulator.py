@@ -47,8 +47,8 @@ tests *policies under this model*, not human learning rates.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Any, Iterable, Sequence
+from dataclasses import dataclass
+from typing import Any, Sequence
 
 from .bank import Item, Topic
 
@@ -155,10 +155,6 @@ class SimulatedStudent:
         scores = [self.probe_score(tid) for tid in self._topics]
         return sum(scores) / len(scores) if scores else 0.0
 
-    def true_mastery(self, topic_id: str) -> float:
-        """Ability expressed on the same 0-100 scale as the agent's mastery."""
-        return 100.0 * self.probe_score(topic_id)
-
     # ---------- learning ----------
 
     def _headroom(self, topic_id: str) -> float:
@@ -186,7 +182,7 @@ class SimulatedStudent:
         """Apply one activity's learning effect and return the theta gain.
 
         ``quality`` is how much of the *tested* content the explanation actually
-        covered (the E2 coverage score). An explanation that never mentions what
+        covered (the coverage score from the frozen content). An explanation that never mentions what
         the post-test asks about cannot produce the full learning gain, so the
         gain is scaled by it. Practice is not scaled: the practice items come
         from the frozen bank in every condition, so item quality is held constant
@@ -211,14 +207,6 @@ class SimulatedStudent:
         self.activities += 1
         return gain
 
-    def snapshot(self) -> dict[str, Any]:
-        return {
-            "profile": self.profile.name,
-            "seed": self.seed,
-            "theta": {k: round(v, 4) for k, v in self.theta.items()},
-            "probe": {k: round(self.probe_score(k), 4) for k in self.theta},
-        }
-
 
 class _Random:
     """Tiny deterministic PRNG (xorshift32) so replays never depend on Python."""
@@ -238,7 +226,3 @@ class _Random:
         if not items:
             raise IndexError("choice from empty sequence")
         return items[int(self.random() * len(items)) % len(items)]
-
-
-def total_items(topics: Iterable[Topic]) -> int:
-    return sum(len(t.practice) + len(t.probe) for t in topics)

@@ -3,7 +3,8 @@
 Sources: `experiments/results/e1_main.json` (4 methods × 5 learner profiles × 8 seeds = 160
 sessions, 32-activity budget) and `experiments/data/materials.json` (the frozen LLM-only and
 RAG explanations plus their scores). Render with `python -m experiments.plots`; all panels are
-300 dpi PNG.
+300 dpi PNG. Figs. 1-4 and 6 come from the equal-budget comparison; Fig. 5 comes from the
+content-preparation stage.
 
 ---
 

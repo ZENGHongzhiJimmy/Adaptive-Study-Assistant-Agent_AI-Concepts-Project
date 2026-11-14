@@ -13,7 +13,7 @@ run never looks "LLM-powered" when it actually used offline templates.
 ``--offline`` is an explicit, deliberate opt-out whose value is captured in
 the events config snapshot, keeping the P6 freeze reproducible.
 
-No UI, no subjective rubric, no baselines: those belong to P5 / E1.
+No UI, no subjective rubric, no baselines: those belong to the experiment harness.
 """
 
 from __future__ import annotations

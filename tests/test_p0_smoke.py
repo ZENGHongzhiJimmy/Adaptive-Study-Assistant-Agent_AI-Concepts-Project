@@ -8,7 +8,6 @@ from __future__ import annotations
 import json
 import re
 import subprocess
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -18,7 +17,7 @@ from src.utils import llm_client as lc
 
 EXPECTED_PACKAGES = {
     "langgraph", "langchain-openrouter", "openai", "pymupdf",
-    "chromadb", "pandas",
+    "chromadb", "numpy",
     "scikit-learn", "matplotlib", "python-dotenv", "PyYAML", "pytest",
 }
 

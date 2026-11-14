@@ -1,6 +1,6 @@
 {
   "protocol": {
-    "experiment": "E1",
+    "experiment": "equal_budget_comparison",
     "dataset": "experiments/data/bank.json",
     "materials": "experiments/data/materials.json",
     "topics": 8,
@@ -70,7 +70,7 @@
         "label": "Adaptive (ours)"
       }
     },
-    "content_backend": "tfidf-pages"
+    "content_backend": "tfidf-chunks"
   },
   "content_quality": {
     "llm_only": {

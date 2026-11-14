@@ -22,14 +22,13 @@ Design:
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from ..utils.config import get_config, resolve_path
+from ..utils.config import get_config
 from .agent import close_agent, get_agent, router as agent_router
 from .services import (
     MaterialService,

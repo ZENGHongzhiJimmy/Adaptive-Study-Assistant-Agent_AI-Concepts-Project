@@ -24,16 +24,15 @@ import json
 import re
 import shutil
 import time
-from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
-from ..ingestion.chunker import Chunk, chunk_pages
-from ..ingestion.pdf_parser import PageText, format_source, lecture_name, parse_pdf
+from ..ingestion.chunker import chunk_pages
+from ..ingestion.pdf_parser import PageText, lecture_name, parse_pdf
 from ..retrieval.embeddings import get_embedder
 from ..retrieval.vector_store import ChromaVectorStore, RetrievedChunk
 from ..utils.config import resolve_path
-from ..utils.llm_client import LLMClient, MissingAPIKeyError
+from ..utils.llm_client import LLMClient
 from ..utils.quiz_order import reorder_quiz
 
 _UPLOAD_KINDS = (".pdf", ".txt", ".md", ".markdown")
@@ -784,13 +783,11 @@ class MaterialService:
             rec = self.get_material(material_id)
             if rec is None:
                 raise ValueError("资料不存在")
-            text = self._material_text(material_id)
         else:
             # 取最近上传的一份资料
             if not self._materials:
                 raise ValueError("尚未上传任何资料")
             material_id = list(self._materials.keys())[-1]
-            text = self._material_text(material_id)
 
         # 简化：直接走 parse 的抽取逻辑，但只返回 quiz
         payload = self.parse_material(material_id)

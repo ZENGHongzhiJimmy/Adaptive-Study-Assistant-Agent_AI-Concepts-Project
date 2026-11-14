@@ -17,10 +17,10 @@ mastery update rule. This module is now the single source of truth:
   ``experiments/run_experiment.py``) calls the same functions.
 
 ``planner.py`` is kept as the legacy threshold planner used by the LangGraph
-CLI (``graph.py``), but it is NOT one of the E1 baselines.  The three E1
+CLI (``graph.py``), but it is NOT one of the baselines.  The three
 baselines are (content, planner) pairs defined in ``experiments/methods.py``;
 the fixed-strategy one is ``methods.CyclicPlanner``.  This module remains the
-single policy shared by the product and the adaptive arm of E1.
+single policy shared by the product and the adaptive arm of the main experiment.
 
 Design notes
 ------------

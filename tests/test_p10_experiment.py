@@ -1,4 +1,4 @@
-"""Regression tests for the E1/E2 harness.
+"""Regression tests for the experiment harness.
 
 Two things have to hold for the comparison to mean anything:
 
@@ -12,7 +12,6 @@ Two things have to hold for the comparison to mean anything:
 from __future__ import annotations
 
 import copy
-from pathlib import Path
 
 import pytest
 

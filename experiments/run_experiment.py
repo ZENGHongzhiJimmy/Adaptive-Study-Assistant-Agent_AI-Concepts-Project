@@ -1,4 +1,4 @@
-"""E1: equal-budget comparison of the four tutors from the proposal.
+"""Main experiment: equal-budget comparison of the four tutors from the proposal.
 
 Protocol
 --------
@@ -393,7 +393,7 @@ def print_report(totals, profiles, pairs, costs) -> None:
 # --------------------------------------------------------------------------
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="E1 four tutors")
+    parser = argparse.ArgumentParser(description="four tutors (equal budget)")
     parser.add_argument("--seeds", type=int, default=5, help="learners per (method, profile)")
     parser.add_argument("--budget", type=int, default=32, help="activities per session")
     parser.add_argument("--out", default=str(DEFAULT_OUT))
@@ -423,7 +423,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     payload = {
         "protocol": {
-            "experiment": "E1",
+            "experiment": "equal_budget_comparison",
             "dataset": "experiments/data/bank.json",
             "materials": "experiments/data/materials.json",
             "topics": len(bank.topics),
