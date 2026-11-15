@@ -18,8 +18,12 @@ from src.api.app import app
 
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
-    """Fresh in-memory-ish agent (temporary SQLite) per test."""
-    service = AgentService(LearnerStore(db_path=tmp_path / "learner.db"))
+    """Fresh in-memory-ish agent (temporary SQLite) per test.
+
+    ``planner=None`` pins the rule path: these tests assert the HTTP contract,
+    not who picked the activity, and they must never need an API key or network.
+    """
+    service = AgentService(LearnerStore(db_path=tmp_path / "learner.db"), planner=None)
     monkeypatch.setattr(agent_module, "_agent", service)
     yield TestClient(app)
     service.close()

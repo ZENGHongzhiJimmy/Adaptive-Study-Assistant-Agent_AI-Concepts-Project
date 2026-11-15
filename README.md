@@ -70,16 +70,18 @@
 
 > **按资料隔离**：每个知识点通过 `_materialId` 绑定所属资料，Pre-test 状态、掌握度、推荐活动与学习记录都只在该资料模块内生效，不同资料之间互不干扰。
 
-三种学习活动（由 `src/agent/policy.py` 按「错题本 + 连续失败 + 是否学过讲解」分派，不是单纯的分数阈值）：
+三种学习活动。**下一步由 LLM 在合法候选里挑选并给出理由**（`planner_llm.py`）；下表是候选的成立条件，只描述"什么时候可以做"，不规定"应该先做哪个"：
 
-| 活动        | 触发条件（policy.decide 的分支顺序）     | 说明                                                             |
+| 活动        | 何时可能被推荐（候选条件）              | 说明                                                             |
 | --------- | ----------------------------- | -------------------------------------------------------------- |
-| **知识点讲解** | 连续 2 次练习正确率 < 50%（重学）／ 从未看过讲解 | 基于上传资料生成的分页讲解，可随时暂停提问（RAG + LLM 现场作答，并附引用出处）；看完最多到 55%         |
-| **知识复习**  | 错题本还有 ≥ 2 道题                  | 针对历史错误的闪卡回顾，只清错题、不涨掌握度                                         |
-| **练习测验**  | 上面都不满足，且题库非空                  | 针对资料内容生成的测验题；`Δ = clamp(round((正确率×100 − 掌握度)×0.6), −10, +25)` |
-| **收尾**    | 掌握度 ≥ 80% 且错题清空               | 该知识点结束，不再推荐活动                                                  |
+| **知识点讲解** | 有讲解页，且未掌握                  | 基于上传资料生成的分页讲解，可随时暂停提问（RAG + LLM 现场作答，并附引用出处）；看完最多到 55%         |
+| **知识复习**  | 错题本还有 ≥ 1 道题                 | 针对历史错误的闪卡回顾，只清错题、不涨掌握度                                         |
+| **练习测验**  | 题库非空                          | 针对资料内容生成的测验题；`Δ = clamp(round((正确率×100 − 掌握度)×0.6), −10, +25)` |
+| **收尾**    | 掌握度 ≥ 80% 且错题清空               | 该知识点结束；`policy.decide()` 在实验里也这样定义"完成"，但产品不再用它排程                |
 
-自适应规划遵循 `Plan → Act（浏览器）→ Observe → Update → Re-plan` 闭环：每次作答后由 agent 更新掌握度与错题本，再重新排出本轮下一步。
+模型的选择可以与任何"经验规则"不同——这正是"决策权在模型"的含义；每次选择都会附带一句引用具体数字的理由，显示在界面的「判定依据」里。
+
+自适应规划遵循 `Plan → Act（浏览器）→ Observe → Update → Re-plan` 闭环：每次作答后由 agent 更新掌握度与错题本，再由模型重新决定下一步。
 
 ---
 
@@ -171,8 +173,34 @@ js/app.js             # 应用外壳 + hash 路由（含资料模块与资料级
 | 文本向量化    | **Hashing（确定性词袋哈希）**      | 无外部模型依赖，离线可复现的文本向量                                                |
 | 资料解析     | **PyMuPDF** + 纯文本         | PDF / TXT / MD 提取正文                                               |
 | Agent 编排 | **LangGraph**             | `observe → planner` 两个节点：先更新状态，再重新规划；`/api/agent/*` 直接 invoke 这个图 |
-| 规划策略     | **`src/agent/policy.py`** | 唯一实现（讲解 / 练习 / 复习 / 收尾 + 滚动轮次），无 LLM、纯函数，实验脚本复用同一份                |
+| 决策（下一步） | **LLM**（`src/agent/planner_llm.py`） | 模型在合法候选里挑一个动作并给出理由；结构化 JSON，校验不过就本步不给决策，**不退回规则** |
+| 合法性与测量   | **`src/agent/policy.py`** | 定义合法动作空间、掌握度更新、掌握判定、滚动轮次；纯函数，产品与实验共用 |
 | 学习状态     | **SQLite（`learner_*` 表）** | 掌握度、错题本、轮次、决策轨迹（`learner_step`）由服务端持久化                            |
+
+### 5.1 决策由模型做，测量由代码做
+
+一句话：**"下一步学什么"交给 LLM，"学会了没有"留在代码里。**
+
+| 归谁 | 内容 | 位置 |
+| --- | --- | --- |
+| LLM | 从候选里选一个动作 + 写出理由（引用掌握度与错题数） | `LLMPlanner.choose()` |
+| 代码 | 枚举合法候选：没题不能练、未前测不入列、已掌握不入列 | `legal_candidates()` |
+| 代码 | 校验模型的选择：幻觉 id、不存在的活动、原样重复上一步 | `validate_choice()` |
+| 代码 | 只给事实：状态、掌握度、错题数；**不产生任何候选旁的动作** | `policy.plan_facts()` |
+| 代码 | 把模型选择写成计划里唯一的下一步，并标记该知识点的判定 | `apply_decision()` |
+| 代码 | 掌握度更新 / 掌握判定 / 轮次推进（**未改动**） | `policy.apply_result()` 等 |
+
+**为什么掌握度不交给模型**：掌握度是度量，是 learning gain 的地面真值。把度量交给被评估的对象，实验就没有结论了——所以 `apply_result` / `is_mastered` / `plan_material` 保持纯函数，模型只碰"选哪个"。
+
+开关与失败处理（**没有自动降级到规则**）：
+
+- `config.yaml -> agent.planner`：`llm`（默认）或 `rule`（显式的演示/测试模式，不会自动切换过去）
+- 无 Key → 不构造任何"规则计划"顶替；响应 `agent.decided_by = unavailable`、`model_connected = false`、`unavailable_reason = no_api_key`，前端直接显示"未接入模型"
+- 免费模型返回了"没法用的内容"（截断、散文、JSON 非法、选了不存在的知识点）→ **用强模型重判一次**：`agent.planner_escalation_models`（默认取 `llm.fallback_models`，即付费模型），token 预算提到 1200，仍由模型决策。成功时 `decision.escalated = true`，前端在"判定依据"处标出"备用模型重判"
+- 强模型仍然给不出 → 不退回 `policy.decide()`；`decided_by = unavailable`，`unavailable_reason` 为 `call_failed` 或 `bad_output`，`decision.attempts` 列出每个被问过的模型及失败原因，`next` 为空
+- 计划里的 `steps` 只有模型选中的那一步；`by_topic` 只有事实（`pretest / ready / done / blocked`），不含代码猜的动作
+- 同一学情命中决策缓存 → 不再调用模型，同状态必然同决策（8 seed 重跑可比）
+- 单次决策约 1k token、3–5 s；升级会多一次调用（约 +2–4 s），一次会话 10–30 步，这是产品侧的主要延迟与成本来源
 
 ---
 
@@ -204,7 +232,9 @@ Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
 │   │   ├── services.py             # 资料解析 / quiz 生成 / RAG 问答
 │   │   └── run.py                  # 启动入口
 │   ├── agent/                      # Agent 运行时
-│   │   ├── policy.py               # ★ 唯一的自适应策略（决策 + 掌握度 + 滚动轮次）
+│   │   ├── policy.py               # ★ 掌握度更新 / 掌握判定 / 事实视图（plan_facts；decide 仅实验）
+│   │   ├── planner_llm.py          # ★ LLM 决策器：合法候选 + 结构化输出 + 校验 + 缓存（无规则回退）
+│   │   ├── prompts/                # 提示词（decision.py 决策、templates.py CLI 讲解/出题）
 │   │   ├── learner_store.py        # learner_topic / learner_roll / learner_step
 │   │   ├── serve.py                # LangGraph 图 + 服务封装（产品实际调用）
 │   │   ├── graph.py                # CLI 闭环（python -m src.agent.run），含 Teach 渲染
@@ -336,6 +366,8 @@ curl -X POST http://127.0.0.1:8000/api/materials/parse \
 | 报告角色 | **method** | **遗留 CLI 实现（非实验基线）** |
 
 > 实验的三条基线（LLM-only / RAG / Fixed-strategy）定义在 `experiments/methods.py`，是 `(content, planner)` 配对；其中固定课程表用 `methods.CyclicPlanner`，**不是** `planner.py`。报告口径以 `policy.py` + `methods.py` 这一条链路为准。
+
+> **决策者与测量者的分工**：产品的"下一步"由 LLM 在合法候选里选（`planner_llm.py`），`policy.decide()` 不再出现在产品路径上（只剩实验基线与显式 `rule` 模式）；掌握度更新、达标判定、轮次推进仍 100% 在 `policy.py`。**注意**：离线实验的 `adaptive` 分支当前跑的仍是 `policy.decide()`，因此现有数字衡量的是"规则策略 vs 基线"，尚未覆盖"LLM 决策 vs 规则决策"。这一点在报告里必须写明，等实验加入 `llm_planner` 一条再更新。
 
 两条纪律：
 
@@ -513,6 +545,7 @@ python -m experiments.plots
 
 产品层面：
 
+- **决策由 LLM 做出，因此有成本与方差**：每次“下一步”约 1k token、3–5 s；免费模型偶发把 JSON 写成散文或被截断，处理顺序是“末尾强指令 → 同模型一次错误回灌重试 → 换强模型重判（`planner_escalation_models`，token 预算 1200）→ 决策缓存”。全部失败时**不用规则顶替**，而是本步返回“无决策”：`agent.decided_by = unavailable`，`unavailable_reason` 取 `no_api_key` / `call_failed` / `bad_output`，`decision.attempts` 记录每个被问过的模型，`next` 为空。
 - **LLM 模型配置与限流**：默认主模型为 OpenRouter 免费模型 `(baidu/ernie-5.5-flash-preview:free)`，`fallback_models` 中配置付费模型 `(deepseek/deepseek-v4.1-flash)` 兜底。主模型正常时只调用免费模型；主模型不可用（下架或 429）时按序切换。可在 `config.yaml -> llm` 更换 `model` 与 `fallback_models`。
 - **学习状态存于后端 SQLite**：掌握度、错题本、滚动轮次与决策轨迹由 `learner_*` 表持久化，浏览器只缓存最近一次 agent 快照用于渲染。清浏览器数据不丢记录，但换机器/换浏览器共享同一份状态（单用户原型，未做账号隔离）。
 - **嵌入后端**：固定为 `hashing`（确定性词袋哈希 + L2 归一化 cosine），无外部模型依赖、离线可复现；属于词面匹配而非语义嵌入，同义改写与跨语言检索能力有限。

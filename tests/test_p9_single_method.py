@@ -120,7 +120,9 @@ def test_views_do_not_reference_removed_constants() -> None:
 
 @pytest.fixture()
 def service(tmp_path: Path):
-    svc = AgentService(store=LearnerStore(tmp_path / "p9.db"))
+    # planner=None: these tests check the policy verdicts and the envelope, so
+    # they pin the deterministic rule path instead of calling an LLM.
+    svc = AgentService(store=LearnerStore(tmp_path / "p9.db"), planner=None)
     try:
         yield svc
     finally:

@@ -398,6 +398,7 @@ const Student = (() => {
               <div class="focus-why-basis">
                 <span class="focus-why-k">判定依据</span>
                 ${ruleTags(next.rule)}
+                ${next.escalated ? '<span class="rule-tag">备用模型重判</span>' : ''}
               </div>
             </div>
           </div>
@@ -431,16 +432,30 @@ const Student = (() => {
             <button class="btn btn-ghost" onclick="Student.openTopic('${s.topics[0] ? s.topics[0].id : ''}')">回看知识点</button>
           </div>
         </div>
-      </div>` : (roll && roll.pendingAgent ? `
+      </div>` : (roll && roll.pendingAgent ? (() => {
+        /* 两种情况必须分开说：没接入模型（部署问题）vs 模型本轮没给出可用决策。
+           两者都不会退回规则策略，所以不能说「正在请求」搪塞过去。 */
+        const noKey = roll.agentReason === 'no_api_key';
+        const extra = (roll.agentAttempts || []).length > 1
+          ? '已自动改用付费备用模型重判' : '已重试';
+        const title = noKey ? '未接入模型' : 'Agent 本轮没有给出下一步';
+        const detail = noKey
+          ? '下一步由大模型决定，服务端未配置模型密钥（OPENROUTER_API_KEY），因此没有可执行的学习路径。'
+          : (roll.agentReason === 'call_failed'
+            ? `模型调用失败（限流、超时或网络异常），${extra}，仍没有得到结果。等一分钟再点「继续」即可，掌握度和错题都已保存。`
+            : roll.agentReason === 'bad_output'
+              ? `模型这次的回复不是可用的决策（常见原因是被截断或没按 JSON 输出），${extra}，仍没有得到结果。再试一次通常就好了。`
+              : (roll.error ? escapeHtml(roll.error)
+                : '模型没有返回可用的决策，稍后重试；系统不会用固定规则替你选一步。'));
+        return `
       <div class="notice mt-16">
         <span class="notice-ico">${I('sparkles', 17)}</span>
         <div style="flex:1">
-          <div class="notice-t">正在向 Agent 请求下一步</div>
-          <div class="notice-d">${roll.error
-            ? escapeHtml(roll.error)
-            : '规划由后端 LangGraph agent 实时生成，请稍候…'}</div>
+          <div class="notice-t">${title}</div>
+          <div class="notice-d">${detail}</div>
         </div>
-      </div>` : (roll && roll.blocked.length ? `
+      </div>`;
+      })() : (roll && roll.blocked.length ? `
       <div class="notice mt-16">
         <span class="notice-ico">${I('bug', 17)}</span>
         <div style="flex:1">
@@ -519,6 +534,10 @@ const Student = (() => {
   function ruleTags(rule) {
     const txt = String(rule || '').trim();
     if (!txt) return '';
+    // 模型决策的标签单独高亮：学生看得出这一步是 LLM 选的，而不是套规则。
+    if (/^LLM/.test(txt)) {
+      return `<span class="rule-tag rule-tag-goal">${escapeHtml(txt)}</span>`;
+    }
     const cmp = txt.match(/^掌握度\s*(\d+)%\s*[<＜]\s*(\d+)%$/);
     if (cmp) {
       return `<span class="rule-tag">掌握度 <b>${cmp[1]}%</b></span>`
@@ -901,6 +920,7 @@ const Student = (() => {
             <div class="basis-line">
               <span class="focus-why-k">判定依据</span>
               ${ruleTags(step.rule)}
+              ${step.escalated ? '<span class="rule-tag">备用模型重判</span>' : ''}
             </div>
             <div class="row mt-16">
               <button class="btn btn-primary" onclick="Student.start('${step.activity.id}','${step.topic.id}')">
@@ -1794,7 +1814,14 @@ const Student = (() => {
               </button>
             </div>` : `
             <div class="text-sm mt-16" style="color:var(--text-3)">
-              ${roll.done ? '本资料已全部掌握，路径完成。' : '本轮没有可排的活动，先完成 Pre-test。'}
+              ${roll.done ? '本资料已全部掌握，路径完成。'
+                : roll.pendingPretest ? '还有知识点没有做 Pre-test，先完成它 Agent 才能排下一步。'
+                : roll.pendingAgent ? (roll.agentReason === 'no_api_key'
+                    ? 'Agent 未接入模型：服务端没有配置模型密钥，无法决定下一步。'
+                    : roll.agentReason === 'call_failed'
+                      ? 'Agent 调用模型失败（限流或超时），暂时没有下一步，稍后重试即可。'
+                      : 'Agent 本轮没有给出下一步，请稍后重试。')
+                : '本轮没有可排的活动。'}
             </div>`}
         </div>
       </div>` : '';

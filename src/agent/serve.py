@@ -5,8 +5,10 @@ ran it, while the web app decided everything in JavaScript.  A reviewer asking
 "where is the agent, and is it the same logic as the page?" had no good answer.
 
 This module closes that gap.  The decision the UI shows now comes from a
-compiled LangGraph graph, and the policy that fills its nodes is the same
-``policy.py`` the evaluation harness uses:
+compiled LangGraph graph: ``observe`` folds the result into the learner state
+with ``policy.apply_result`` (measurement), ``planner`` asks the model which
+legal activity to do next (``planner_llm``) and falls back to *no decision* -
+never to a rule-made one - when the model cannot answer.
 
     observe ──► planner          (after one activity: Update → Re-plan)
                   │
@@ -18,10 +20,14 @@ the student reads / answers - and comes back as an observation.  State lives in
 SQLite (``learner_store``) so a page refresh, a second tab or an experiment rerun
 see exactly the same trajectory.
 
+``policy.decide()`` is not reachable from this module any more.  It still exists
+as the ``adaptive`` baseline in ``experiments/methods.py`` and behind the
+explicit ``agent.planner: "rule"`` switch (tests, offline demo).
+
 Why not run ``graph.py`` here?  That graph renders content (Teach text, MCQ
 generation through the LLM).  The web layer already has the parsed material and
-would pay an LLM call per page render.  Same policy, different action surface -
-documented in README §5.
+would pay an LLM call per page render.  Different action surface, same
+measurement, documented in README §5.
 """
 
 from __future__ import annotations
@@ -32,6 +38,7 @@ from typing import Any, Sequence, TypedDict
 from langgraph.graph import END, StateGraph
 
 from .learner_store import LearnerStore
+from .planner_llm import apply_decision, make_planner
 from .policy import (
     EXPLAIN_CAP,
     MASTERED,
@@ -40,9 +47,13 @@ from .policy import (
     advance_round,
     apply_pre_test,
     apply_result,
-    decide,
+    plan_facts,
     plan_material,
 )
+
+# ``planner=None`` is meaningful (force the rule path, e.g. in tests), so the
+# "build it from config" case needs its own sentinel.
+_UNSET = object()
 
 
 class AgentGraphState(TypedDict, total=False):
@@ -54,6 +65,10 @@ class AgentGraphState(TypedDict, total=False):
     visited: list[str]
     observation: dict[str, Any] | None
     result: dict[str, Any] | None
+    # The activity that was just absorbed, so the planner sees it *in the same
+    # invoke*: ``learner_step`` is written after the graph returns, and without
+    # this the model would be blind to its own last move and repeat it.
+    last_activity: dict[str, Any] | None
     plan: dict[str, Any]
 
 
@@ -63,8 +78,21 @@ class AgentService:
     engine = "langgraph"
     policy = POLICY_ID
 
-    def __init__(self, store: LearnerStore | None = None):
+    def __init__(
+        self,
+        store: LearnerStore | None = None,
+        planner: Any = _UNSET,
+        config: dict[str, Any] | None = None,
+    ):
+        """``planner`` may be injected:
+
+        * omitted  -> built from ``agent.planner`` in config (``llm`` or ``rule``)
+        * ``None`` -> force the rule path (tests, offline runs, no network)
+        * object   -> use it as-is (a stub in tests, or a shared cache)
+        """
         self.store = store or LearnerStore()
+        self.config = config
+        self.planner = make_planner(config) if planner is _UNSET else planner
         self._graph = self._build_graph()
 
     def close(self) -> None:
@@ -104,18 +132,72 @@ class AgentService:
                 "round": round_no,
                 "visited": visited,
                 "result": outcome.to_dict(),
+                "last_activity": {
+                    "topic_id": topic_id,
+                    "activity": activity,
+                    "mastery_before": outcome.before,
+                    "mastery_after": outcome.after,
+                    "outcome": outcome.note,
+                },
                 "observation": None,
             }
 
         def planner_node(state: AgentGraphState) -> dict[str, Any]:
-            """Re-plan: rank the whole material and pick the next activity."""
-            return {
-                "plan": plan_material(
-                    state["topics"],
-                    int(state.get("round", 1)),
-                    state.get("visited") or [],
-                )
+            """Re-plan: the model decides, code only reports what is true.
+
+            Two modes, and they are not allowed to blur into each other:
+
+            * ``planner is None`` - an **explicit** ``agent.planner: rule``.
+              ``plan_material`` runs, as it did before, for the rule demo and
+              for the tests that pin its behaviour.
+            * ``planner is not None`` - the product path.  The plan is built by
+              ``plan_facts`` (counts and statuses, no activity anywhere), the
+              model picks one legal candidate, and ``apply_decision`` inserts
+              that single step.  If the model returns nothing there is **no**
+              rule substitution: ``next`` stays ``None`` and the payload says
+              why, so a rule-made step can never be mistaken for a decision.
+            """
+            planner = self.planner
+            round_no = int(state.get("round", 1))
+            visited = state.get("visited") or []
+
+            if planner is None:
+                return {"plan": plan_material(state["topics"], round_no, visited)}
+
+            plan = plan_facts(state["topics"], round_no, visited)
+            recent = list(store.recent_steps(state["material_id"], limit=5))
+            just_now = state.get("last_activity")
+            if just_now:
+                # Written to SQLite only after this invoke returns, so hand it
+                # to the planner directly - otherwise the model cannot see that
+                # it just did this step and happily repeats it.
+                recent = [just_now, *recent]
+            decision = planner.choose(
+                state["topics"],
+                round_no,
+                visited,
+                recent,
+            )
+            if decision is not None:
+                return {"plan": apply_decision(plan, decision, state["topics"])}
+
+            reason = str(getattr(planner, "unavailable_reason", "") or "no_decision")
+            # "no_candidates" is not a failure: it means there was nothing left
+            # to schedule (all mastered, or everything blocked).  Only the real
+            # failures deserve an "agent unavailable" banner.
+            if reason != "no_candidates" and plan.get("remaining"):
+                plan["agent_unavailable"] = True
+                plan["unavailable_reason"] = reason
+            plan["decision"] = {
+                "source": "unavailable" if plan.get("agent_unavailable") else "none",
+                "reason": str(getattr(planner, "last_error", "") or ""),
+                "unavailable_reason": reason,
+                # Which models were asked and how each failed (model + reason
+                # only, never prompt text), so the page can tell "rate limited"
+                # apart from "the reply was not JSON" instead of guessing.
+                "attempts": list(getattr(planner, "attempt_log", []) or []),
             }
+            return {"plan": plan}
 
         def has_observation(state: AgentGraphState) -> str:
             return "observe" if state.get("observation") else "planner"
@@ -130,6 +212,25 @@ class AgentService:
 
     # ------------------------------------------------------------- helpers
 
+    def _safety_plan(
+        self,
+        topics: Sequence[TopicState],
+        round_no: int,
+        visited: Sequence[str],
+    ) -> dict[str, Any]:
+        """Plan used only if the graph somehow returned nothing.
+
+        In model mode this must not fall back to the rule plan - that would
+        reintroduce exactly the substitution this design removes.  It returns
+        the facts plus an explicit "no decision" marker instead.
+        """
+        if self.planner is None:
+            return plan_material(topics, round_no, visited)
+        plan = plan_facts(topics, round_no, visited)
+        plan["agent_unavailable"] = True
+        plan["unavailable_reason"] = "no_plan"
+        return plan
+
     def _hydrate(self, material_id: str, payload: Sequence[dict[str, Any]] | None) -> list[TopicState]:
         """Seed from the client on first contact, then trust SQLite."""
         incoming = [TopicState.from_dict(item) for item in (payload or []) if isinstance(item, dict)]
@@ -139,9 +240,32 @@ class AgentService:
         return self.store.load_topics(material_id)
 
     def _envelope(self, plan: dict[str, Any], topics: Sequence[TopicState]) -> dict[str, Any]:
+        decision = plan.get("decision") or {}
+        model_mode = self.planner is not None
+        decided_by = str(decision.get("source") or ("unavailable" if model_mode else "rule"))
         return {
             "policy": self.policy,
-            "agent": {"engine": self.engine, "nodes": ["planner"]},
+            "agent": {
+                "engine": self.engine,
+                "nodes": ["planner"],
+                # Who picked the next activity for THIS response:
+                #   llm           - the model chose among legal candidates
+                #   unavailable   - the model was asked and gave nothing usable;
+                #                   no step is shipped, nothing is substituted
+                #   rule          - explicit agent.planner="rule" (demo/tests)
+                "planner": "llm" if model_mode else "rule",
+                "decided_by": decided_by,
+                "model_connected": bool(getattr(self.planner, "available", False)),
+                # The free model produced nothing usable and the paid one made
+                # the call.  Still a model decision, but the page must not
+                # present it as a first-try answer.
+                "escalated": bool(getattr(self.planner, "escalated", False)),
+            },
+            "decision": decision or None,
+            # A failed decision is surfaced, never papered over: the UI needs to
+            # tell "no API key" apart from "the model is thinking".
+            "agent_unavailable": bool(plan.get("agent_unavailable")),
+            "unavailable_reason": plan.get("unavailable_reason") or "",
             # Thresholds travel with every decision so the UI never needs its
             # own copy.  Before this, engine.js hardcoded 80 / 55 and would
             # silently disagree with the server the moment the policy changed.
@@ -178,7 +302,7 @@ class AgentService:
                 "observation": None,
             }
         )
-        plan = final.get("plan") or plan_material(topics, round_no, visited)
+        plan = final.get("plan") or self._safety_plan(topics, round_no, visited)
         self._log_plan(material_id, plan, (time.perf_counter() - started) * 1000.0)
         return self._envelope(plan, final.get("topics") or topics)
 
@@ -209,7 +333,7 @@ class AgentService:
                 },
             }
         )
-        plan = final.get("plan") or plan_material(topics, round_no, visited)
+        plan = final.get("plan") or self._safety_plan(topics, round_no, visited)
         latency = (time.perf_counter() - started) * 1000.0
         result = final.get("result") or {}
         self.store.log_step(
@@ -262,7 +386,7 @@ class AgentService:
                 "observation": None,
             }
         )
-        plan = final.get("plan") or plan_material(topics, round_no, visited)
+        plan = final.get("plan") or self._safety_plan(topics, round_no, visited)
         payload = self._envelope(plan, final.get("topics") or topics)
         payload["latency_ms"] = round((time.perf_counter() - started) * 1000.0, 3)
         return payload
@@ -310,4 +434,4 @@ class AgentService:
             self.store.clear_all()
 
 
-__all__ = ["AgentService", "AgentGraphState", "decide"]
+__all__ = ["AgentService", "AgentGraphState"]

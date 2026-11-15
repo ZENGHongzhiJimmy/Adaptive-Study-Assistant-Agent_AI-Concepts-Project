@@ -535,6 +535,85 @@ def plan_material(
     }
 
 
+# --------------------------------------------------------------------------
+# facts only - the same envelope, without choosing anything
+# --------------------------------------------------------------------------
+
+PRETEST = "pretest"
+READY = "ready"
+DONE = "done"
+BLOCKED = "blocked"
+
+
+def fact_status(topic: TopicState) -> str:
+    """Where a topic stands as a *fact*, without picking an activity.
+
+    ``stage_of`` asks ``decide()`` what to do and turns the answer into a badge;
+    this asks only what is objectively true: not assessed yet / finished /
+    nothing to measure with / ready to be scheduled.  The distinction is what
+    lets the model own the choice while the payload still reports status.
+    """
+    if not topic.pretested:
+        return PRETEST
+    if is_mastered(topic):
+        return DONE
+    if topic.quiz_count == 0:
+        # Reading is possible but there is no way to measure the result, so no
+        # activity would ever move this topic forward.
+        return BLOCKED
+    return READY
+
+
+def plan_facts(
+    topics: Sequence[TopicState],
+    round_no: int = 1,
+    visited: Sequence[str] | None = None,
+) -> dict[str, Any]:
+    """``plan_material`` minus the decision: counts, statuses, no ``next``.
+
+    Used on the path where the model chooses.  It keeps every number the UI
+    needs (round, mastered, remaining, thresholds arrive in the envelope) and
+    every per-topic status, but ``steps`` is empty and ``next`` is ``None`` until
+    ``apply_decision`` puts the model's choice in.  Nothing here calls
+    ``decide()`` - that function is the experiment baseline now.
+    """
+    visited = list(visited or [])
+    candidates = [t for t in topics if fact_status(t) == READY]
+
+    by_topic: dict[str, dict[str, Any]] = {}
+    for topic in topics:
+        status = fact_status(topic)
+        by_topic[topic.topic_id] = {
+            "activity": None,
+            "rule": "",
+            "reason": "",
+            "mastered": status == DONE,
+            "blocked": status == BLOCKED,
+            "status": status,
+            "mastery": _pct(topic.mastery),
+            "wrong": topic.wrong_count,
+            "explain_pages": int(topic.explain_pages),
+            "quiz_count": int(topic.quiz_count),
+            "need_help": bool(topic.need_help),
+        }
+
+    return {
+        "round": int(round_no),
+        "total": len(topics),
+        "mastered": sum(1 for t in topics if is_mastered(t)),
+        "remaining": len(candidates),
+        "pending_pretest": sum(1 for t in topics if not t.pretested),
+        "visited": sum(1 for tid in visited if any(t.topic_id == tid for t in candidates)),
+        "steps": [],
+        "next": None,
+        "last_round_done": bool(candidates) and all(t.topic_id in visited for t in candidates),
+        "blocked": [t.topic_id for t in topics if fact_status(t) == BLOCKED],
+        "done": bool(topics) and all(t.pretested for t in topics) and not candidates,
+        "by_topic": by_topic,
+        "decided_by_model": True,
+    }
+
+
 def advance_round(
     topics: Sequence[TopicState],
     round_no: int,

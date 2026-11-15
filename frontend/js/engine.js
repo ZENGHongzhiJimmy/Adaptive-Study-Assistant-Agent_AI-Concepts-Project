@@ -399,6 +399,10 @@ const Engine = (() => {
     const snap = agentSnapshot(rec);
     const d = snap && snap.by_topic ? snap.by_topic[t.id] : null;
     if (!d) return 'none';
+    /* 服务端改为下发「事实状态」（pretest / ready / done / blocked）：
+       「下一步做什么」由模型决定，代码不再为每个知识点猜一个活动。
+       ready 表示可以排，但没被模型选中，因此不显示活动徽标。 */
+    if (d.status) return d.status;
     if (d.mastered || (!d.activity && !d.blocked)) return 'done';
     if (d.blocked) return 'blocked';
     if (d.activity === 'explain' && t.needHelp) return 'help';
@@ -426,6 +430,27 @@ const Engine = (() => {
       };
     }
 
+    /* 服务端给出了「无决策」标记：模型没有选出下一步，且不会退回规则。
+       不能本地猜一个，也不能显示空队列；把理由带上去让界面说清楚。 */
+    if (snap.agent_unavailable) {
+      return {
+        round: snap.round || 1,
+        total: snap.total == null ? ts.length : snap.total,
+        mastered: snap.mastered || 0,
+        remaining: snap.remaining || 0,
+        pendingPretest: snap.pending_pretest || 0,
+        visited: snap.visited || 0, steps: [], more: 0, next: null,
+        lastRoundDone: false, blocked: [], done: false,
+        pendingAgent: true,
+        agentReason: snap.unavailable_reason || 'unavailable',
+        /* 每次尝试的模型与失败原因（服务端只给 model + reason，不含提示词），
+           用来把「限流」和「回复不是 JSON」分开说，而不是一句笼统的重试。 */
+        agentAttempts: (snap.decision && snap.decision.attempts) || [],
+        policy: snap.policy || null,
+        error: null,
+      };
+    }
+
     const byId = id => ts.find(t => t.id === id) || null;
     const steps = (snap.steps || []).map(s => {
       const t = byId(s.topic_id);
@@ -436,6 +461,7 @@ const Engine = (() => {
         rule: s.rule,
         reason: s.reason,
         stage: s.stage,
+        escalated: !!s.escalated,
         nextRound: !!s.next_round,
       };
     }).filter(Boolean);

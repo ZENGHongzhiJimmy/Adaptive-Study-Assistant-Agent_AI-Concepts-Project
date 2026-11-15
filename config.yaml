@@ -89,13 +89,38 @@ planner:
   review_trigger_errors: 2
   max_steps: 10              # hard stop for the State Update -> Re-planning back-edge
 
-# P4 LLM content generation.
+# P4 LLM content generation + P5 LLM decision module.
 agent:
   # Quote the mode: YAML 1.1 would otherwise parse `off` / `on` as booleans.
   llm_mode: "on"
   max_json_retries: 2        # retry structured question generation on bad JSON
   teach_max_chars: 900       # cap the LLM explanation stored in the trace
   grounded_min_hits: 1       # Teach needs >=1 retrieved chunk for a citation
+
+  # P5: who picks the next activity (src/agent/planner_llm.py).
+  #   "llm"  -> the model chooses among the legal candidates and writes the reason
+  #   "rule" -> policy.decide() only; an explicit demo/test mode, never automatic
+  # Thresholds stay in policy.py and mastery measurement never leaves code, so
+  # the experiments still measure the same thing.  If no API key is configured,
+  # "llm" does NOT degrade to "rule": the response says decided_by=unavailable
+  # and ships no next step, because a rule-made step would misrepresent the
+  # agent.  Failed calls / unusable JSON are handled the same way.
+  planner: "llm"
+  planner_model: null          # optional cheaper model for the decision step
+  planner_max_tokens: 700      # one JSON object, never a paragraph (thinking models need room)
+  planner_retries: 1           # ask again once if the reply was unusable
+  planner_max_candidates: 30   # 8 topics x 3 activities = 24, so this never bites
+  planner_cache: true          # identical state -> identical decision on rerun
+
+  # Escalation when the free model answers with something unusable (truncated
+  # reasoning, prose instead of JSON, a topic that is not in the list).  The
+  # transport layer only switches models on 429/404/network errors, so a 200
+  # response with a bad body would otherwise lose the decision entirely.
+  # This is still a MODEL decision - it just asks a stronger model.
+  #   null -> reuse llm.fallback_models (the paid one); [] -> disable
+  planner_escalation_models: null
+  planner_escalation_max_tokens: 1200   # truncation is a common cause; give room
+  planner_escalation_retries: 1         # one error-feedback retry on the strong model
 
 evaluation:
   subjective_rubric_enabled: false
