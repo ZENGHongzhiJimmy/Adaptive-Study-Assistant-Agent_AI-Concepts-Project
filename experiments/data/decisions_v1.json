@@ -1,0 +1,4263 @@
+{
+ "meta": {
+  "purpose": "adaptive arm decisions for experiments.run_experiment",
+  "model": "deepseek/deepseek-v4.1-flash",
+  "fallback_models": [
+   "z-ai/glm-5.3-flash"
+  ],
+  "budget": 32,
+  "entries": 607
+ },
+ "decisions": {
+  "00125c1706923d6124f3efbc954ec10f58f82387": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 67% 且错题 1 道，讲解已读过 1 次，概念基础已具备，用 4 题练习答对即可把错题清零并把掌握度推向 80% 以上。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "00d467684f49256fa355c59b6fcd6590144c8aeb": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 48% 为四个候选中最高且仅剩 2 道错题，练习一旦正确率过半可同时清错题并冲击 80% 掌握线，而 t02/t03/t06 掌握度仅 22%-35%，先练大概率再添错题。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "01c854ef0d0fc8c6dfe45266d17b937b55e7d956": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 47%、错题 3 道，且讲解已读 2 次重看收益很小，只有练习答对才能把错题清零并推高掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "01d72a7c56bef59c7cafa1a9a821ae194640fb10": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度只有 42% 且已连续 1 次练习低分、错题 3 道，再练一次低分就会触发连续两次低分，说明概念未建立，应先重读讲解。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "022d5e010dea3207fe068f37a129e218b9eb82de": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅42%、错题2道，且本轮尚未服务，讲解已读1次再读收益低，先用4题练习验证并争取清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "02709e2eac99e98c82b872600f00356f42f99f96": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 55%、错题 0、题库 4 题，讲解已到 55% 上限，需用练习验证并冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0306b058b5f797806a0d1e444f813cfc368058e2": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "What is AI 掌握度仅 20%、错题 4 道且连续低分 1 次，是 8 个知识点中最薄弱的，概念未建立，先重读讲解再谈纠错。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "04a6e4c6ed884e161f408255ce246cfd2c58c164": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度仅20%且错题0、讲解未读，先讲解补概念比在45%的知识点上直接练习更紧迫。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "04e9f8db18a4500ac78a7bcde01c5415766f462b": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅 30% 且错题 0，讲解已读 1 次，最需要通过 4 题练习验证并拉升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "054542838ff19fcf91892c9a7c63c2ec30ffda89": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 29% 且有 3 道错题，讲解已读 2 次重看收益低，练习既能通过答题清错题又能把掌握度往上推。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "05712e64526bce9c2d7825ee89d172e5e6dba363": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06_ai_tasks 掌握度仅45%、讲解未读且题库4题，先首次讲解建立概念比直接练习更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "064b08b755a907ef2e32fbfec02264f95ffb0d6a": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅55%且还有1道错题，用4题练习最有机会把掌握度推到80%以上并清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0756bf8fff23b1d6211903344ac7b87a693d65f7": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 52% 是当前最低，且讲解已读 1 次（重看最多推到 55%，收益仅 3%），而它只有 1 道错题、连续低分 0，说明概念已初步建立，更缺的是练习验证来提升掌握度。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "0801a1dfe7550e489f49746410ad5055fe01fe89": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅 20%、错题 4 道且上轮练习 0/4 答对，概念明显未建立，先用讲解把基础补起来最划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "08dfc655fb0662c38484102db7980d16066da566": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 47%、错题 2，讲解已读 1 次重读收益小，练习可同时清错并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "091c57c76e3d578de8b93c0ace78fc8a33f7b02c": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08_ml_taxonomy 掌握度45%且讲解未读、错题0，首次讲解可把掌握度推到55%，比直接练习更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0934393707c510d5a91421aa1ee68b60f8d31154": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅 22% 且积压 4 道错题，讲解已读 2 次收益有限，通过练习答对可清错题并直接提升掌握度。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "093a89efbfab423bea3035a178b580145f7773e0": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度仅 27% 且连续 1 次练习低分，说明概念尚未建立，重看讲解比练习或复习更能补上基础。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "0959b79ec75ad81ad70955188f8cd812da5617e4": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度 55%、错题 0，讲解已读 1 次，需用 4 题练习验证并冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0a35b43c1520de68611e0216dc24ecef8f8edc78": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 45%、错题 3 道、连续低分仅 1 次，未达到两次低分回讲解的条件，且讲解已读 1 次，先用 4 题练习验证并争取清错更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0a904c60f174924a3a2f3064cd6e4e3e3c45d03b": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 55%、错题 0，距 80% 只差一轮练习，题库 4 题若全对即可达标。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0a94f5738331c108e1793d6c9499899312d12566": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 77% 且错题 0，距 80% 达标线只差 3 个百分点，本轮 4 题练习答对即可直接掌握，是当前收益最高的一步。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0ad87bdfe9dd7e31bb76c3e632c3c589e265dab7": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04_big_data_4v 掌握度只有 45% 且讲解一次都没读过，概念未建立时直接做 4 道题容易连错，先用讲解把概念推到 55% 再练习更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0af7ad067d2a05667026de9379e81d5dca2c1910": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度 45%、错题 0、讲解未读，首次讲解收益最大，可先把掌握度推到 55%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0beb65fa9fc92c1514d8ce870997ed69c4a45f9b": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度 55% 是候选里最高、错题仅 1 道，练习答对即可清错并最接近 80% 达标线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0c01740d3a62101342d6e6f1194417b15353c8bd": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 当前掌握度45%、错题0且讲解未读，先用讲解建立P-T-E框架概念，为后续ML分类学习打基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0d2b7825b19412e92534683fa3f9c6802f67d22f": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 45% 但错题 3 道且已有 1 次连续低分，需通过练习验证并清错，避免再低分后被迫回讲解。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0d4f6d84da6efea04fabe3a9ef2555a1121d45b2": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "该知识点掌握度仅 20%（全组最低），错题 0 但讲解未读、题库 4 题待练，首次讲解收益最大（可从 20% 推到 55%），比先做其他 45% 的知识点更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0d6fbd80ab570e90c0ad01485697c3d0fbe99634": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度已达 67% 且只剩 1 道错题，是 8 个知识点里最接近掌握线（80%）的，练习答对即可清错并冲上 80%。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "0e1cc02a599b73ec7a3ee3fcacb5b7ec741b50dc": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03_deep_learning 讲解后掌握度已达 55% 且错题为 0，讲解收益已到上限，需要通过练习验证能否突破 55% 向 80% 迈进。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "0e9110946c18be0d50b55487e438347f294318f2": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度已达 55% 且错题 0，但讲解最多推到 55%，需用 4 题练习验证并突破到 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0f4f18ce5cd81b41747bda7192e94a0032651eb8": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅 30% 且讲解已读 1 次、错题 0，重看讲解收益很小，用 4 题练习验证概念才能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0f7469299824b8350c3c5462c27cc78f33d7beb4": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度 45%、错题 0 且讲解未读，先补 P-T-E 框架概念，才能把后续 4 题练习的正确率提上去。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0fb4c16f53f91465f94ac948dd24a2889d2d2221": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度 45% 且讲解未读、错题 0，首次讲解收益最大，可先把概念推到约 55% 再练这 4 道题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "0fb928618f40e4cfcd49306693126945bc7b05e9": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04_big_data_4v 当前掌握度仅 52% 且有 2 道错题，优先用练习同时验证概念并清理错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1031ecc8e90458ea00c7c8e9bad66a988ae1f46c": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅30%、错题0且讲解已读1次，需先做4题练习验证概念并把掌握度推向80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1048fb6e4dd17dfd9d9ed74ddc42ec32d8d5c9e1": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度仅 29% 且错题 3 道，讲解已读 2 次重看收益低，应立即用练习验证并清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "10e3d9d5993756ada6fc4f00543fedcb3fcdc2eb": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 当前掌握度 55%、错题 0、题库 4 题，讲解已读 1 次，需用练习验证并争取提升到 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "11872f369e2c0a285f3808dfc698aef3b59866ea": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 47% 且有 3 道错题，讲解已读 2 次收益有限，优先用练习验证并清错更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "118bd985734badd378a4a05786d3e3491f67bfa8": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度已达 51%、仅剩 2 道错题且无连续低分，是 8 个知识点中最接近 80% 掌握线的，练习一轮若答对 4 题即可清空错题并大幅提升掌握度。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "1201236e8129fb2cbe406566898c9121872b6bd4": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "该知识点掌握度45%、错题3道且已有1次连续低分，讲解已读1次说明概念初步建立，现在最需要通过练习验证并清错，若正确率再低于50%再回讲解。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "12232e26225f0675f6010875961ac0839b6c2015": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 55% 是候选里最高且错题 0，讲解已读过 1 次重读收益很小，用 4 题练习验证最有机会把它推向 80% 的掌握线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "123fbb2f3f04ae802463eff542e5b8ac7eaa78f7": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度仅 45% 且错题 4 道为全知识点最多，连续低分 1 次说明概念未建立，先重读讲解再练习。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "1270bf74b631aabefcc07b80c7a18587226d9b67": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 30%、错题 0 且讲解已读 1 次（重读收益很小），该知识点缺的是验证而非概念，用 4 题练习能把掌握度往上推。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "12cecd05e67eb0a0692ee421e1ca7de9d515d2d0": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05掌握度45%且错题0、讲解未读，首次讲解收益最大，先把概念补到55%再练习验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "132b7893cf091b6c9c83a93f5ad9ff05cc827dae": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度 45% 且讲解未读、错题 0，先读讲解可把概念补到最高 55%，比直接练 4 题更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "13568ceeb0569881bedf34e4e4666ac82d1a51a0": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度 45% 且讲解未读，先讲解可把掌握度推到 55%，在 8 个待学知识点中比 20% 的更接近 80% 达标线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "13864d102801b68dec614fd8f90700bd41bca7c0": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 47% 为候选最低且错题 3 个，需通过练习答对来清错并把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "13d9df62e97fc77b6e8cf6ef62efc7b463d93c13": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度仅 20% 且讲解未读、错题 0，概念尚未建立，先讲解可把掌握度推到最高 55%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "14a1bded60c9aed73076415dbbd95f6e9edcdad3": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅 27% 且已有 3 道错题，讲解已读过 1 次，重看收益小，先用 4 题练习验证并清错更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "14aa6aa330eed435b3aff25d91ba2d1245d4cf24": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度已达77%且错题0，再做4题练习答对就能跨过80%的掌握线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "15f5706ce25cdce895d594f5dbc847e405d6f839": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度30%、错题0且讲解已读1次，重看收益低，用4题练习验证并提升掌握度更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1611870a41fb8a365cb5f49cb4cc11cad08070de": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 掌握度 45%、错题 0 且讲解未读，首次讲解可把掌握度推到 55%，比直接练习更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "16d3d504978f680ac0182bf5acb915b35a2ca403": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 当前掌握度仅20%、错题0且讲解未读，题库有4题，先用讲解建立概念比直接练习更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "16f050f1e476d02992fad9b338b578b6a87e55b4": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅 30%，低于其他知识点的 55%，且错题 0、题库有 4 题，先用练习验证概念并争取把掌握度拉过 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "172a40c44a29d3fe8ca41387dc0e91b55a4a0702": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度 45% 且讲解未读、错题 0，首次讲解收益最大，先把概念补到 55% 再练习更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "17aa2d0acb2bc3322dd63b08a93a0b558c579cd1": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 27%、错题 3 道且连续低分 1 次，尚未触发两次低分回讲解，先用 4 题练习验证并争取清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1843155a298ac23c4bdbfb447a6db7de706fdc07": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 已连续 2 次练习正确率低于 50%，掌握度仅 26% 且积压 3 道错题，说明概念尚未建立，需先重读讲解把基础补上。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "18655c1a166df1cc01ba111a828cb37bc3acdea8": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06_ai_tasks 当前掌握度55%、错题0且讲解已读过1次，用这4题练习验证并冲高掌握度比重复讲解更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1902297b408f619fd10a6888a8c697b858ca7054": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度仅 20%、错题 4 道，且上一轮练习 0/4 全错，说明概念未建立，应先重读讲解再练习。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "1b06b54d350622d1e23c8d0aa62467e0f5ddab51": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 42% 且积压 2 道错题，讲解已读过 1 次重看收益很小，用 4 题练习既能靠答对清错题又能把掌握度往上推。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1c100513c41ec7c70b87c367b50ea3e83173556e": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅 30%、错题 0 且讲解已读 1 次，重看讲解收益很小，用 4 题练习验证概念才能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1ce3412fd2501941f727a9d5309411ada27440f6": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度仅27%且有3道错题，讲解已读1次且连续低分仅1次，先用练习验证并争取清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1d30608718914a95aeaa3a6b02640d9da79f1bf6": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅 30%、错题 0 且讲解已读 1 次，重看收益小，用 4 题练习验证概念并争取把掌握度推过 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1d72c20488bf5c537a825cd312645a0c245d9a4b": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 当前掌握度45%、错题0且讲解未读，先用讲解建立P-T-E框架概念，再配合4题题库验证更稳妥。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1e23f60553a6f9e52730d8f2671226f39bf46651": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅20%且讲解未读，作为P-T-E基础框架先建立概念，后续4题练习才有验证基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1e2b0900a01f39b1e7ed8a16924a264c0bd53c12": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 66%、有 1 道错题且讲解已读过 1 次，练习既能靠答对清掉错题、又能把掌握度推向 80% 以上，比重复讲解收益大。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1e6913aa230262a8878c402690ed60bed6ac7496": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 62%、错题 1 个且从未练习过，题库 4 题正好用来验证概念并把错题清零，比 t03 无错题更值得这一轮机会。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1e99bbc23e67553a12fd8169f7b33dcebb64030c": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度30%、错题0、讲解已读1次，重看收益小，先用4题练习验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1eefed7fb10cc464ca0e25ac6ccd5bb1df612986": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度30%、错题0且连续低分0，讲解已读1次重读收益小，用4题练习验证概念最合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1f24259823b98caab1a231da3edfd58a7dc22ad5": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度55%且0错题，讲解已读1次已到上限，需用4题练习把掌握度推向80%并清零错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1fb225b9f7de2e1b67ebb897499ba1efb18e8b88": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅 52% 且错题 2 道，讲解已读过 1 次再读收益有限，先用 4 题练习验证并争取清掉错题更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "1ff2ee186ec512a4a745ceb952899f07eb0f55fc": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 27%、错题 3 道，但连续低分只有 1 次且讲解已读过 1 遍，重读收益小，先用 4 题练习验证概念并争取清掉错题更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "204da677e840b947e52283903c24ddaf95372614": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 51%、错题 2 道且连续低分 0 次，比 t07 的 41% 更接近 80% 目标，用 4 题练习可清错并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "20fe79af9482d0dcfa2b95cd44ecb9916170ecb7": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 30%、错题 0、讲解已读 1 次，刚完成讲解，需用 4 题练习验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "21168fc38271fe93fcbfa4b9f9941208a3ea1cd5": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 55% 已达讲解上限且讲解已读 1 次，错题 0、题库 4 题，需用练习验证并冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "212e5f1a6b9da021a87b17ad63a42fc6950c7efd": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度已到 77%、错题 0，上次练习 4/4 全对，再练一轮最可能直接越过 80% 达标线并清零错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "214e26e50fa19047a801273ce87b7f825b2b555e": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03_deep_learning 当前掌握度45%、错题0且讲解未读，首次讲解可把概念推到55%，为后续练习达标打基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "214ef8cc126e547384b8e5ed73d913c5ed6d3a9b": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度仅30%且错题0，讲解已读过1次，用4题练习验证概念最合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "216ecd284f82a9bb68f8b54ca676cb8afc989df1": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 55% 且仅 1 道错题、连续低分 0，最接近 80% 掌握线，本轮练习答对即可清错并继续提分。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "21cf4808dbf8182622416aa3ab5ff397a2b7a02b": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅 20%、错题 4 道且最近练习 0/4，概念尚未建立，应先重讲再练。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "21e761828279fc31271b1d861e594fa1c4e9b1cd": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅 75% 且错题 0，最近两轮练习都答对 3/4，概念已建立，缺的是用练习把正确率拉满以突破 80%，重看讲解收益太小。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "21e76d58bbbbee9b81a6452c27eb07f58fd1c14d": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 67% 距 80% 仅差 13 个百分点且只剩 1 道错题，练习答对即可同时清掉错题并冲线，是四个候选中最接近掌握的知识点。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "2276c9af591517ef6175251027145720b1e0924f": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅20%且讲解未读，是剩余知识点中最低的，先讲解建立概念（首次讲解最多可到55%），比直接练习更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "233356604908a122d160dee36e8b61161acc69db": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "...",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "23c99e56035d9a2e904b82bf84ffdd97f7a8807c": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 掌握度45%、错题0且讲解未读，先讲解可建立基础概念并把掌握度推到55%，为后续4题练习打底。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "23ea76d6168f2fe1e48d273b1bd3e6234d828c19": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度只有 52% 且积压 2 道错题，重看讲解最多推到 55%，只有练习既能验证概念又能把这 2 道错题清掉。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "23eabe8031a78184f2274a73a099bad4b0cfadd6": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅 20% 且有 4 道错题、连续 1 次低分，是 8 个知识点中最薄弱的，重读讲解可把概念基础从 20% 提升到最高 55%。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "241598553a3139e66453bf9cf911d050d312b6d7": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 掌握度仅 17%、错题 4 道且连续 2 次低分，最近练习 0/4 答对，说明概念未建立，需优先重读讲解。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "24a00340438b0eb57a92601066f6e10d9165f193": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度仅 27% 且上轮练习 4 题只对 1 题、连续低分 1 次，概念未建立，应先重读讲解再验证。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "25097e217c0e7d57b8b8e9d957a92979d28afe63": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度仅 27%、错题 3 道且连续低分 1 次，上次练习只答对 1/4，说明概念未建立，先用讲解把基础补到 55% 更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2643efc98643d965e4b5f56bdb6b508ec130200d": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度已达 55% 且错题 0，是当前最接近 80% 的知识点，用 4 题练习验证可把它推向掌握线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "290197e156de69248882d782661210fd70c9223c": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度仅 20% 且讲解未读、错题 0，首次讲解能把掌握度推到最高 55%，比练习更缺概念基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2909c061504fa5fcf79fa5b0263bfe35bdc73402": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 55% 且错题 0，讲解已读 1 次再讲收益小，题库有 4 题，适合用练习验证并冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "299dc4a6b9d79aeea6bff43717da822a1eb3f044": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度只有 56% 且积压 2 道错题，讲解上限 55% 已无增益，上一轮练习正确率 2/4 说明只差纠错验证，练习答对即可同时清错题并提升掌握度。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "29ae164f07c871faeb60aef0a8f2a8df443c23d3": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 22% 且错题 4 个，讲解已读 2 次收益有限，优先用 4 题练习同时提分和清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2a71459cf830a7208063df5d485b62d11a836604": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 讲解未读且掌握度只有45%，先讲解可把概念补到最高55%，比直接练习更符合当前缺概念的状态。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2a983b186a96da359545cf38051407d22bf30153": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 已连续低分 1 次、错题 3 道，且上次练习只答对 1/4，需先回到讲解重建概念，避免再低分。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2af69a2fda209d28e02c07e3cb9b9cccfa18a527": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅27%、错题3道，讲解已读1次且连续低分仅1次，未到回讲解的2次阈值，练习能同时提升掌握度并清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2b27ff43d35449fe140a514c57133f96ee7787e1": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 当前掌握度 45%、错题 0 且讲解未读，首次讲解收益最大，可先把概念推到 55% 再安排练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2b2b8b2095c0097c12132847ebc57164fbc2a757": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 当前掌握度仅20%且讲解未读、错题0，先用讲解建立概念，最高可到55%，比直接做4题练习更稳妥。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2c2f59ff7a640c9b7ce9232020dcf2e2cd92e137": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08_ml_taxonomy 掌握度55%、错题0且讲解已读1次，重看讲解最多仍停在55%，应做4题练习验证并争取提升到80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2c7e4b421a03b63c960e46b75dab8120735ae068": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅 32% 且积压 4 道错题，讲解只读过 1 次还有较大提升空间（讲解上限 55%），先补概念再练习更有效。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "2c8e758d0f127f2829ee912566fc1954260e4d91": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 77% 是唯一未达 80% 的知识点，错题 0 且讲解已读 1 次（重看上限仅 55%），做 4 题练习答对即可越过 80% 达标线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2ca001e130f3c09ec1c7934f084989a76210efe6": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08_ml_taxonomy 掌握度仅20%、错题0且讲解未读，先通过讲解建立概念，才能把后续练习正确率转化为掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2cb6627569bedbddf5d130b933f05266ced708ed": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅 20% 且讲解未读、错题 0，属于概念未建立，先讲解可把基础推到 55%，为后续 4 题练习铺路。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2d46e6e453b3fdf33aa1122388172ef40d7206ee": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅 42%、错题 2 道，且讲解已读 1 次，概念基础已有，现在最该用练习把正确率转化为掌握度并清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2e34157ede46b7853b78d007414a5fb61a89de29": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度仅 20%、错题 4 道且上轮练习 0/4，概念明显未建立，先讲解比继续练习更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2e4dffa1524146b90e1970215e60f498b70e017e": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅 47%、错题 4 个，讲解已读 2 次收益很小，需靠这 4 题练习答对来清错题并拉高掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2e68f36c4d38dacd0c390a714325db7d923a4e51": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01_what_is_ai 掌握度仅 20% 且讲解未读，首次讲解收益最大，先建立概念再练习。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "2ea463d628444be75aeb791e5579fdfea10d4d00": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08掌握度仅42%且还有2道错题，讲解只读过1次尚未到达55%上限，先补概念再练习的收益最大；t03已在55%上限、重看讲解几乎无增益。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "2ec009d0b43908751670e000cdefac3fc5138f3c": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度已达 52% 且连续低分为 0，是 8 个知识点中最接近 80% 达标线的，练习 4 题若答对可同时清掉 2 道错题并冲高掌握度。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "2fd73493cf1de5f076bd3d99d4f3a21993b101a6": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 30%、错题 0、讲解已读 1 次且连续低分 0，概念已建立，需用 4 题练习验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2fdfece9e39d7d6d42be0fc1e3ae7db50873d878": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08_ml_taxonomy 当前掌握度仅 20%、错题 0 且讲解未读，首次讲解收益最大，可先把概念建立到 55% 再练习验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "2ffa5f56cc5a8946099ab952e01196bfd494ce67": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08_ml_taxonomy 当前掌握度仅20%、错题0且讲解未读，先通过讲解建立分类框架，后续练习才可能达到80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3026e178e814e583becd173834a3a931b7bd9120": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 30%、错题 0、题库 4 题，讲解已读 1 次重讲收益小，先用 4 题练习验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "302d239ac4bf189e0bd3a41deacc637ab457d5f1": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅30%、讲解已读1次且错题0，题库有4题，需先用练习验证并争取把掌握度推向80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "317378ec786ce77bde6dca4a139771c32bbf851a": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "该知识点掌握度仅32%且已有1次连续低分，若再练习很可能触发连续两次低于50%的警报，先用讲解把概念从32%推向上限55%更稳妥。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "32430be6598514d0d37e03513e570b50001099f7": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅 27%、错题 3 道，但连续低分只有 1 次未达回讲解的阈值，先练习争取答对清错题并拉高掌握度。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "32bf0a796513e6a26c68202ac0a3ad8136adc2ec": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 44%、错题 2 道，讲解已重看 2 次收益有限，先用 4 题练习验证并争取把错题清零。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "33cacb57a424e0d7e1a070a25e4ba742dbc98c47": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅30%、错题0且讲解已读1次，需先用4题练习验证P-T-E框架并把掌握度推向80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "33d8a190754a55386240b4156364642bb3ae6dca": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度仅 20%、错题 4 道，且上一轮练习 0/4 全错，说明概念未建立，应先回讲解补基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "34481083c69ea0641a4d5ae4007747d13504747b": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 30%、错题 0 且讲解已读 1 次，重看讲解收益低，先用 4 题练习验证概念并争取把掌握度推过 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "347dafadc7f5d40b5661067216c837d6b2614b80": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 41%、错题 2 个且已连续低分 1 次，讲解已读 1 次，概念基础已具备，现在正需要用 4 题练习来验证并清空错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "348d6068d0663e24949437912a90b019eeabfd12": {
+   "topic_id": "t03_deep_learning",
+   "activity": "review",
+   "reason": "该知识点掌握度 75% 未达 80%，错题本还挂着 1 道题未清零，而上一轮练习已答对 3/4 题说明概念已建立，本轮先用复习清掉这 1 道错题，下轮再靠练习把掌握度推过 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "34bd7662ea0c74be4af758fd043357b7e5c23c8a": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度45%、错题0且讲解未读，首次讲解收益最大，可先把掌握度推到55%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "35779a703eca5d61f26e5f33aa3283e7c6d8e91a": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度30%、错题0、题库4题且讲解已读1次，概念已建立，用练习验证并提升掌握度最合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "35c00e7f1898bc98696af42a89849560d82875b2": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度仅 45%、错题 3 个，且上轮 4 题只答对 1 题，说明概念尚未建立，应先回到讲解补基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "35d6a7c622734fbfba1c58c313f4250f51e9cbf4": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度仅17%、错题4道且连续2次练习低分（最近0/4），概念未建立，需先重读讲解。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "35ee20edff1fcd7572f11b5f9214c9d00efa69a1": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 30% 且错题 0、连续低分 0，讲解已读 1 次，缺的是验证而非纠错，先用 4 题练习检验 P-T-E 框架概念是否真正建立。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "366ad0a3dd913b70893306071fab75cb806e07a3": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 67% 距 80% 目标只差 13 个百分点，错题仅 1 道且题库有 4 题，讲解已读过 1 次再讲收益有限（上限 55%），用练习把这 1 道错题清掉最划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "36d057f2ccd0cb3fbc63ceb0bcb1df34ca758b39": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 55% 且已有 1 道错题，而讲解上限就是 55%、已读过 1 次再读无收益，只有练习能同时提分并清掉这 1 道错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3714cd3c5b39ebb4839f3413833c4686928bdc01": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07掌握度51%、连续低分0次，概念已建立，练习可在4题中清掉2道错题并冲击80%目标，收益高于讲解55%的上限；t03已有1次连续低分，留待下轮回讲解。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "371f734beab4dbe17e8288652b876fa1cf39cfa3": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 已连续 2 次低分，最近练习 0/4 且掌握度仅 17%，说明概念未建立，应先重读讲解而不是继续刷题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "37418b56e5ed67a261d21ca632fadab6aaa4ceb6": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 51% 是 8 个知识点中最高的，仅剩 2 道错题，练习答对即可清零错题并最快冲上 80% 掌握线。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "376742f79885149c9c942a54204e98125d165b2a": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 63% 是候选里最低的，还挂着 1 道错题，而讲解已读过 1 次重看收益很小，用 4 题练习既能清掉错题又能把掌握度往 80% 推。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "380b4196cb8c44f84ad147c5b85e2b9d955e16ad": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 67%、错题 3 道且已有 1 次连续低分，概念讲解已读，优先通过练习纠错并验证，答对即可清错题、把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3838978d7f331f4f9932faf355c01e1369e190f1": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 53% 且积压 2 道错题，上次练习答对 2/4 未触发连续低分，本轮练习既能提掌握度又能清错题，比复习或重看讲解收益更大。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3a2841d35f68770feff960b656f86c073e5ffcbf": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度 45% 且讲解未读，首次讲解收益最大，可先建立概念再练 4 题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3a60c1dbeed44af748780f228035625fdb67159d": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 当前掌握度 30%、错题 0 且讲解已读 1 次，重看讲解收益有限，先用 4 题练习验证并提升掌握度更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3a8a17361d6c41b5e56e7e81d1e7de3168efe793": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅 44%、已读 2 次讲解（重看收益很小），且积压 2 道错题，只有练习答对才能同时清错并把掌握度往上推。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3b479d14e2f4eba79a5c656c50db73040f2ac9cc": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "该知识点掌握度47%、错题2道、讲解已读1次，重读收益小，用4题练习可同时提升掌握度并争取清掉这2道错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3bf7a68c81a5d6b4a03a2916fc9763891f77132b": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 55% 已到讲解上限且错题 0，讲解已读 1 次重看无收益，用 4 题练习验证才能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3c3e49a0f810788e5eae768eb094fc72dfc595d9": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07掌握度仅20%，错题0，讲解未读，首次讲解收益最大，先补概念最划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3c439135fe9db3574103cedaec4a04dcc8922be1": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅 30% 且无错题、连续低分 0 次，说明缺的是验证而非纠错，用 4 道题的练习来检验并提升掌握度比重看讲解（上限 55%）收益更大。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "3c7a613a8b25252435802fa9f0f7339dc170581b": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 55%、错题 0 且讲解已读 1 次，重看讲解收益很小，用 4 题练习验证并冲击 80% 更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3cb1e643d2aac26fce3ad657eab981da866651cc": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度停在 55% 且错题 0，讲解已读 1 次再读也只能到 55%，必须靠这 4 题练习把正确率转成掌握度才能冲过 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3dc2159c89923d2a4398110bfe1e55b75c147758": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度 47% 是 8 个知识点中最高的，但讲解只读过 1 次、还有 2 道错题，先补第二次讲解把概念打牢，比在 22% 的 t04 上从零开始收益更大。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "3dc7c5b7371016ae2a866351e2e2d3bd34e3cfda": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "该知识点掌握度仅20%，低于多数知识点的45%，且错题0、讲解未读，需先建立P-T-E框架概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3de7422ae807d32e0d7b16b04cbea2ea433b1fff": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03_deep_learning 掌握度仅 27%、错题 3 道且已连续 1 次低分，是候选中概念最薄弱的知识点，重读讲解重建概念后再练习收益最大。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "3dece6f46e2b1e20c0403d02dcaebc1273eadb11": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度30%、错题0且讲解已读1次，重看收益小，用4题练习验证并提升更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3e6474a5a1478f9aa3470fc1d65a369f6f719500": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 55%、错题 0、讲解已读 1 次，题库 4 题，需通过练习验证并冲击 80% 掌握线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3e71c53417ea3d25df65e3c5956be8e01edab8ec": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度已达讲解上限55%、错题0且题库有4题，需通过练习验证并冲击80%掌握线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3e7b0d050675e47c0dc1a0f2da36034854182b04": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 当前掌握度 45%、讲解未读，首次讲解可建立概念并把掌握度推至 55%，其后还有 4 题可用于验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3eb0f41e84531dc81984df478444a6087e3810da": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 67%、错题 1，讲解已读 1 次且上限仅 55%，需用 4 题练习同时提分并清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "3f2106a02c4a2e1fc00afe795f29e6f33ab0d2ed": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅 20%，低于 t05/t06/t08 的 45%，且讲解未读，首次讲解收益最大，先补概念最划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "406b439bf8921de2f6839ab824f67cd189cd823a": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05_data_driven 掌握度45%且讲解未读、错题0，首次讲解可把掌握度推到55%上限，应先补概念再练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "40c02a8d1cd9dff7c3b4b04e459c9dc2df26488d": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 的掌握度只有 30%，错题 0 道，说明已读过 1 次讲解但概念还没验证；题库有 4 题，正适合用练习把掌握度推到 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "40fcc2d4538be17e112def37eafba973a2c70887": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅 30%、错题 0 且已读完 1 次讲解，先做 4 题练习验证概念最能推动掌握度提升。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "41725b25d2d53827405a95f0ad8d47415abcedb1": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03_deep_learning 当前掌握度仅 20% 且讲解未读，首次讲解可把掌握度推到 55%，比直接练习更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "423439fe822c1e92cbe08603d0f61fd3d2780ca3": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 55%、错题 0，讲解已读 1 次且达到讲解上限，做 4 题练习最可能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "436386ba8e3c4b0446458c502eedb1ea5041f568": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度仅 55%、错题 0，前面 t02/t03/t04 用练习都从 55% 升到 80%，同样一把练习即可冲过 80% 判定线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "436d7a7da4b389f9051e32c14ae9635a7713de20": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 55%、错题 0，讲解已读 1 次，概念已建立，需用 4 题练习把掌握度推向 80% 并验证是否真正掌握。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "441d51a2631b06491a8c39e12ee3887c926b2ea0": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 66% 且仍有 1 道错题，上次练习 3/4 正确，需通过练习把正确题移出错题本并冲过 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4475de96b84848b92c7a63b4266c0d456e62f83c": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "该知识点掌握度67%、还有1道错题，最近练习4题答对3题，需要通过练习把正确率转化为80%并清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "447c993cfc2ba419b6cb87f2cd7bd13314459b42": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 22% 且错题 4 道，讲解已读 2 次重读收益低，需用练习验证并争取清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "46c14ea9d9486dc5bf5e38a7108dfeb9dfda7825": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01掌握度已达67%且仅剩1道错题，是8个知识点中最接近掌握线的，本轮练习若答对3题以上即可清零错题并冲击80%掌握目标。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "470fdd7292b5fea13b3859bcf3c2981b93987475": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 掌握度仅20%且讲解未读、错题0，作为基础概念先讲解可把掌握度从20%推到最高55%，为后续4题练习打底。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4710b036b2ce0e1e56ea3aa4548c8e83797aeeca": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 47% 已是待学知识点中最高、错题仅 2 个，用 4 题练习最可能把正确率拉高并清零错题，比继续重看讲解收益大。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4739f7ecc3ef09a1cd03c5297e24f2fdf64d5785": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅30%、讲解已读1次且错题0，重看收益小，用4题练习验证概念更可能提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "478a02e5e6d3ddf306ad0d6e00774a8ae375ac4f": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 42%、错题 2 道且讲解已读 1 次，概念已建立，优先用 4 题练习同时提分和清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "47f1048e510783177fb5c5695902e8d9e6e91356": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度仅20%且讲解未读，首次讲解收益最大，并能衔接刚学完的 ML 定义。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4804230a1fff5cca92cc84b09bd8e5295831cd61": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度42%、错题2道、讲解已读1次且尚未练习，先用4题练习验证并争取清除错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "485c5151d9c4e3df82741b842063aa3b543a9460": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅 27% 且有 3 道错题，是 5 个待学知识点中最低的，且已连续 1 次低分，说明概念未建立，应先重读讲解再练习。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "48b0a4edf31e2614682aec609c94921dbc0f2423": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 最近一次练习只答对1/4题且掌握度27%，连续低分说明概念未建立，应先讲解而不是继续练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "48c54894424c7f2ca7ed7cb619d9bf76c0c545fc": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 当前掌握度 45% 为剩余知识点最高且错题 0，讲解未读，首次讲解可把上限推到 55%，优先为后续练习达标铺路。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "48d3f5ac52da13c8fc9400fbdeb1802e7f1e56c3": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅 30% 且错题 0，讲解已读过 1 次再读收益很小，用 4 题练习验证概念并提升掌握度更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4a95cac377741df0c3fbe2f3307b00df7f8a50d6": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度仅 52% 且积压 2 道错题，讲解已读过 1 次重看收益很小，用 4 题练习既能提掌握度又能把错题清零。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4ab38cb5083b604f7e2d847a1ae06c908f3b4dbe": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度 55% 已到讲解上限、错题 0，4 题练习全对即可冲到 80% 达标，是当前收益最确定的一步。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4af2957c95eaf2400da82e2f8cae9d09d4c2e3b1": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03掌握度72%距80%达标线还差8%且挂着1道错题，练习若像上轮那样答对3/4题可同时清掉错题并冲过掌握线，比重看上限仅55%的讲解或只纠错不涨掌握度的复习更划算。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "4b3762503c2108c1ca6f27e48963fba1290163d6": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 已连续低分 2 次、掌握度仅 35%、错题 3 道，说明概念尚未建立，应先讲解而不是继续练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4be99030f06fc40c1f9109059e1b76f4e21fe65d": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "该知识点掌握度 67%、错题 1 道，讲解已读 1 次且再读最多只到 55%，现在缺的是用 4 题题库做题验证并清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4c0e1bd649362e5e6b6e678233e67ae7b443ac15": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06掌握度55%已触及讲解55%上限且错题0道，练习是唯一能继续提升的途径，参照t05本轮练习答对3/4题即从55%升至67%，练习收益明确。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "4c604613d974eafc984a741fa19d57f17ffcfef5": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 当前掌握度 45%，是剩余未学知识点中最高的，且讲解未读，首次讲解可将其推至约 55%，离 80% 目标最近。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4c82e684999a27c14bc169022c2354d23b5a41a3": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 67%、错题 1 道，距 80% 达标只差一轮练习，且 P-T-E 框架是后续知识点的基础，用 4 题练习答对即可清错并冲上 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4cc49a6d1a7c44f4517c6196ef11874bd718cf98": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度仅 20%、错题 0 且讲解未读，首次讲解收益最大，先用 4 题题库前的概念建立把它补到 55%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4cddb975d18024345f1ef30fc257c923af21ed80": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度仅42%、错题4道且上轮练习0/4，概念明显未建立，先回到讲解比继续练习更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4d455a610e0030d730a21f8edc406aa6f732a211": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02掌握度45%、错题3道、连续低分1次，未到两次低分必须回讲解，且讲解已读1次收益小，用4题练习可同时清错并提掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4d6c6ddc14936a347dd202277bc902402bea9832": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度已达 67%、仅剩 1 道错题，是 8 个知识点中最接近 80% 掌握线的，练习一次既可能清掉这 1 道错题又能冲高掌握度。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "4e1b0780b314493368aadd9d0a1bcec42cdb19e1": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅34%、错题3道、连续低分1次，尚未触发两次低分回讲解的阈值，用4题练习可直接清错并拉高掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4e600c60f29a76bbb9c6833d0afc25513638677c": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度 55%、错题 0、题库 4 题，讲解已读 1 次，需通过练习验证并冲击 80% 掌握线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "4ed2eba08aad5ce8542bf8c2e4de492f2aceebae": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度42%为候选最高、错题仅2道且无连续低分，先用练习验证并清错比继续重看讲解更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "502e880cb59755612d136ad7144c02fd3d036254": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 57% 且错题 0，讲解已读 2 次收益有限，通过练习验证可把掌握度推向 80% 的掌握线。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "50e276eca27be6836542f9945e9e3bd6617f7aa8": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅 52% 且积压 2 道错题，讲解已读过 1 次重读收益小，用 4 题练习既能清错题又能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "512c4c5cd2a54ae4d61cf34614495e1fe06e5316": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅 55% 为全场最低且积压 1 道错题，讲解已读过 1 次重读收益很小，用 4 题练习答对即可清错并冲上 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "51361f344b5b239766381102ce32b8e31f6c1199": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度 52% 是候选中最高且仅剩 1 道错题，一次练习即可清错并冲向 80% 掌握线；而 t03 掌握度仅 22% 但讲解已读 2 次，重看收益有限。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "51aa2fb4138a4de5ab02ac72ab49d405d96b7806": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 当前掌握度45%、错题0且讲解未读，首次讲解可把掌握度推到55%，为后续4题练习打基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "52a51f9a30e0cfa9ea8d1ff6fd647348c196d758": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度已达 70% 且错题 0，距 80% 掌握线仅差约 1-2 题，而讲解上限只有 55% 无法再提升它，练习 4 题题库是本轮最有望产出第一个掌握知识点的选择。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "52ff9fed3a8edc4ff9a6c9d13c4d3836cb7ab755": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 45% 是 8 个知识点中最高的，且只有 3 道错题、连续低分 1 次，练习一次若答对即可清空错题并冲高掌握度，是离达标最近的选择。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "5305058199c894434e7d446ef3ed55d0baf4b98e": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03掌握度42%为候选最高且错题最少仅2题、连续低分0次，练习一轮若答对即可清错题并把掌握度推向更高区间；其余候选如t01、t04、t07均为27%且各有3道错题，概念巩固收益更低。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "532e4f8fa9f99975c67b31fdb985c7b1b1e61a64": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅 27%、错题 3 道且讲解已读 1 次，概念已有输入，先用 4 题练习验证并争取清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5385f1e46cfae7001f3ba6c089027e1ccb404c80": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 30%、错题 0 且讲解已读 1 次，重读收益小，用 4 题练习验证概念最合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "53f40fb326490e6bd4e722e96301cbff28bd7b4b": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 连续低分2次且最近练习0/4答对，掌握度仅17%，应先回到讲解重建概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "54afb544d52c81fde70cdcf35c9c5c5557cb086a": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 掌握度32%但讲解只读过1次，重看仍可把掌握度推到55%，且已出现1次连续低分、积压3道错题，说明概念未稳，先补概念比直接刷题更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "558f6ef2a9617976c01c219c11c2f9e88ad8c233": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07掌握度仅30%，比其余待学知识点的55%低25个百分点，且错题0、讲解已读，需先用4题练习验证并拉升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "55bc5540e0697d5a00d28973907f131624bdea07": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅 62%，是三个候选里最低的（t04 66%、t08 67%），且讲解已读 1 次、概念已建立，只剩 1 道错题，用 4 题练习既能提分又能清错题，最接近 80% 且错题清零的目标。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "56af177ce31a470864d7ef86c99b6b5152915de2": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 掌握度仅 20%，低于其余知识点的 45%，且讲解未读、错题 0，先用讲解建立概念收益最大。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "56d4f8790cdb59f94b02167e7a366a4b7f7d79cd": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "该知识点掌握度55%且错题0，讲解已读1次再读收益很小，用4题练习验证才能向80%推进。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "572c04e3c1adcd2af31fa6d60cd32f912f333076": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 55%、错题 0、讲解已读 1 次，讲解上限仅 55% 无法再提升，需用 4 题练习验证并冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "576e0a67b6f9dca55f7210ede40207662cd81eac": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅30%，低于80%目标且错题0，需通过4题练习验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "58085a0e94c8038bc98819652c29e1d469a4b5e5": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 22% 且积压 4 道错题，讲解已读 2 次再读收益很小，用这 4 道题练习既能提掌握度又能清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "58aca36ac1465fa6f8cd447791207d54d16e0551": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 22%、错题 4 道为全场最多，讲解已读 2 次重看收益很小，用 4 道题练习答对即可清错题并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "591e11e57863df0cfb6722f6466bb6bcd29a7feb": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度52%、错题2，且无连续低分，讲解已读1次，用4题练习可同时提分并清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "593c973ad90fa45b06909b47d10893a443561131": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅 55% 且有 1 道错题，讲解已读 1 次，需通过 4 题练习验证并清错以冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "59a216a7c787df67525dfc7f290e839cb1a0c24a": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 当前掌握度55%、错题0，讲解已读1次且讲解上限55%，只有通过4题练习才能验证并突破到80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "59fc5f612c44b8cbb0f834466205d92eb892eaf0": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 当前掌握度 45%、错题 0 且讲解未读，首次讲解可把掌握度推到 55%，比直接做 4 题更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5a46f5f25b04d492ab6466a1e1a3c5aa63c3df3a": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06_ai_tasks 掌握度仅 22%、错题 4 道，且讲解已读 2 次收益很低，先用练习验证并争取答对后移除错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5a98bad2d0f5cd9b2ceb2239783bd27ae5619609": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度仅 20% 且讲解未读，首次讲解收益最大，可先建立概念再练习验证。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "5af0d613111c4656909ef2f42b9037012d5a0bef": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度45%且讲解未读，首次讲解收益最大，可先补概念再练4题，比直接练习更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5afb0d96bb1928bd27bf8dc9363a7d6f7f6a0a94": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度只有 24%、错题 3 道且已连续 1 次低分，讲解已读 2 次说明概念仍未建立，先补概念比再刷题更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5ba69507c8b2e46867d27c9ee45c959acb6e55bd": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度只有 27%、错题 3 道、连续低分 1 次，讲解也只读过 1 次，再练一次若低于 50% 就会连挂两次，先用讲解把概念拉高更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5ba7820d0246f495cde6cb0e0c02e73f38164edf": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅 27%、错题 3 道且讲解已读 1 次，重读收益小，先做 4 题练习争取答对后清错并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5d8495dae48544cc38cc482e327376fcdc56e32f": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 67%、错题 1，练习答对可清错并有机会把掌握度推到 80% 以上。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5d98287b302305a9e8503bbb163f0c0bb9d1b3f5": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07掌握度仅45%、错题0且讲解未读，先完成首次讲解把概念补到55%，再练习才更可能达标。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5e470a2092bb6368c7e47e3ae59de5f4e6fd07ae": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 讲解已读 1 次、掌握度 55%、错题 0，讲解上限就是 55%，现在需要用 4 题练习验证并把掌握度推向 80% 的掌握线。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "5e662522ee863c34d531f26a3ba8a7dbd9834673": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04_big_data_4v 掌握度只有 27%，错题 3 道且连续低分 1 次，说明概念未建立，应先重读讲解再练习。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "5e8f3454dc5e07eac2eb9e54885ca22adfc7054c": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 55%、错题 0，讲解已读 1 次，需用 4 题练习验证并冲击 80% 掌握线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5ee1eea89175de840e2240e88abdf0243b6513df": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02掌握度42%、错题2道且讲解已读1次，重读收益有限，先用4题练习验证并争取清错更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5f3e0c4edc36b42f996d6f27977ee2f113e56c29": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度已达 67% 且只有 1 道错题，练习答对后最有机会突破 80% 并清零错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5f4816144a8067827a571d2b5f1810a3a6b7dcfe": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 30%，明显低于其他知识点的 55%，且讲解已读 1 次、错题 0，需先用 4 题练习验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5f4aedc12c35a5d41ec618d6f8e87748848eb927": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 55%、错题 0，讲解已读 1 次，需用 4 题练习验证概念并把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "5f825707bdd658bf3275fc11e30a6637396e0302": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 71%、仅 1 道错题，最近练习答对 3/4 题，再练一轮最可能跨过 80% 并把错题清零。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "61139cc6cdb3e4061ebd658d3f741336cb423401": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 当前掌握度仅 20%、错题 0 且讲解未读，概念尚未建立，先用讲解把基础推到 55% 更稳妥。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "611ea0cbb81cf8b7a9c558d522818a21e617250c": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 67%、错题 1 道，且讲解已读过（上限 55%，重看无收益），本轮 4 题练习若答对 3 题以上即可把掌握度推到 80% 并清掉那 1 道错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6168c5814209878dc612e0c037209012c04d57f5": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 当前掌握度67%、错题1，练习答对可移除错题并提升掌握度，而讲解上限55%且复习不提分。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "620c8176682eb426e448435dfb9436bdd3dbfb76": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 当前掌握度仅 45% 且讲解从未读过，首次讲解收益最大，可先把它推到 55% 再安排 4 题练习验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "622d5ff5d2c1f12a0db7a427c8bb372e8dd24117": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "review",
+   "reason": "t08 掌握度 71% 且错题本还压着 1 道错题，讲解已读 2 次上限仅 55%，先用复习把这 1 道错题纠正清零，再练习才能把 71% 推过 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6240f131c66dac094c45df4b340ae23a94798ebd": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度72%、错题1，距80%目标差8个百分点，且讲解已读1次上限55%无法再提升，需用练习答对来清错并提分。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "62d018448dc394d56ca24a0627dd7993036902e1": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 掌握度45%、错题0且讲解未读，题库有4题，先读讲解可把概念补到55%再练习验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "63227048a787d176f42b626d30144e3ba1e1768f": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 掌握度仅 45% 且讲解未读，题库 4 题尚无错题，先完成首次讲解可把概念推到 55% 上限，再练习验证更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "634a7d1048428a4f2c8cedec4763008472e7a92a": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 45%、错题 3 道、连续低分仅 1 次，概念未崩，用练习既能清掉这 3 道错题又能把掌握度推向 80%，而复习不提高掌握度、二次讲解收益又很小。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "63972bad87df8b965470ce21e94d3a604bf55c3f": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅 32%、错题 3 道，上轮练习只答对 1/4 且连续低分 1 次，说明概念未建立，应先讲解。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "63c05d2e3b4a25e27b9284575e3347134d0be006": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度55%、错题0且讲解已读1次，重讲最多仍停在55%，用4题练习验证并冲击80%更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "642982f53aa47315d6245c3821f8d43e4b481071": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度只有 42%、错题 3 道，最近一次练习 4 题只答对 1 题，且讲解仅读过 1 次，说明概念没建立，先用讲解把上限推到 55% 再练。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "650914720f2df4ef2905027ebbbc8086180ca4f6": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度66%、错题1，已读讲解且高于讲解上限55%，需用练习提分并争取清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "653310777c10bd30d9fc5b4edcda0eb4d5787bb5": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度只有 30%、错题 0，讲解已读 1 次再读收益很小，而题库有 4 题可练，先做练习验证才能把掌握度往上推。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "655d020f74d5853f669533a0b02d4a2338b47796": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度仅 22% 且积压 4 道错题，讲解已读 2 次收益有限，先通过练习清错题并验证掌握情况最划算。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "666236969ddd4dff1054f27e40d4e7b4b4e28ff2": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅29%、错题3道且讲解已读2次，先做练习可用4题验证并清除错题、提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6663d69356fad359fcfdac8bf8968d3d4cf066da": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度仅 20%，讲解未读且题库 4 题、错题 0，首次讲解收益最大，应先补概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "668b3f4e3da497cf7cdf35f0830fdecb55ee53d8": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度仅 20%、错题 4 道，且上轮练习 0/4 全错，说明 4V 概念尚未建立，先重讲把掌握度从 20% 拉起来比继续刷题更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "673561504837b7d0d1673335ed0696b97202de71": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅 30% 且错题 0，讲解已读过 1 次再读收益很小，用 4 题练习验证概念才能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6738993ad91d1832eff07340a05254bc97782f37": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 52%、错题 2，且讲解已读 1 次，需用练习把正确率转化为掌握度并清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "67ac39175904ff0c8106df42b031311f377b3124": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度已达 55% 且只剩 1 道错题，用一次练习最有机会把错题清零并继续把掌握度推高。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6810f44a7a01c822e35a69ee1894ab110e53a87b": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅 27% 为全场最低、错题 3 道且已连续低分 1 次，讲解已读过 1 次再读收益很小，用 4 题练习验证概念并清错题最划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6822ddbdf456d02aec1f99624afe65aadfa2c59b": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度仅 17%、错题 4 道且连续低分 2 次，讲解只读过 1 次，说明概念未建立，应先重讲而不是继续练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "682ced594eb15675265c224809aab7819ffe3285": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅 29%、错题 3 道且讲解已读 2 次仍是全库最低，需先补概念再验证，因此本轮优先安排它的讲解。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "68afae53d1b80fadf85057328037702d88a1d379": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06_ai_tasks 掌握度仅 45% 且讲解未读、错题 0，先完成首次讲解可把概念补到 55%，比直接练 4 题更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "69a36af547716e1b8e531f0bdf5bddc1cf8d9924": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 52%、错题 2 道、讲解已读 1 次，概念基础已具备，用 4 题练习验证并清错题比重看讲解收益更大。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "69d6de861928bce922e41fb8a49fc7c9c2d1cc70": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度45%、讲解未读且错题0，作为P-T-E基础框架应先补概念，首次讲解可把掌握度推到最高55%，为后续4题练习打底。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6a16e74047f485004d97b7702c4df017a76878a1": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度仅 72% 且有 1 道错题，练习既能争取清错又能把掌握度推向 80%，比 t04 的 77% 无错题更紧急。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6b62b5ddc9b911d40816c8a3e2a190feadf70643": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06掌握度仅20%、上轮练习0/4全错且错题累积到4道，概念明显未建立，先重读讲解把掌握度从20%拉向55%上限，比在42%的t02/t04/t07/t08上练习更紧迫。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "6c1ba2085c6545e419f75bc830d372e98ab172f2": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度只有 52%、错题 2 个，是 6 个待学知识点里最低且错题最多的，讲解已读过且上限 55%，只有练习能同时提掌握度并清掉这 2 道错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6c278244659cbaf9f6a9c2ddb4f4d2b451641c50": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 讲解未读、当前掌握度仅 45%，首次讲解收益最大，可先推到 55% 再进入练习验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6cabb74f0c72e8eb38dd96f83343b657f470d20d": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅20%、讲解未读且题库有4题，先建立P-T-E概念比直接练习更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6ce8edfe6990882f71442a3b942cce706b731f61": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 29%、错题 3 道，讲解已读 2 次重看收益很小，需用 4 题练习验证 P-T-E 框架并清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6d1582022004c6d0c01331aecb3020aa99c5b3c5": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度 57%、错题 2 道，讲解已读 1 次且上限 55% 已无提升空间，只有练习答对才能把 57% 推向 80% 并清掉这 2 道错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6d86ff072c732191e0379693fe969d228dba1802": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 52% 为 8 个知识点中最高、错题仅 2 道且连续低分为 0，概念已建立，用练习把 52% 推向 80% 并清掉这 2 道错题的收益高于在 27% 知识点上重看讲解。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6dd0ec16d2a55b545866807c6358b247cbd7e9d7": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度 45% 但讲解未读，先读讲解可把它推到 55%，比从 20% 起步的 6 个知识点更接近 80% 掌握线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6e00d16030b04e66e18b67d15f58f7c296b22d10": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅 45% 且已有 3 道错题和 1 次连续低分，再练一次很可能触发连续两次低分，应先重读讲解重建概念。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "6e48052455db3514cfdac74e3a71578fbbb36506": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 30%、错题 0 且讲解已读 1 次，概念已建立，重看讲解收益小，用 4 题练习验证才能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6e83e0b379814dabb0cbc28d8941fe3ffd2f8533": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度55%、错题0、题库4题，讲解已读1次，需用练习验证并冲击80%掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6eb3e4c6c1fd5cbbf4eb931671ec6e219273677c": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "8 个知识点全部未读讲解、掌握度最高仅 45%，先给掌握度 20%、错题 0 题的 t01 建立概念，比直接练 4 题更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6ec66d0de39f42d0a1ba2201f29b76ee5c99329a": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅 42% 且有 2 道错题，是 8 个知识点中最低的，练习既能提升掌握度又能清错题，比讲解（上限 55%）收益更大。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "6eeb74e5605c2053973ff063064a5a309be4a19a": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06_ai_tasks 掌握度仅20%且讲解未读、错题0，概念基础最薄弱，先首次讲解比掌握度45%的t01/t02/t07更优先。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "6eed2e4c52d79c71f42ee14490a917e46086fe64": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度 45%、错题 0 且讲解一次未读，概念尚未建立，首次讲解收益最大（可把掌握度推向 55%），所以先补这一块而不是直接练题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "70b79cb80f58b496b5dc2632af360c0f6f34117a": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅20%、错题0且讲解未读，作为机器学习P-T-E基础框架，先用讲解把概念建立起来。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "70f9f2d261f857a37f6e81e810ff7073b07751e2": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06掌握度72%且只剩1道错题，是离达标（80%且错题清零）最近的知识点，上轮练习已答对3/4题，再做一轮练习最可能直接突破80%。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "723ace71e52ef2a61b5aef1ee8b9578330f6d175": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 42% 是候选里最低的，且积压 2 道错题，讲解已读过 1 次重读收益小，用 4 题练习既能提分又能清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "728c5a6f829f87828f2faf1b1dc1eb9acb02e39b": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅30%、错题0且讲解已读1次，用4题练习验证概念比重看讲解更能推动掌握度向80%目标提升。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "72a28cbf67adf8fea39f765b165ce894609b446a": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度已达55%、错题0，是8个知识点中离80%目标最近的，用4题练习验证并争取提升。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "72e7853cf775018bd038fddf5dfae08aa1c4ffc6": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅 22%、错题 4 道，是 5 个待学点里最低的，且讲解已读 2 次再读收益很小，只有练习答对才能清掉这 4 道错题并把掌握度推过 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "72ec4b693b1e8aca6b515d5c2b1b6b013d3047ba": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度45%、错题0且讲解未读，作为 P-T-E 基础框架先建立概念，比直接练习更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "7320462c99f70e6b6e1cbe71d548f002b99a2fda": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 67% 且错题 1，讲解已读 1 次，练习答对可清错并把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "74483df1f1f4689978b280cbb08e3bc422c7b592": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度仅20%且讲解未读，题库4题尚未验证，应先读讲解建立概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "75bbc0c514113dac5edbb22d3287d7c0a1bf7f3f": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅 30%，是 8 个知识点中最低之一且错题为 0，说明概念尚未建立而非缺练习，重读讲解可将其推向 55% 的上限。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "7644804c9d1d84ea78d6989e4ec96b50680677db": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅 22% 且有 4 道错题，讲解已读 2 次再重看收益很小，应通过 4 题练习验证并清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "76887bdbbd77da6b3dbeb86ee09d9ef27e78010f": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅 27%、错题 3 道，讲解已读过 1 次重看收益很小，用 4 题练习既能清错题又能把掌握度往上推。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "768b3e7f72c282f8840dae386044fe7b4ca0912c": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度仅 44%、错题 3 道，是 6 个待学点里最低的，且讲解已读 2 次收益递减，用练习提分并清错题最划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "76fc63c7475d5e42ca8d3622111eaea4efc4963e": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "该知识点掌握度72%且只有1道错题，练习4题中答对3题就有望达到80%并清零错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "77232f20c055a2db720fee7cb09e96807c3bffd6": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 当前掌握度45%、错题0且讲解未读，题库有4题，先完成首次讲解可把概念基础补到55%上限，再安排练习验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "78dceccb1195c513e3a3788906565e1c169d39af": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08_ml_taxonomy 掌握度45%、错题0、题库4题且讲解未读，首次讲解收益最大，比20%的知识点更接近80%目标。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "79670fc9322f118a954cde7c0843a88699f8875d": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度仅45%且讲解未读，题库有4题，首次讲解收益最大，先补概念再练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "7978bbb0ca86a556ffcba53c73bfd7267e008ca4": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅42%、错题2道且无连续低分，讲解已读过1次收益有限，先用4题练习验证并争取提高掌握度、清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "79b0fa63d69ce468830e6aa2041af499f8f7336f": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 67%，距 80% 还差 13 个百分点，且有 1 道错题；讲解上限 55% 已无提升空间，复习只纠错不涨掌握度，所以练习既能清错题又能提掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "79e44428828f2b849106da2b1a89a60c41aff60e": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 30% 且错题 0，讲解已读过 1 次，重看收益小，先用 4 题练习验证并提升掌握度最划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "79f3b021dcc33fb5951e5752712ec4a31b920e64": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 55% 已达讲解上限，且有 1 道错题，需通过练习答对来清零并继续提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "7b5700a050f8d2ec1aa9a8a5c6a600dcadc5ce1d": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 55%、错题 0，讲解已读 1 次且讲解上限为 55%，现在需要通过 4 题练习来验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "7bb9a20d3601ab656dcbe1e045103f877103ea14": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度已达 67%、仅剩 1 道错题，练习若答对 3/4 以上即可清掉错题并冲上 80% 掌握线，是候选中离掌握最近的知识点；而 t08 只有 55%，一轮练习难以达标。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "7c4537ab4eec45a2220ef1b7393e0fa76c95aca2": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 67%、错题仅 1 个，是三个待办知识点中离 80% 达标线最近的，一轮练习答对即可清错并达标，而 t03 已到讲解上限 55%、t08 只有 42% 且错题 2 个，收益都不如它。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "7c54ceaa532fda16d1e86449d782acbcf0d99b42": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度42%、错题2道且讲解已读1次，缺的是练习验证，本轮做4题若答对可移出错题并推动掌握度向80%靠近。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "7c6fe4ace7148ab3881192d37b537a488978f2ea": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "该知识点掌握度仅45%、错题3道且已有1次连续低分，讲解已读过1次，当前更需要通过练习验证概念并清除错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "7ca863f125e621a997ba12a88ea38cf7d026e7a2": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 45%、错题 3 道且连续低分仅 1 次，概念未到必须重讲程度，先练习验证并争取清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "7d39ab5123255afcd853249d22db8f044ba409cf": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅27%、错题3道且讲解已读1次，需通过练习把正确率转化为掌握度并清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "7d3baa570f01d9d1ca5b0854df3808c0d12189e1": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 30%、错题 0、讲解已读 1 次，缺的是验证而非概念，用 4 题练习可把掌握度往上推。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "7da72365a5deca75b55198b0a6b95e0a9c64ff41": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07掌握度仅20%，低于其余知识点的45%，且讲解未读、错题0，需先建立回归与分类概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "7edbaf7be085178d53e63781495c099dd0626c73": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 67%、错题 0，且上次练习答对 4/4，离 80% 只差 13 个百分点，现在练习最可能直接达标。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "805127db6409334f8012964c87489670ab33d97b": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 掌握度45%、错题0且讲解未读，作为最基础的 What is AI，首次讲解可先把概念推到55%，为后续7个知识点打底。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "805f4cc5d4dcd508b10dfe633b943cc133c7b0ec": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度 67% 且错题 1，练习既能冲 80% 又能清错；t02 虽同为 67% 但错题 0，优先补有错题的 t01。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8130e992f2805339c7a720f929d7485a8f623a25": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 57% 且积压 2 道错题，讲解已读过 1 次且上限只有 55%，再讲解无增益，需用 4 题练习同时提分并清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "81525fcc15c1f4c9d3dcb49d1ed5e042a2d32bf4": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度仅 32% 且讲解只读过 1 次，第二次讲解收益仍大，可把掌握度推向 55%；而 t06 讲解已读 2 次，重看收益很小。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "819d064fc2428b9aae85af326eac0e7ac9a59a0e": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 30% 且错题 0、讲解已读 1 次，概念已建立但从未验证，重看讲解收益小，先用 4 题练习把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "81a8489241b06a98d5a74f90f59ec29aba1e0531": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度仅 20%，低于其余待学知识点的 45%，且讲解未读、错题 0，先补概念收益最大。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "82032af838239abf8a4aa8f6d78c913331127e31": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度 62% 且挂着 1 道错题，讲解已读过 1 次（重读上限仅 55% 已无收益），用这 4 道题练习既能清掉错题、又能把掌握度推向 80% 达标线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8239c96e7d7e405cf8a63efbcc6b9c5c63f43578": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅 37% 且有 3 道错题，是 8 个知识点中最薄弱的，练习可同时纠错并提升掌握度，且连续低分只有 1 次，尚未触发回讲解的条件。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "8283cd097f04a71981ba10f3d1554c59b8cf3f41": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度已达 55% 且错题 0，是候选中最接近 80% 掌握线的知识点，用 4 题练习验证并冲击达标。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "82edad06403a889b61f2605e4d258dc99b2989f5": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 当前掌握度 45%、错题 0、题库 4 题，概念未读但已有基础，先用 4 题练习验证能否把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8455caefd196e248e89a55c1b826f89001e01ba7": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 30%、错题 0、连续低分 0，讲解已读 1 次，适合用 4 题练习验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "848a1745e47e255d13f32d992613761f29ea30ef": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02已连续2次练习正确率低于50%（最近一次4题全错），掌握度仅35%且积压4道错题，说明概念尚未建立，需先重看讲解而非继续练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "84a562889264fab5755abb85d2308e2feb3434fa": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07掌握度66%且仍有1道错题，上次练习答对3/4题，再练一轮更可能把正确率提上去并清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "84f2830abbc07580543aa03d99950485c563e87c": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅 22% 为全场最低、错题 4 道最多，且讲解已读 2 次收益递减，需用 4 题练习答对来清错题并拉升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8516c939e34d0bcb1cdda3e857993bd9fc11923f": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 62%、错题 1，讲解已读 1 次且无连续低分，概念基本建立，优先用练习把正确率转化为掌握度并清掉这 1 道错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "863a2a65e9d6b7d0dc709b3677e5b791d2e71347": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 47%、错题 3 道，是 5 个待学点里最低最脏的，且讲解已读 2 次重看收益很小，只有练习能同时提掌握度并清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8695811e5e6a5a31e3853b05cc11f311b1ccfaf3": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 67%、错题 0，讲解已读 1 次且讲解上限仅 55%，应通过 4 题练习验证并冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "86c24892dff58b487843da517418dd2529e60ea0": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度只有 30%，是 8 个知识点中最低的，讲解已读过 1 次再读收益很小，需用 4 题练习把它从 30% 拉向 80% 并保持错题清零。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "870ff6ed1dacfbc330fd1194af29583c2ca789eb": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 32%，是 6 个待学点中最低的，讲解已读 2 次（重看收益很小）却仍停在 32%，说明缺的是验证而非概念，用 4 题练习来建立正确率最划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "87d7ee3fe383aaf81a66214fdc8deacebdb048cb": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅 55%、错题 0，讲解已读 1 次且最多只能推到 55%，用 4 题练习验证最有助于达到 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "888f86633e9ffe4603fa453cd99ab0ecfcf5e52e": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "该知识点掌握度55%、错题0且题库有4题，讲解已读一次再读收益很小，先做练习验证正确率才能把掌握度推向80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8925e19e4b20772d0705d7cf933885ae8d8bab4a": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 55%、错题 0，讲解已读 1 次，重读收益小，需用 4 题练习验证并冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8936032388c60ed73468f3abdd983c4ae2b58b0a": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "剩余 6 个知识点掌握度均为 45%、错题 0 且讲解未读，属概念缺失，先讲解（可推到 55%）优于无概念直接练习，且 t03 紧接刚学完的 t02 ML 定义（现 55%），衔接最顺。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "89980cda1b4f0f3e884a58340c3a29318ff57bc2": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 当前掌握度45%、错题0且讲解未读，先用讲解建立概念，再配合4题题库练习更稳妥。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "89ba1024103bdd6fa06b4f6802faecc9d4353a23": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 55%、错题 0，讲解已读 1 次且讲解上限为 55%，再讲解收益很小，需通过练习验证并提升到 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "89c2815edb5c1d4c0274f9f744c6343f96720fd2": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03_deep_learning 掌握度仅 30%，讲解已读 1 次重看收益小，先用练习验证概念是否建立，答对还能清零错题并提升掌握度。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "8a8bf68efaa9800e69c5f3825b48d21d5e085241": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 37% 且有 3 道错题，是 8 个知识点中差距最大的，讲解已读 2 次重看收益有限，通过练习答对可同时清错题并提升掌握度。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "8b76b001b5272e38c89eba39b963c41363ea72e6": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 27%、错题 3 道为全场最多，且只有 1 次连续低分、讲解已读 1 次且重看收益小，因此用 4 题练习验证效果，答对还能把 3 道错题从错题本移除。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8ba6947eeeb1946944bb647b5d73cb6e0816699e": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 已连续 2 次练习正确率低于 50%（最近一次答对 0/4），掌握度仅 35% 且错题 4 道，需先重读讲解建立概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8bb4126e7d480f59efcd592aff4fff69ce38dbbe": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 67%、还有 1 道错题，上次练习答对 3/4 未低于 50%，概念已建立，需用练习把掌握度推到 80% 并清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8bbe39698846d78684df97548eac978663855b18": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度30%、错题0、连续低分0，讲解已读1次重看收益小，用4题练习验证并提升掌握度更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8be933d50e7716c8c7af11d65a24586e86a1c7c3": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 42%、错题 2 个且讲解已读 1 次，重看讲解收益小，而练习答对可同时清错题并提掌握度，比 t08 更基础应先推进。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8c12159a91f3677b36f172b726103607889d7bda": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 72% 且还有 1 道错题，上次练习答对 3/4 题，需要靠练习把正确率转化为掌握度并清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8c502a66f63e09c2f01b127167d48e59dd58e7b1": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 掌握度仅 30%，明显低于其余 7 个知识点的 55%，且讲解最多可推到 55%，应先补概念再练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8c739e917a7451df7f21f77524e20bb67e1afc2b": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅 20%，是 8 个知识点中最低的，且讲解未读、错题 0，说明缺的是概念而非纠错，先用讲解把 P-T-E 框架建立起来收益最大。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8e2c5157787bf35778c72d1f5466c6b582aa03d3": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度55%、错题0、题库4题，讲解已读1次已到55%上限，先用练习验证才能向80%推进。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8ed427c2946f8c0733621b280fceaea826bdaae7": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 72%、只差 8 个百分点到 80%，错题仅 1 道，本轮 4 题练习答对即可清错并冲线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8f027d2d0e1c2131c9d2bfcf35110d31708c635a": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 55% 正好卡在讲解上限且错题 0，重看讲解收益小，用 4 题练习验证才能把它推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8f44a966cee2bd4d1bd6d5fdfaafac0790029152": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅20%且讲解未读，题库4题，先讲解建立概念比直接练习更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "8ff01ae730d29870fb13f376bcd4e6a0c18e6709": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度仅 45% 且讲解未读，首次讲解收益最大，预计可提升约 10 个百分点至 55%。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "8ff0673eec9439390beb76b9fcc7c0d027eeab24": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度 42% 为候选中最高，讲解已读 1 次且连续低分 0 次，说明概念已建立，现在最需要通过练习验证并清掉 2 道错题；其余候选知识点（如 t03/t04/t06/t08 均为 27% 且连续低分 1 次）概念尚未稳固，练习收益低。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "9030a53d753bc6ff3db6330ae9d9bbad21fa9ec8": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 67%、错题 1 道，讲解已读 1 次且讲解上限 55% 低于当前掌握度，只有练习把这 4 题做对才能清错题并冲过 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "905f4c464389f938248fd68e76be51231d2030ab": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度45%、错题0且讲解未读，首次讲解收益最大，可先把概念推到55%再练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "90b8277dcf8963022a9dc65548af54f4f5eb806d": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 当前掌握度55%、错题0、连续低分0，讲解已读1次后概念已建立，需用4题练习验证并冲80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "90c9a299461626b660df32e79d8eabdc0c7db4f4": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 67% 且已有 1 道错题，讲解读过 1 次说明概念已建立，用 4 题练习既能冲过 80% 又能清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "91121f8081de95574f9b6b2cff9ddaa81d91eb35": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅 27%、错题 3 道且连续低分 1 次，讲解已读 1 次重读收益小，先用 4 题练习验证并争取清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "91863000062e3109307c60f34b3d3d2d5142511c": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "该知识点掌握度已达55%但错题0，讲解最多到55%，需用4题练习验证并冲击80%掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "921b9fea5dc7d862f9657010e958ce0ae1835530": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅 20% 且讲解未读、错题 0，说明概念尚未建立，应先讲解而不是直接练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "929d071479dda3d72c559fc37bc1b941c1cb8671": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 67%、只剩 1 道错题，本轮 4 题若全对即可同时达到 80% 掌握并清零错题，是当前最接近完成的知识点。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "93682e4ba7f4b0693677505eac9cb01c061413b8": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅 28%、错题 3 道，讲解已读 2 次重读收益很小，需用练习验证并清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "93a880a47af674335d53040b74e223ae25af5143": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度 45%、错题 0 且讲解未读，先用首次讲解把概念补到上限 55%，再练 4 题更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "93b25d671afcfb9758e320ba0d96720ac7e41763": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 67%、错题 1，距 80% 只差 13 个百分点，4 题练习若答对 3 题以上即可清零错题并接近达标。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "94311b64e7c570343f84c00147010726e69c2b44": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度55%、错题0，讲解已读1次且讲解上限为55%，需用4题练习验证并推向80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9471d22a8fe418b79a4f505370e7b99ae39fefc3": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 57% 是候选里最高的，讲解已读 1 次说明概念已建立，用 4 题练习既能冲 80% 又能清掉 2 道错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9519a8323537c945a6fe5198c98d6df435a0c84a": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 掌握度45%、错题0且讲解未读，首次讲解收益最大，可先建立概念并把掌握度推到55%上限，为后续练习验证打基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "952e446dc8355a980a077d8b3b50e39e07874180": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08掌握度仅45%且讲解未读，首次讲解收益最大，还能衔接本轮刚学的t02（55%）与t07（30%）的机器学习概念链。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "9567491afcf13995202bd7231e5036236c2e18ae": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅 27%、错题 3 道且连续低分 1 次，说明 P-T-E 概念尚未建立，先重读讲解再验证比直接练习更有效。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "956fc2ecd6a110770923865452222482b43a5f14": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 47%、错题 2 道、讲解只读过 1 次且没有连续低分，现在最该用练习验证并清掉这 2 道错题，把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "962704a4070acdc849ee7658a5c9442d18eb38c9": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "该知识点掌握度仅42%且错题2道，讲解只读过1次，概念尚未建立，先补讲解再练习收益最大。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "96682859c4fe49bc72114e75f254c2a390e93c42": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 当前掌握度 45% 为最高且错题 0、讲解未读，先读讲解可把掌握度推到 55%，为后续练习达到 80% 打基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "96c0daa99ed0151d15946b77985339a0c7f103cd": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 29% 且有 3 道错题，讲解已读 2 次再讲收益有限，通过练习既能纠错又能验证概念是否真正建立。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "96ed2e6e414124a1df88fba404e3e1c2500eb6e8": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 57% 是候选里最低的，且积压 2 道错题，讲解已读 1 次而讲解上限只有 55%，再讲解无法提升，只能靠练习把正确率拉起来并清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "97e010e01fd54b72dfbaaaaae34850c73360fd59": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 57% 且错题 2 道，是当前候选里最低且错题最多的知识点，用 4 题练习既能冲 80% 又能清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "97e3a1d3bf06b9df2fa67bd153c74e55c0472e34": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 是唯一未读讲解的知识点，当前掌握度 45%、错题 0，先读讲解可建立概念并把掌握度推到 55%，为后续练习拿分做准备。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "98a43a9c5b5d37d417237b0a91cfc490c17566c1": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度仅 29% 且错题 3 道，是候选中最薄弱的知识点，讲解已读 2 次重看收益很小，需通过练习验证概念并清错题。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "98c27c597ff7ed57596e204ea1d17ca4e90edb9e": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 62% 已是当前最高，且只有 1 道错题，用 4 题练习最有机会把掌握度推过 80% 并清零错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "98e2899dfadeb5e1a31116f860155e5e986b1edb": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 67%、错题 1 道且讲解已读 1 次，概念已建立，先用 4 题练习验证并清掉错题更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "98e8ebb837d0aa592ed6c48a3be3137b51727142": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 67%、错题 0，讲解已读 1 次且讲解上限仅 55%，需用 4 题练习验证并冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "98ea3afe16e6d5d8d9ba5e970b0449dd0fe47905": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 52% 已接近讲解上限 55%，且讲解已读 1 次、错题 2 道，本轮用 4 题练习验证并清错比重看讲解收益更大。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "98f32a1bebbd977087641cb5655c51e5372077ac": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅 29%、错题 3 道，讲解已读 2 次再重看收益很小，只有练习才能把掌握度往上推。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9934ac2e2ecd882f32aedb2f60db5f527d606026": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "当前掌握度55%、错题仅1道，是待学知识点中最接近80%且错题最少的，优先用4题练习清错提分。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "99a6697f8f391544349b5bce8343cbaec825ac29": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 55%、错题 0、讲解已读 1 次，重看讲解收益很小，需用 4 题练习验证并争取把掌握度提升到 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9a414f4b17d7f0ec0877184cb9d841e72b6c5899": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅 30%、错题 0，讲解已读 1 次重读收益小，用 4 题练习验证并提升掌握度更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9a46462270467873c517e142a8ca279e4fbbaf5c": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "该知识点掌握度52%、有2道错题且讲解已读1次，概念基础已具备，需通过练习验证并清除错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9a9a2195d76e9bb019e0b77bd4b408f2c5673fc5": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 已连续 2 次练习正确率低于 50%（最近一次 0/4），错题 4 道且掌握度仅 35%，说明概念未建立，应先回到讲解。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9b1310f4d0ff3bc305a5c6925124fd7b7d831e91": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "当前8个知识点已掌握0个，t01掌握度45%且讲解未读，先用首次讲解把基础概念建立起来收益最大。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9b1ada3b274422b51f5af037055c9d10e7efe823": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 29%、错题 3 道，且讲解已读 2 次收益有限，需用 4 题练习验证并争取清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9c5313af97a9d2df67a2a4fc8e1c0448adbcb3e8": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 30%、错题 0、题库 4 题且讲解已读 1 次，重读收益小，先做练习验证概念并把掌握度推高。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9c7605fc07791ab86e78a720d4598962e0046dc4": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅30%、错题0，讲解已读1次重读收益小，用4题练习验证概念并冲80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9cd2eb99a3183f99ef19fab047d3ffd9e12f4a1f": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 当前掌握度仅 20% 且讲解未读，先完成讲解可把概念基础推到 55%，再练 4 题更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9d00f2709e5397bbe8e96b8ad28131a5f52b74a0": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06_ai_tasks 掌握度仅 22%、错题 4 道为全组最低，概念尚未建立，先通过讲解把掌握度从 22% 向 55% 提升，再进入练习验证。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "9d1d08dc2355d82ce6c0392814809c19fe803475": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 47%、错题 2，讲解已读 1 次，练习既能争取清掉 2 道错题又能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9d52a5cf4576b8734525bf809b58f8779840a921": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度 52% 是候选中最高、连续低分为 0，且仅剩 2 道错题，练习一次若答对即可清空错题并冲击 80% 掌握线，性价比最高。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "9d87921b5fd8ae362362d160d215aa2a79bacfcc": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06_ai_tasks 掌握度55%、错题0且讲解已读1次，用4题练习验证最可能把掌握度推向80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9d886e605cd6bcab358fcec783e1fb2a5c064797": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅 32%，是 6 个待学知识点中最低的，且讲解已读 2 次重读收益很小，只有靠 4 题练习才能把掌握度往上推。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9dd8775effdf2121996d45fc08be11966852183b": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅 29%、错题 3 道，均为全组最差；讲解已读 2 次再读收益很小，先用 4 题练习答对来清错题、拉高掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9eacfb1c25ee5fd14a37be2912c5474bd0c7d492": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度仅 20%、错题 4 个且最近练习 0/4 答对，连续低分 1 次，说明概念尚未建立，先讲解比继续练习更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "9f23fc31356543f3639068c5a3bd860124907c23": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅 35% 且有 3 道错题、连续低分 1 次，但讲解只读过 1 次，首读收益最大，先把概念补牢再练习验证。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "9fe56186b1cbb37d998c397a7639829a6e9a37a2": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 42% 是候选中最高且连续低分为 0，错题仅 2 道，练习最可能答对清错并把掌握度推向 80% 的达标线。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "a0406f3e591e66c06b0c0965155eff7b50ecbb0a": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度只有 55%、错题 1 道，是候选三个知识点里最低的，用 4 题练习答对即可清掉错题并把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a19349fe1738714b3d108a26bc54b1bcec107843": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 47%、错题 3 道且连续低分 0 次，先练习可验证概念并争取清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a1beb48ca99873fbb3c08cdecaa395601a9c91b4": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度只有 20%、错题 0 且讲解从未读过，属于概念完全未建立，先读首次讲解收益最大（可推到 55%），而 t02 已 4 道错题需另做纠错安排。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a2037a88ca61e64961037412a8b34abeb69f2bed": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "该知识点掌握度仅34%、错题3道，是8个知识点中最低的，且讲解最多可推到55%，说明概念尚未建立，应先回讲解补概念。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "a3503270177ce49102e5f59385a36d40ca6c459a": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 当前掌握度仅 45% 且讲解未读，题库有 4 题，先通过讲解建立概念才能避免练习低分。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a36e5a415fa7b4cbdcb3032af888fa83e15dadb4": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 42%、错题 2 道且讲解已读 1 次，作为 P-T-E 基础知识点当前最缺验证，做 4 题练习能清错并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a38460a97a1aa8c7cfd28a22726f49c1e9f97c44": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05_data_driven 掌握度仅 20%，是剩余知识点中最低且讲解未读，首次讲解可把掌握度推到 55%，优先补概念缺口。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a3a72c425345b3f696dc25db53d89819d67bad16": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 的掌握度已达 55%，且没有错题；但距离 80% 的目标还差 25 个百分点，题库中有 4 题，正适合通过练习巩固已学概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a3da5811aaf03359a4bbbbd07b2c945e2066aade": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 30%（全组最低）且错题 0，讲解已读过一次，现在最缺的是用 4 题练习验证概念并冲上 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a3f29dbfd327098a08fbcb4187908ed2cff24eef": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06掌握度仅45%、错题3道且连续低分1次，最近练习只答对1/4，说明概念未建立，应先讲解。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a426883b9b568c5a03855f220957a50d2505e964": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 当前掌握度仅30%、错题0且讲解已读1次，重读收益低，用4题练习验证概念更可能把掌握度推向80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a4ea9d461d6b702496af136aaf0d06414d4ef035": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 55%、错题 0、题库 4 题且讲解已读 1 次，重讲收益低，需用练习验证并冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a4f64cd8e87e0ea5afb17ceddd616d86d4c2c8ae": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 当前掌握度仅20%、错题0且讲解未读，先读讲解可把掌握度上限推到55%，比直接练习更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a509cb399dca6ee0174f9654beeba661d519573c": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 66% 为全场最高、错题仅剩 1 道，用本轮 4 题练习验证最可能一次把掌握度推过 80% 并清空错题本。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a5ea3a8e7b4d65c10608396e813dd4925d84c9f1": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅27%、错题3道，且连续低分1次，讲解已读1次再读收益有限，需用4题练习验证并争取清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a5fe14b4cce9fa43e75edc507b70980cf4249d74": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 55% 已达讲解上限、错题仅 1 道，用 4 题练习验证最有机会把掌握度推过 80% 并清零错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a62a6727b69e6055c4362e4babe1b4ceaddd8e66": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 72% 距 80% 目标只差 8 个百分点且已有 1 道错题，讲解已读 1 次（上限仅 55%）无收益，复习又不涨掌握度，故用 4 题练习一次冲达标并清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a6393260d74b766511b98b8f3c01724b8f7153cc": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 41%、错题 2 道，且仅连续低分 1 次未到回讲解阈值，先用 4 题练习验证并清错更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a67d790c8e10f52f091dc364cb28a88462c4d3fb": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 55%、错题 0、无连续低分，概念已通过讲解建立，现在最缺的是用 4 题练习验证并冲击 80% 掌握线。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "a6b9152a7aa0df51caec32941a8b487c986426f2": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度48%且有2道错题、连续低分1次，讲解已读1次，需练习验证并把答对题从错题本移除。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a6fba35ef4f932f5d85ddd68aceb200f8350341e": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度已达 55% 且错题 0、连续低分 0，概念已建立，现在最需要用练习验证并冲击 80% 的掌握线；而 t03–t06、t08 仍停在 30%，重看讲解收益很小，应先从 55% 的知识点里推进。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "a71df1fddfec1529a1ee5bb498425f777a369f7f": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 76% 是唯一未达 80% 的知识点，且还挂着 1 道错题，上轮练习答对 3/4 说明概念已建立，再做一轮练习既能把错题清零又能把掌握度推过 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a746404743eaf237480953de24857814c9e65bef": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度已达55%且错题0，离80%目标最近，用4题练习验证最可能直接推进掌握。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a7bdca80c9123c718bb82b830e1e920b4dfd75a5": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅 45% 且讲解未读，概念尚未建立，先讲解可把掌握度推到 55%，再练 4 题更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a8a2c970afd279aaac7159951db240adb9628284": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 当前掌握度45%、错题0且讲解未读，先通过讲解建立P-T-E框架概念，为后续练习打基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a8c0a085996c79e0fabb62e55b72a435e8d19705": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅 30% 且讲解已读 1 次，重读收益小，需用 4 题练习把掌握度从 30% 推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "a8d59cfc3938fbd5a583bad66d1f61346143043c": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅30%、错题0且讲解已读1次，重读收益小，用4题练习验证概念更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "aab75ae9bffb1d3bfe6b58253bea489735110acd": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "该知识点上轮练习 4/4 全对、错题已清零、掌握度 69%，再练一轮最可能直接突破 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ab0cfe27d6fb527fb2e4a6dd2d79c7c85bb6fb8e": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度仅52%、错题2道，最近练习答对2/4，先用练习验证并争取清错比重看讲解更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "abca6a654d6b7022f0bfaa1916212cdbfad61ad8": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 掌握度仅 45% 且讲解未读，是唯一还没建立概念的知识点，先讲解可把它推到 55% 再练 4 道题验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ad3e88d6878f4294b9096805d0ecda76b5d155f0": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度仅 66%、还有 1 道错题，且讲解已读过 1 次，重看收益小，先用 4 题练习既能纠错又能把掌握度往 80% 推。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ad513ee5fe1543f02b3c07c098ba842e70f0aa46": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 当前掌握度只有 45%，讲解尚未读过；首次讲解收益最大，可先推到 55%，再去做题库 4 题练习验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ae78dad974879f5878e2c9e8f97073a875b0577e": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "该知识点掌握度仅20%，低于其他候选的45%，且讲解未读、错题0，最需要先建立概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b11ee62a39b2cff31c2180265a6a15f7904dc62d": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度55%、错题0且讲解已读1次，重读讲解收益低，用4题练习验证并冲击80%更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b12fbffa31f4f3db1192d1385b09104242d5d7b6": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 30%，低于其他已讲解知识点的 55%，且错题 0、题库有 4 题，先用练习验证 P-T-E 框架能否把掌握度推过 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b17f5aedade4244ab06f25e8bfc4f37c180c0513": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度30%、错题0且讲解已读1次，重看讲解收益小，用4题练习验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b18e15c8d578e465323f83e954a0271e058039a4": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 22%、错题 4 道且讲解已读 2 次，重看收益小，用 4 题练习验证 P-T-E 框架并清错题最合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b1b5dc06cfd0023ec0c8f27a03b0c29bca4b70ab": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 30%、错题 0 且讲解已读 1 次，重看讲解收益很小，用 4 题练习验证概念最合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b2cb9cf6b2d373af13ecc89a316650517c5a6e85": {
+   "topic_id": "t03_deep_learning",
+   "activity": "review",
+   "reason": "t03掌握度75%距80%达标线还差5个百分点，且错题本还剩1道错题未清，讲解上限仅55%已无收益，先用复习逐题纠正这1道错题实现清零，下轮再练习把掌握度推过80%。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "b39658eaf6666c51719e9ab6070fc28d73bac852": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 的讲解已读过 1 次，但掌握度仍为 30%，错题为 0；直接做这 4 道题，正确率反馈能可靠地把掌握度推上去，比再读一遍讲解更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b470484499e1e972044e79ad5deaf2fb787679a9": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度 45%、错题 0 且讲解未读，首次讲解收益最大，先把概念补到 55% 再练习更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b47bc4415616099bf399f07bb3bc40bda5cd8c1a": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅20%且讲解未读、错题0，先讲解建立P-T-E框架，为后续4题练习打底。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b558d8b12c977379e5f18c6cceaa0baa6dc58af1": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "该点掌握度57%已超过讲解55%的上限，重看讲解无收益，而错题本还挂着2道题，需靠练习答对来清错并往80%推进。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b59d62582240710d84dafa80520b699542d5333d": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 55% 已读完讲解且错题 0，练 4 题把正确率拉高即可冲过 80% 掌握线，是当前最接近掌握的知识点。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b5df4bf53f8b11fa1253220c6925a9d79315b8f7": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04掌握度仅45%且积压3道错题，上轮正确率1/4、连续低分1次，再练一轮可同时提分并清错题，若正确率仍低于50%下轮即回讲解。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "b6395c4031fc893d38c3876a5c2e6c6ace05f8fb": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度已达 52% 且只剩 1 道错题，是 8 个知识点中最接近掌握条件的，练习答对即可清零错题并冲向 80% 的掌握线。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "b639cd03bb5ad020662ebb986c109f5e5ef31fbd": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度已达 67% 且只剩 1 道错题，是候选中最接近 80% 掌握线的知识点，一次练习若答对即可清错并冲线，而重看讲解（如上轮 t07 仅 42%→44%）收益太小。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "b700e7264f238e2ac377b968a6aba096f002ff35": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅 30% 且错题 0，讲解已读过 1 次重读收益很小，用 4 题练习验证概念才能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b7a222509ec96ed5538f20db33c414821fcde3f3": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06_ai_tasks 掌握度 30%、错题 0、讲解已读 1 次，缺的是验证而非纠错，练习可检验并提升掌握度；t08_ml_taxonomy 情况相同，可下一轮再安排。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "b85bc870d75e85f8fb52f05903a8ff3a3213d121": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度仅45%且讲解未读、错题0，先用首次讲解建立概念，比直接做4题练习更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b8a0c7a249facf39af07f92ff4ccf31392aa2375": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度已 55%，是候选里最高的、且错题 0，讲解已读过一遍再重看收益很小，用 4 题练习验证最有可能把它推到 80% 达标线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "b8a8c28ddb020e4367635f43020d16ff0ef3f6b9": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03掌握度仅42%且有2道错题，讲解已读1次重读收益小，而练习答对既可清掉这2道错题，又能像刚从42%练到62%的t02一样大幅提升掌握度。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "b90121587595ba7f4515a65b0e8aa0347899363e": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度55%、错题0、题库4题，讲解已读1次，练习才能把掌握度推向80%并验证概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ba154c926d5945342eca370cb73d2a68b3a8b1ff": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 掌握度仅 20%、错题 0 且讲解未读，先读讲解可把概念推到 55%，为后续 4 题练习打基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "baf6b42a70bd3c4aa346f68ecb811ac04d2a3b62": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度已到 67% 且只剩 1 道错题，讲解已读 1 次再读收益小，用 4 题练习若保持 3 题以上正确就能清错并冲过 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "bb23d11563c7629d59b4072d7f413b3185a225bf": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅27%、有3道错题且连续低分1次，讲解已读过1次，当前应通过4题练习验证并争取清零错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "bbf7126ed914ed0588bc9a690ceb311d0f417b78": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 掌握度仅 17%、积压 4 道错题，且连续 2 轮练习正确率低于 50%（上一轮 0/4），说明概念尚未建立，先重读讲解把基础补到 55% 上限再练。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "bbf92873e6ba243b4593176461db340ff5ffd0b2": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅 30%、错题 0 且讲解已读 1 次（重看收益很小），用 4 题练习做验证比再讲解更能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "bdd2e926a99641b383254e4903d90a8be96f706e": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度45%且讲解未读，首次讲解收益最大，可先把它推到55%，比直接练习更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "bdee626fa4757f82321362b132d0215f750cc295": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度已 45%、错题 0，是 8 个知识点中最接近 80% 达标线的一个，且讲解最多只能推到 55%，所以先用 4 题练习验证真实水平、争取直接拉高掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "be173e84ff460802c2528452f5538be1fa033569": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03掌握度55%已达讲解上限，错题0，需用4题练习验证并争取突破80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "bf2584b5465c0988fd698e7a22dad5a3abbd59fb": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 当前掌握度仅 20%、错题 0 且讲解未读，首次讲解收益最大，可先把概念建立到最高 55% 再练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "bf31843413659394066d561be360152454429836": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 30%、错题 0 且讲解已读 1 次，重看收益小，直接练 4 题更能验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "bf51e0b128eea33b139aa0defb7d0f0215bcb71a": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度55%、错题0，讲解已读1次，需通过4题练习验证并提升至80%以上。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "bf9fb49eba2c13000727406b6071174008a30426": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅 27%、错题 3 道且连续低分 1 次，讲解已读过 1 次重读收益小，需用练习验证并清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "bfcd6e0af22f354fb58fbdd049fdc15f30fec7b7": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度已达 72%、仅 1 道错题，本轮练习若能保持正确即可清错并冲击 80% 掌握线，是当前最接近达标的缺口。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "bff852735a3e3e5161fa5fd8423f31fd2d7088b0": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度仅 27%、错题 3 道、连续低分 1 次，上一轮练习只答对 1/4，概念未建立，需先讲解。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c00bbd266624cb39e4f13fb403ded0a94b21a132": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 55%、错题 0，讲解已读 1 次且讲解最多推到 55%，现在需要练习来把掌握度提升到 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c0664eaa2b9e384000d24c7d8297ba11967e5122": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 当前掌握度 45%、错题 0 且讲解未读，首次讲解收益最大，可先把掌握度推到 55%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c07183f811214d475feaab5ef928398aada62ad3": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 当前掌握度45%、错题0且讲解未读，首次讲解收益最大可推到55%，应先补概念再练习验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c073cefdb86a6845cecb7d97799392f7c89fd108": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 67% 且积压 1 道错题，讲解已读过 1 次再读收益有限，用 4 题练习答对即可清错题并把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c0c0717cf3d2b3f89439c9849c93bd8d8abf1d39": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 当前掌握度 45%、错题 0 且讲解未读，首次讲解收益最大，可先把掌握度推到 55% 再练习验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c1006bfeec7e93f21252ab4aa32d184e3c5707be": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 47% 且有 2 道错题，讲解已读过 1 次，优先用练习同时验证概念并争取清除错题、提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c1a6358577f08062b795f901e1caba562f093a2d": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度仅45%、讲解未读且错题0，需先建立概念，才能让后续练习有基础把掌握度推向80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c1b07bd5710d37e3a016f96d88b5efda6563395f": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度55%且错题0，讲解已读1次，重读收益小，做4题练习可验证并冲击80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c1b88cc41696ad16038b255f1bc1fae465112d7d": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅 20%，低于其余未学知识点的 45%，且讲解未读、错题 0，先讲解可把概念补到上限 55%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c24befb973247e26f9c1dcde6e1ae358c2ad541e": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 掌握度仅20%、错题0且讲解未读，先讲解可把概念上限推到55%，为后续4题练习打基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c2f1f60a4efb1720eeb50b63ddf2176e1769de9f": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04掌握度56%是待学4个知识点中最低的，还挂着2道错题，而讲解上限只有55%已无增益，练习答对可同时清掉2道错题并冲击80%目标。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "c420aa9f337c8247093aff45219062369a9f6abf": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度仅 20%、讲解未读且题库 4 题，先读讲解建立概念收益最大。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c4980c9ba463ebc39048bc8ca5baeea8b9b71c67": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度仅 45%、错题 0 且讲解未读，首次讲解收益最大，可先把概念推到 55% 再练 4 题验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c54728e2069a4dadb8a1d1764c3e605520f8afdb": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 讲解已读 1 次、掌握度停在 55% 的讲解上限，错题 0 且题库有 4 题，需用练习验证并冲击 80% 掌握线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c54be299d30373dc773cbe7c0a09c84e00000a92": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 52%、错题 2、连续低分 0，是候选中离 80% 最近且错题最少的，先练习可清错并提分。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c5515f41a35be27737e71287229ebc1271239661": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度仅 20% 且讲解未读，是剩余 4 个知识点中最薄弱的，首次讲解收益最大、最多可推到 55%，先补概念再练习才不会浪费题库。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "c61898c6f83de4f8955ab82691227f52fcd913c1": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 42%、错题 2 个且讲解已读过 1 次，概念已建立，现在做 4 题练习既能提掌握度又能把 2 个错题清零。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c669570cdc71cbb6f12e1fa419f8e39827c834bc": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 掌握度仅 35%、错题 3 道且连续低分 2 次，按规则连续两次练习正确率低于 50% 应先回到讲解重建概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c69cc237f9a9646285da20aa2401f57c7ccab6b6": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅 53%、错题 0，且讲解已读 2 次收益有限，需通过练习把掌握度推向 80% 目标。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c6cda5afeb30b2e3acf3f7f664b7c258e78d37f2": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 64%、只剩 1 道错题，且讲解已读 2 次，一次 4 题练习答对 3 题以上即可把掌握度推向 80% 并清零错题；而 t01、t02 仅 57%、各有 2 道错题且上一轮练习只答对 2/4，收益更低。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c76a650fd6adc6d7bc67969c1fab92c0f1eef2ce": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度仅 45% 且上轮练习只答对 1/4 题、错题积到 3 道，连续低分 1 次说明概念未建立，应回炉讲解而非继续刷题。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "c7b68384b28b74d1f525a87ccbd1c5e59c724c00": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 45% 是候选中最高且连续低分为 0，说明概念已初步建立，通过练习答对可清掉 4 道错题并直接冲击 80% 掌握线。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "c816f02f407657924e05675a963db45afe4809b2": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 72% 且仅 1 道错题、连续低分 0 次，说明概念已建立，用练习把正确率转化为掌握度并清掉这 1 道错题，比重看讲解更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c84b3f2e0f5263d99b28bff8fdb8e42299ea1a92": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度停在 55%（正好是讲解能推到的上限）且错题 0、连续低分 0，重看讲解收益极小，只有做 4 题练习才能把它推到 80% 达标；而 t06 上一轮刚练过 3/4 题、已升到 67%，本轮优先补尚未验证的 t07。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c91c55bda2234e53a6e5ed3fee5b8bb8f53baf5d": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 30%、错题 0 且讲解已读 1 次，概念已建立但从未验证，用 4 题练习最可能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c9af9f8c6d7db980b6cc7fbd259e301677fa70e8": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 55%、错题 0，讲解已读 1 次，重读收益小，只有练习能突破 55% 上限并冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "c9b43fdb8bd4782deb2b9bcc1b2dc5171d902008": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 75% 距 80% 还差 5 个百分点且错题已为 0，需用 4 题练习把正确率从 3/4 提上去。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ca3994fa1e31d50d0d71eda605db6c12b95bb006": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度 30%、错题 0、讲解已读 1 次，重看讲解收益很小，用 4 题练习验证概念才能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ca3be97df41885e3bdae98df4ac01054e854dbf8": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度30%、错题0且连续低分0，讲解已读1次，概念基础已在，适合用4题练习验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ca816f13843e8b476dfd9c91f47c94e250634d92": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度已达 55%、错题 0，且讲解已读 1 次接近上限，用 4 题练习最可能把它推到 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "cafd9db17d5e37bd3457263e5a200700c7db5486": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度仅 35%、错题 3 道且已连续 2 次练习正确率低于 50%，说明概念尚未建立，必须先重读讲解而不是继续刷题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "cc1205212f06450e9308ba72ec908bbfe27f2898": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 上轮练习只答对 1/4 题、掌握度降到 27% 且已积 3 道错题，概念未建立，先重读讲解把基础打牢，比继续刷题更有效。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "ccc21446d32c4c7422a618f5beea1562e9886f90": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 57% 且积压 2 道错题，最近一次练习只答对 2/4，而讲解上限 55% 已无法再提升，必须靠练习把正确率拉起来并清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ccd69d7ccc0c4c3d1b07611b86ccf3cd242e9667": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅 35%、错题 4 道且连续低分 1 次，讲解还未读，概念缺口最明显，先用讲解把基础补起来。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ccdd53cc5d6ec2094f44552684282085c1ed7a8b": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 77%、错题 0，上次练习 4/4 全对，再练一次最有望把掌握度推过 80% 的达标线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ce18d1c46619bdfc4086f259994142a763dba281": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度仅 20% 且讲解未读，首次讲解收益最大，可把它从 20% 推到 55% 上限，比 t08 的 45% 提升空间更大。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ce3adcf3645c3370add33cda8506e1e917a727d9": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 30% 且错题 0，讲解已读 1 次再读收益很小，用 4 题练习验证概念并冲 80% 最划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ceb7f3ef3abec2124d4c6595765aa2a06af59a8a": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度仅 20% 且讲解未读、题库 4 题，刚学完 t02 的 ML 定义，先补深度学习与 ML 关系的概念缺口最稳妥。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ceffd82ee662ea670cc83591776294e5016deda0": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 讲解已读 1 次、掌握度停在 55%、错题 0，说明概念已建立但没验证过，用 4 题练习把掌握度推过 80% 并保持错题清零。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "cfc2cbcc38bb6a4d35b77a4fbaf6eff6fb2baafd": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅 52%、错题 2 道，距 80% 目标最远，且连续低分 0 次，先练习提分并清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d06befaa2df0bdf993ed94fb76faa3156beebe4e": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 55%、错题 0，讲解已读 1 次，用 4 题练习验证并冲击 80% 比重看讲解更有效。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d0cded1871b3675ccaa5d350aac1f9a21bc730b7": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度30%且错题0、讲解已读1次，直接做4题练习能验证理解并把正确率转化为掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d0ee0ba8f8af4ddf20f825e539709b63f9a20b68": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01掌握度67%是候选中最高、距80%仅差13%，且只有1道错题，练习答对即可清错并有望成为首个掌握的知识点。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "d1b1ba140dfdeb6c6f02b955e6215d2452dbfafb": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 55% 已到讲解上限（55%）且错题 0，重看讲解无增益，用题库 4 题做练习才能突破并验证概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d1b8240685cde1dd997f755d945a3843b5beadaf": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 29% 且已积累 3 道错题，讲解已读 2 次仍未见效，需要通过练习答对来清除错题并验证掌握情况。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "d1ce02f32fbe0c6bd9e1e510032df8b436887e2f": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度30%、错题0、连续低分0，讲解已读1次，重看收益小，用4题练习验证并冲80%更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d1efd862a80fad8d6bd91dd97b12a3157ad8cfef": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 已连续低分 2 次、掌握度仅 26% 且错题 3 道，说明概念未建立，先用讲解把基础补起来。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d299a65cce17a685c2514d1b27a6b54c8c67a0eb": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅 20%、错题 0 且讲解未读，概念尚未建立，先讲解可把掌握度推到 55% 上限，再配合 4 题练习才可能冲上 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d2feeb7f61452fa9389a8f1edd8ce0cea449c6be": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅45%、错题3道且刚练习只答对1/4，讲解只读过1次，先用讲解重建概念比再练更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d30fea0cb234689e4302d182eff5b4837c40058d": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "该知识点掌握度仅22%、错题有4道，讲解已读2次再重看收益很小，需用练习验证并清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d3dd65d41a9950ba45cd7dc5556ef4fd24419e89": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06上轮练习0/4全错、掌握度仅20%为8个知识点中最低，且连续低分1次说明概念未建立，应先讲解把掌握度推向55%再练习。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "d577d1405a75bd6521fbf4fc3f2003f1c7afb8a3": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅 52%、错题 2 道，讲解已读过 1 次再读收益小，练习答对可清错题并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d59ec05b548c39d7036e2a392ff9bac37742ef1e": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度 67% 距 80% 目标还差 13 个百分点，且有 1 道错题待清，讲解已读过一次且上限 55% 已无收益，用 4 题练习既能把掌握度推过 80% 又能顺带清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d601c9a3a86aee7b764a238df2a993bb1213d808": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度已达 55%、错题 0，首次讲解收益已用尽，用 4 题练习验证最有望把掌握度推到 80% 以上。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d6174a6487bd76ee9c221e5eaa78c0693483f99f": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 30%、错题 0，讲解已读 1 次后最缺验证，题库 4 题可用来把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d663cf32ff9b0bbe0823213c9aa0be9baf3a7c5e": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04_big_data_4v 掌握度仅22%、错题4道，距80%目标最远且讲解已读2次，先用练习验证并争取清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d7503a0a74fa8893a21b611aa8688641acaf422a": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度只有20%、错题0且讲解未读，首次讲解可把掌握度上限提到55%，优先补这个最薄弱的概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d77718fb2ec3a17efefd46fe6404e20c63b016d7": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "回归与分类刚练习只答对 1/4 题，掌握度从 55% 跌到 45% 且错题累积到 3 道，说明概念未建立，应先重读讲解再验证。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "d7e8ba9a01fb6810f265d344c1f5da827b9597e1": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 55%、错题 0，讲解已读 1 次且重读收益小，需用 4 题练习验证并争取提升到 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d80ca1968aa54925bb7232ceaaae48a02d29be0f": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度已达 72%、仅剩 1 道错题，是 8 个知识点中最接近 80% 掌握线的，练习答对即可清错并冲线。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "d80f86de23183b8281445add493ddf62751aa650": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 45%、错题 3 道且已连续低分 1 次，这轮用 4 题练习验证概念并争取错题清零，若再低于 50% 就回讲解。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d8313526d2121a657e4cb6ea9f3f8787d4fe8574": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度55%、错题0且讲解已读1次，需用4题练习验证并突破55%上限。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d839d38e1a511b277208b499b40438f187656123": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 已连续 2 次练习正确率低于 50%（最近 4 题仅答对 1 题），且掌握度仅 35%、错题 3 道，概念尚未建立，应先用讲解重建概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d8c4d4a3da51294ce4488a90b0f21cd242419de5": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度仅 45% 且讲解未读、错题 0，首次讲解收益最大，可先把概念推到 55% 再练习验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "d987ea2f489207a56b7dc3867658cbd95b6f7312": {
+   "topic_id": "t05_data_driven",
+   "activity": "review",
+   "reason": "t05 刚在练习中答对仅 2/4 题、掌握度从 67% 降到 57% 且积压 2 道错题，当前最缺的是纠错，先逐题清掉这 2 道错题再谈提升。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "d9fbfb13c3618d699a2d57fab757becd2c2a6c8e": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度45%、错题3道且连续低分仅1次，讲解已读过1次，优先用4题练习验证并争取清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "da55a2eebc211f1b5ab5818a1160e5cf4c3ebddc": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 47% 且积压 3 道错题，讲解已读 2 次重看收益很小，需用 4 题练习验证并清错题，而 t01、t02 已 67% 且错题更少可稍后处理。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "da89e2d8781099bc349e466ebcb3cc86f669a114": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度已到讲解上限 55% 且错题 0，重看讲解收益很小，用 4 题练习验证才能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "da904ead3814bbb779b264e1d3954e1d9d7d6069": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 45%、已有 3 道错题且连续低分 1 次，讲解已读过 1 次，现在最需要用它只 4 题的题库做验证，答对即可清错题并把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "db2bdd2d09904de7220ce5b48a8bd69e33d0a7ca": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 当前掌握度 45%、错题 0 且讲解未读，首次讲解能把掌握度推到 55%，比直接练习更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "db8307954afe15ef0afc7b159db69b5090da8205": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08_ml_taxonomy 掌握度已达 55% 且错题 0，离 80% 目标最近，用 4 题练习验证最可能本轮直接推到掌握。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "dc2b1c384c35deba935fdc0746583a5f6d609fb2": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅30%、讲解已读1次且错题0，说明概念已接触但未验证，用4题练习可把掌握度往80%推进。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "dcb7c9cd19f0291e82b85352d472837b6f45cf77": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅 30%、错题 0 且讲解已读 1 次（重读收益小），用 4 题练习验证概念并冲 80% 掌握度最划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "dd182bb85c731d0d5f5756c69952c329e1605b3a": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 57% 且积压 2 道错题，是待学知识点里最低最脏的，讲解已读过一次再读最多只到 55%，所以用 4 题练习既清错题又冲 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "dd2614064d9553cd39bd033e3ee67c19825440b4": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 30%、错题 0、连续低分 0，且讲解已读 1 次，重读收益小，适合用 4 题练习验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "dd81e93e0912897e74b2354a7abddea11a3c70ef": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度 45%、错题 0 且讲解未读，首次讲解收益最大，可先把概念补到 55% 再练习验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "dda5e970d4b6ff4e894b47c984cea25685f952d3": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 67%、错题 1 道且无连续低分，讲解已读 1 次再读收益很小，用 4 题练习答对即可清错题并把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ddba8389c051f64efde5648279262f06ac73250b": {
+   "topic_id": "t03_deep_learning",
+   "activity": "review",
+   "reason": "该知识点掌握度75%仍差5%到80%门槛，但上一轮练习答对3/4题，先复习纠掉这1道错题清空错题本，下一轮再练习验证掌握度",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "ddf9b1a9576ea9a422c48f554bc2872ddcc66eed": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 72%、错题 1，低于 80% 目标，需通过练习把错题清零并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "de6e6d37b451ec0d1acfc4bb09c5d7c0d11ab08b": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅 62% 且错题 2 个，比 t06 的 64% 和 1 个错题更需通过练习提分并清零错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "dfbdebd1767d3bab0c3f1912733480044c99c60f": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度30%、错题0且讲解已读1次，需用4题练习验证概念并把掌握度推向80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e0d2e2b6efcff5fd48233f7ab103ea1ab3f016d3": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅 20% 且讲解未读，是全组最低，先读讲解可把概念建到 55%，比在 45% 的知识点上重复更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e12364d7df0e5f3ce2c6cea2847724ee58045b3f": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度 30%、错题 0、讲解已读 1 次，重讲收益低，用 4 题练习验证并提升更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e12c338a5b085358196256ea04aea60863f8121e": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 55%、错题 0，讲解已读 1 次，概念收益已到上限，需用 4 题练习验证并冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e1e3d72e94ce244b599180c2630622081395cbe2": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度 30%、错题 0 且讲解已读 1 次，重看收益低，先用 4 题练习验证概念并提升掌握度更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e1f7d225e712bdb4169f07da97a066f2dc78352b": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04_big_data_4v 掌握度55%、错题0且讲解已读1次，重读讲解收益有限，用4题练习可验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e27ecf10f729bd5708ac069f8ff974b9d6b06978": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 42% 最高且仅错 2 题，练习答对即可清错并冲向 80%，比 27% 的知识点更能推进整体进度",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "e2c496cb8b74c52d61b788be4fa7413c3a482b31": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度仅20%、错题0且讲解未读，首次讲解收益最大，可先把概念补到55%再练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e33eaebc9ecb162450b8e07f7bb86d949584ab7f": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度已达55%、错题0，距80%目标只差25个百分点，用4题练习验证最可能直接达标。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e4547cfdc50eae1442ff9f25caa95aa4024fab5f": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度只有 52% 且积压 2 道错题，讲解已读过 1 次、连续低分为 0，说明概念已有基础，现在最缺的是做题验证并借答对把错题清零。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e4c8eebe06c188353b0138a7ec2b531bb5f65a2e": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度仅20%、错题0且讲解未读，概念缺口最大，先讲解可把掌握度上限提到55%，比已45%的t06/t08更该优先补概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e4f01dcb1e327db9009b5c9248c7850477590fa6": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度45%、错题3道且讲解已读1次，尚未连续低分，优先用练习验证并清错题更划算。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e5377c9bbd84fb0e8985814bec00d2ebe13b1215": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 掌握度仅 20%、错题 0 且讲解未读，首次讲解收益最大（可推至 55%），且它是理解后续 ML 与深度学习的前置概念，题库 4 题留待讲解后验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e585b5bf0022dc1c43e838f0b8e2feadde6e2fcf": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅 20% 且错题 4 道为全清单最低，且已有 1 次连续低分，说明概念未建立，应先重读讲解再验证。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "e58c4afda31caec1abfff1af91f4d2131b74f6b4": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 42%、错题 2 道且讲解已读 1 次，概念已建立，用 4 题练习既能清掉这 2 道错题又能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e5cd85116ff9fa8c4b14491706269502597f9d0b": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "explain",
+   "reason": "t07 掌握度仅 27%、错题 3 道且连续低分 1 次，讲解只读过 1 次，需先补概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e63dd8904594515ed685ff1513a4c53a0019c8a6": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度45%且讲解未读，题库4题、错题0，先首次讲解可把概念推到55%，比直接练习更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e6e1fe804751e72e363eb208eafbfea0dab9928f": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 掌握度仅 20%，低于其他候选知识点的 45%，且讲解未读、错题 0，应先通过讲解建立概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e721adac76f27e27362b162c903a0d3e6407c167": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度仅 29% 且已读讲解 2 次，重看讲解收益很小，通过练习 4 题既能验证概念又能清掉 3 道错题。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "e78157ca8c496e2daf9ab8dcc06f484629dcc5b6": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅 20%、错题多达 4 道，且最近两轮练习正确率只有 0/4 和 1/4（均低于 50%），说明概念未建立，应先重读讲解重建 P-T-E 框架这一基础概念。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "e8da21abbf9dd8319f0337ed903b98db742ce55b": {
+   "topic_id": "t03_deep_learning",
+   "activity": "practice",
+   "reason": "t03 掌握度 75% 未达 80%，错题已清零，最近一次练习答对 3/4，需用练习把掌握度推过 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "e9e977ddd1d5211f9af2389e362e463b488611ac": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅30%、错题0且讲解已读1次，重读收益有限，用4题练习验证并争取提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ea35d9ef210917c878ac9089de54e955bc3fdc2c": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 讲解已读 1 次后掌握度卡在 55%，讲解无法再提升，需要用 4 题练习验证并冲向 80% 的掌握线。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "eaa958c1b857db93b893daa1b1b83f2e8a0b5ddb": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 67%、错题 0，讲解已读 1 次且讲解上限 55%，现在需要练习验证并冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "eaa98f1f438af0902f09ebf69a81fa1fd7068fe5": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 掌握度仅 20% 且讲解未读，低于其他候选的 45%，先用首次讲解建立概念，再用 4 题练习验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "eafa533bc4a9187bd53cd4f2ff3bf48e3ac55d6c": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 30% 且无错题、无连续低分，缺的是验证而非纠错，讲解已读 1 次重看收益小，用 4 题练习检验概念最有效。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "eb8594e035e9849cdb003513b43b40fd85e31d39": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度仅30%、错题0且讲解已读1次，重看收益小，先用4题练习验证并争取把掌握度推过80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ebd5a703238d3bf39cbb3bc7ea03f31c1950fd7b": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅 67% 且还有 1 道错题，而讲解已读过且上限只有 55%，必须靠练习把正确率转化为掌握度并清掉错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ec0a221baab9acbb49bb363c80972bfe71605fcc": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01掌握度仅17%、错题4道且连续2次低分，讲解只读过1次，需先重建概念再练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ec48be372b57f5a2eba90433b90a1c61a112d74d": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度仅20%且讲解未读，先讲解可把概念推到55%，为后续4题练习打基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ec88b7de50b0c0d68f7dfaf2f382e19471dbfd81": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 67%、错题 1 道，讲解已读 1 次且连续低分为 0，说明概念已建立，只差练习验证：4 题里答对 3 题即可清零错题并把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ee8ac1eb5e144a1769e57a2cf492a2231c45ab29": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "explain",
+   "reason": "t04 掌握度仅 20% 且错题 4 道，上一轮练习 0/4 全错说明 4V 概念尚未建立，应先重读讲解再谈纠错。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "efc36160217b2d1a17111a7c92d885a5cbcd8e9a": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度仅30%、错题0且讲解已读1次，题库4题正好用于验证概念，练习答对可把掌握度推向80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f00ce7c2f3cc753be3d9029e06d31385941ff77c": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06_ai_tasks 掌握度 52% 为 8 个知识点中最低且错题 2 道最多，本轮练习若答对 2 题即可清空错题并显著提升掌握度。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "f03c83124c9dc2689a39ad02b2294496b4af93d1": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度 55% 已到讲解上限、错题 0，作为 P-T-E 基础框架需用 4 题练习验证并冲击 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f11c9270f1363d7dccecfab8f209227904697718": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度仅30%、错题0且讲解已读1次，概念已建立，用4题练习验证并提升掌握度最合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f17a60ee65baa3797b9579997ecc379296b02908": {
+   "topic_id": "t05_data_driven",
+   "activity": "explain",
+   "reason": "t05 掌握度 45% 且讲解一次未读、错题 0，首次讲解能把它推到 55% 上限，比先做题更稳，而 t06 同为 45% 可下轮再处理。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f2686a14a2d1a25f3525c9f9518213233d259b05": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03 掌握度45%且讲解未读、错题0，首次讲解收益最大，先补概念再练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f2f238c790c02905676079570828c42cfeff9d89": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度仅 42% 为候选最低，且积压 2 道错题，讲解已读 2 次收益有限，需用 4 题练习验证并清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f34da471e7833bcb20299ff8e749f5c088bdb796": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度 66%、错题 1 道，讲解已读 1 次且上限只有 55%，做 4 题练习既能清错题又能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f3a7079d33aef4ebfa99096110989936efd14de4": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅29%、错题3道，讲解已读2次收益有限，先用4题练习验证并清理错题更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f3fa7c7b2afe186db3ebccfb33724e6a06334191": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 52%，是候选里距 80% 最远的，且积压 1 道错题，讲解已读过 1 次收益有限，用 4 题练习既能提掌握度又能清错题。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f43e0b1470915b2080d3ce92435ebafc8f6077b5": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07掌握度仅30%，低于其余待服务知识点的55%，且讲解已读1次、错题0，当前更缺练习验证来把掌握度推向80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f55a92cfe54a1a1d1ea172aa3a5a5b86b1399b49": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06_ai_tasks 当前掌握度仅 20% 且讲解未读，题库有 4 题，先做首次讲解可把概念基础推到最高 55%，比直接练习更合适。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f5964085aefce294309999831968cf36f4b3b0ec": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05_data_driven 掌握度已达55%、错题0，需用4题练习验证并推向80%以上。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f59fd3d4f829deb000a1efd8590f00c9f9c0323a": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 掌握度45%且错题0、讲解未读，首次讲解收益最大，可先把概念补到55%再练习验证。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f7940f396afe14bbd50a960c6755816f2e3bb3b8": {
+   "topic_id": "t05_data_driven",
+   "activity": "practice",
+   "reason": "t05 掌握度已达 55% 的讲解上限且错题 0，只有通过 4 题练习把正确率转化为掌握度，才能冲过 80% 的达标线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f7a0d7591e1f82449f9bae8f8e967f05110cab11": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "practice",
+   "reason": "t01 掌握度42%、错题2，讲解已读1次且无连续低分，先用4题练习验证并争取清错。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f7bff85f23ad7bbc60b9f603ea9b838196a42727": {
+   "topic_id": "t04_big_data_4v",
+   "activity": "practice",
+   "reason": "t04 掌握度55%、错题0，讲解已读1次，题库有4题，练习可验证理解并冲击80%掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f8ba17df6c3cdef67a81b5ca07d0a478cff69985": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 已连续 2 次练习正确率低于 50%（最近仅答对 1/4 题），掌握度 26% 且错题 3 道，说明概念未建立，需回讲解重建基础。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f8c8c16a386d8c8b4d4447c7f2c67ad2d725c024": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 掌握度仅20%、错题0且讲解未读，作为AI基础概念先讲解可把掌握度上限推到55%，为后续4题练习打底。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f8f8129e63d6a714f21fdd1204d94b170624f0bf": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "practice",
+   "reason": "t08 掌握度仅48%且错题2道，但只连续低分1次，讲解已读过1次，练4题可同时清错并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "f9c81ee75ad77994e96bc562ec38d86993e571be": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度 74%、仅 1 道错题且讲解已读 1 次，最接近 80% 掌握线，用 4 题练习验证并清零错题收益最高。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "fa44a847d8a15bd8f5df05e6db2f379788533eed": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度仅 47% 且积压 3 道错题，讲解已读 2 次再讲收益有限，通过练习答对可直接清错题并拉高掌握度。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "fa4af39b9f4d3dacd9a2dd04f695907d82404342": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 讲解已读1次、掌握度30%且错题0，概念基础已有，适合用4题练习验证并提升掌握度。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "fa4d24702bbd4c256952eb0ba41a486f37ea5c56": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度 45%、错题 0 且讲解未读，首次讲解收益最大，可先把 P-T-E 概念推到 55% 再练习。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "fbd50b2dfaf779ff8eb40afc8f447e3a228d07e3": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "explain",
+   "reason": "t06 上一轮练习只答对 1/4 题，掌握度从 30% 降到 27% 且连续低分已达 1 次，说明概念未建立，应先重读讲解（最多可推到 55%）再验证。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "fcbca5b507a268c7acab5622a12265615ada3a1f": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08 掌握度仅 45% 且讲解一次未读，首次讲解收益最大可直接推到 55%，而错题 0、连续低分 0 说明尚无练习验证基础，先补概念再练更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "fe7241f2803da026053677c858243d3322461731": {
+   "topic_id": "t06_ai_tasks",
+   "activity": "practice",
+   "reason": "t06 掌握度已到讲解上限 55% 且错题 0，重看讲解收益很小，用 4 题练习验证才能把掌握度推向 80%。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "fe7421f957d2ff74e28414df478bd131f172eff9": {
+   "topic_id": "t02_ml_definition",
+   "activity": "practice",
+   "reason": "t02 掌握度仅 55% 为全场最低，且错题 0、讲解已读 1 次（讲解上限就是 55%，重看无收益），需要用练习把掌握度往 80% 推。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "fe844cea6764342af06b5492f46ed0e11767148b": {
+   "topic_id": "t03_deep_learning",
+   "activity": "explain",
+   "reason": "t03掌握度仅20%且讲解未读、错题0道，缺的是概念，首次讲解收益最大，先建立概念再练习。",
+   "model": "z-ai/glm-5.3-flash",
+   "escalated": true
+  },
+  "fefa8e26e8dbcc83ef5000684ba60ece93e31f26": {
+   "topic_id": "t02_ml_definition",
+   "activity": "explain",
+   "reason": "t02 掌握度仅 20% 且讲解未读，首次讲解可把它推到 55% 上限（+35），而 t08 已 45% 再读只增 10%，所以先把这次机会给最基础、增益最大的机器学习 P-T-E 定义。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ff4c7d1c674fd2a2d14451d438213c05f1be1609": {
+   "topic_id": "t07_regression_vs_classification",
+   "activity": "practice",
+   "reason": "t07 掌握度已达 55% 且错题 0，是 8 个知识点中最接近 80% 掌握线的一个，用 4 题练习验证最可能直接把它推过线。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "ff8508a8e64d8a6a372b2d673962d6670a444773": {
+   "topic_id": "t01_what_is_ai",
+   "activity": "explain",
+   "reason": "t01 掌握度仅 20% 且讲解未读，题库有 4 题，先讲解建立概念比直接练习更稳。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  },
+  "fff14ac031442ff12735adad61030909c3de8a7e": {
+   "topic_id": "t08_ml_taxonomy",
+   "activity": "explain",
+   "reason": "t08_ml_taxonomy 连续低分2次且最近练习仅答对1/4，掌握度35%、错题3，应先重读讲解建立概念。",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "escalated": false
+  }
+ },
+ "no_decision": []
+}

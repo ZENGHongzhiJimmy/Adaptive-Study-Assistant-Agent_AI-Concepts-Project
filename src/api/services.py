@@ -24,6 +24,7 @@ import json
 import re
 import shutil
 import time
+import uuid
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -396,10 +397,10 @@ class MaterialService:
         if len(data) > 20 * 1024 * 1024:
             raise ValueError("文件过大（上限 20MB）")
 
-        mid = "m_" + re.sub(r"[^a-zA-Z0-9]", "_", str(abs(hash(name + str(len(data))))))
-        # 同一份文件重新上传：清掉上一次的删除标记，否则新上传会被当成
-        # 「已删除的资料」而拒绝解析。
-        self._removed.discard(mid)
+        # 每次上传都是一个新资料：id 不能由「文件名 + 大小」推出，否则重名文件
+        # 会落回同一个 id，命中上一次的解析缓存而看着像「上传成功但不解析」。
+        # 现在重名/重复上传都会成为独立模块，各自走一次真实的解析。
+        mid = "m_" + uuid.uuid4().hex[:12]
         path = self.upload_dir / f"{mid}{suffix}"
         path.write_bytes(data)
 
@@ -771,38 +772,6 @@ class MaterialService:
                 })
         return out
 
-    # ---- 独立 quiz 生成 ----
-    def generate_quiz(
-        self,
-        material_id: str | None,
-        topic: str | None,
-        count: int,
-    ) -> dict[str, Any]:
-        self._require_key()
-        if material_id:
-            rec = self.get_material(material_id)
-            if rec is None:
-                raise ValueError("资料不存在")
-        else:
-            # 取最近上传的一份资料
-            if not self._materials:
-                raise ValueError("尚未上传任何资料")
-            material_id = list(self._materials.keys())[-1]
-
-        # 简化：直接走 parse 的抽取逻辑，但只返回 quiz
-        payload = self.parse_material(material_id)
-        all_quiz: list[dict[str, Any]] = []
-        for t in payload.get("topics", []):
-            for q in t.get("quiz", []):
-                q = dict(q)
-                q["topic"] = t.get("name")
-                all_quiz.append(q)
-        picked = all_quiz[:count]
-        # 单个知识点的题目已在本知识点内均衡；跨知识点按 count 截断后可能偏向
-        # 某个字母，这里按整份卷子再均衡一次（复制体，不影响解析缓存）。
-        reorder_quiz(picked, seed_parts=(material_id, topic or ""))
-        return {"material_id": material_id, "count": len(picked), "quiz": picked}
-
     # ---- RAG 问答 ----
     def ask(
         self,
@@ -936,18 +905,6 @@ class MaterialService:
         for i, h in enumerate(hits, 1):
             blocks.append(f"[{i}] {h.source}\n{h.text[:limit]}")
         return "\n\n".join(blocks)
-
-    # ---- progress ----
-    def list_topics(self) -> list[dict[str, Any]]:
-        result: list[dict[str, Any]] = []
-        for mid, topics in self._topics.items():
-            for t in topics:
-                result.append({**t, "material_id": mid})
-        return result
-
-    def overall_mastery(self) -> float:
-        # 后端不保存学生作答状态（由前端本地维护）；这里返回 0 占位。
-        return 0.0
 
     def close(self) -> None:
         try:

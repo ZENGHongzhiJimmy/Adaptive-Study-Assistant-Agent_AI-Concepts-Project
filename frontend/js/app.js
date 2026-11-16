@@ -20,7 +20,7 @@ const App = (() => {
   /* ---------------- 导航配置 ---------------- */
   const NAV = [
     { hash: '#/student/dashboard', label: '学习主页',        icon: 'dashboard' },
-    { hash: '#/student/materials', label: '课程资料 · 问答', icon: 'book' },
+    { hash: '#/student/materials', label: '课程资料 · AI 问答', icon: 'book' },
     { hash: '#/student/progress',  label: '学习进度',        icon: 'target' },
   ];
 
@@ -38,8 +38,8 @@ const App = (() => {
   const FEATURES = [
     ['upload',   '上传与 AI 解析', 'PDF / TXT / MD 自动解析',
      'PDF / TXT / MD 上传后，LLM 自动抽取知识点、讲解与测验题'],
-    ['sparkles', '自适应学习路径', '按掌握度推荐下一步',
-     '按掌握度与错误次数推荐讲解 / 练习 / 复习，一次只推一件事'],
+    ['sparkles', '自适应学习路径', '大模型 Agent 决策下一步',
+     '大模型 Agent 读取掌握度、错题与本轮进度，在合法候选里决定讲解 / 练习 / 复习，并给出理由'],
     ['chat',     '课程资料 AI 问答', '只依据资料作答 · 带引用',
      'RAG 只依据你上传的资料作答，并给出可核对的引用出处'],
     ['chart',    '学习进度追踪', '掌握度与轨迹按资料记录',
@@ -72,7 +72,7 @@ const App = (() => {
   function isActive(h, navHash) {
     if (h === navHash || h.startsWith(navHash + '/')) return true;
     // 资料模块、知识点、活动、Pre-test 都归属「学习主页」这一栏目
-    // 注意必须限定路径边界：material 不能误匹配 materials（课程资料 · 问答）
+    // 注意必须限定路径边界：material 不能误匹配 materials（课程资料 · AI 问答）
     if (navHash === '#/student/dashboard') {
       return /^#\/student\/(material|topic|activity|pretest)(\/|$)/.test(h);
     }
@@ -113,6 +113,9 @@ const App = (() => {
   function needsAgent(rec) {
     const snap = Engine.agentSnapshot(rec);
     if (!snap) return true;
+    // 两段式中间态：掌握度已经存下、下一步还没算完（例如正好这时刷新了页面）。
+    // 不补这一次请求，页面会永远停在「正在安排下一步」的骨架上。
+    if (snap.decision_pending) return true;
     return Number(snap.total) !== Engine.topicsOf(rec).length;
   }
 
@@ -196,12 +199,29 @@ const App = (() => {
         </div>
       </header>`;
 
+    /* 正在向 agent 要「下一步」时，页面顶部有一条进度条。
+       没有它，首次进入资料页的那 3-4 秒看起来就像页面渲染坏了。
+       做题页不显示（那一步不需要模型）。 */
+    const waiting = (() => {
+      const seg = h.replace('#/', '').split('/');
+      if (seg[1] === 'activity') return false;
+      const rec = routeMaterial(h);
+      if (!rec || !Engine.topicsOf(rec).length) return false;
+      if (Engine.state.agent && Engine.state.agent.error) return false;
+      return needsAgent(rec);
+    })();
+
     document.getElementById('app').innerHTML = `
       ${sidebar}
       <main class="main">
         ${topbar}
         <div class="content">
-          <div class="content-inner page-in">${view()}</div>
+          <div class="content-inner page-in">
+            ${waiting ? `<div class="agent-bar"></div>
+              <div class="agent-wait mb-16"><span class="agent-spin"></span>
+                Agent 正在按最新掌握度安排下一步…</div>` : ''}
+            ${view()}
+          </div>
         </div>
       </main>`;
 

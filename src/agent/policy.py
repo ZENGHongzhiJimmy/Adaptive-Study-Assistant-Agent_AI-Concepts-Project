@@ -4,8 +4,8 @@ Before this module existed there were two planners:
 
 * ``frontend/js/engine.js``  - what the demo actually ran (error book +
   fail-streak + rolling rounds, mastery on a 0-100 scale);
-* ``src/agent/planner.py``   - the threshold planner used by the LangGraph
-  CLI (mastery 0-1, ``Teach/MCQ/Challenge/Review``).
+* a threshold planner in the retired CLI loop (mastery 0-1,
+  ``Teach/MCQ/Challenge/Review``).
 
 That split is indefensible in a report: the agent being demoed was not the
 agent being evaluated, and the two disagreed on thresholds *and* on the
@@ -16,10 +16,9 @@ mastery update rule. This module is now the single source of truth:
 * the experiment harness (``experiments/methods.py`` /
   ``experiments/run_experiment.py``) calls the same functions.
 
-``planner.py`` is kept as the legacy threshold planner used by the LangGraph
-CLI (``graph.py``), but it is NOT one of the baselines.  The three
-baselines are (content, planner) pairs defined in ``experiments/methods.py``;
-the fixed-strategy one is ``methods.CyclicPlanner``.  This module remains the
+The retired CLI loop was deleted on 2026-11-16.  The three experiment baselines
+are (content, planner) pairs defined in ``experiments/methods.py``; the
+fixed-strategy one is ``methods.CyclicPlanner``.  This module remains the
 single policy shared by the product and the adaptive arm of the main experiment.
 
 Design notes
@@ -532,6 +531,85 @@ def plan_material(
         "blocked": blocked,
         "done": bool(topics) and pending_pretest == 0 and not candidates,
         "by_topic": by_topic,
+    }
+
+
+# --------------------------------------------------------------------------
+# facts only - the same envelope, without choosing anything
+# --------------------------------------------------------------------------
+
+PRETEST = "pretest"
+READY = "ready"
+DONE = "done"
+BLOCKED = "blocked"
+
+
+def fact_status(topic: TopicState) -> str:
+    """Where a topic stands as a *fact*, without picking an activity.
+
+    ``stage_of`` asks ``decide()`` what to do and turns the answer into a badge;
+    this asks only what is objectively true: not assessed yet / finished /
+    nothing to measure with / ready to be scheduled.  The distinction is what
+    lets the model own the choice while the payload still reports status.
+    """
+    if not topic.pretested:
+        return PRETEST
+    if is_mastered(topic):
+        return DONE
+    if topic.quiz_count == 0:
+        # Reading is possible but there is no way to measure the result, so no
+        # activity would ever move this topic forward.
+        return BLOCKED
+    return READY
+
+
+def plan_facts(
+    topics: Sequence[TopicState],
+    round_no: int = 1,
+    visited: Sequence[str] | None = None,
+) -> dict[str, Any]:
+    """``plan_material`` minus the decision: counts, statuses, no ``next``.
+
+    Used on the path where the model chooses.  It keeps every number the UI
+    needs (round, mastered, remaining, thresholds arrive in the envelope) and
+    every per-topic status, but ``steps`` is empty and ``next`` is ``None`` until
+    ``apply_decision`` puts the model's choice in.  Nothing here calls
+    ``decide()`` - that function only serves the explicit ``rule`` mode.
+    """
+    visited = list(visited or [])
+    candidates = [t for t in topics if fact_status(t) == READY]
+
+    by_topic: dict[str, dict[str, Any]] = {}
+    for topic in topics:
+        status = fact_status(topic)
+        by_topic[topic.topic_id] = {
+            "activity": None,
+            "rule": "",
+            "reason": "",
+            "mastered": status == DONE,
+            "blocked": status == BLOCKED,
+            "status": status,
+            "mastery": _pct(topic.mastery),
+            "wrong": topic.wrong_count,
+            "explain_pages": int(topic.explain_pages),
+            "quiz_count": int(topic.quiz_count),
+            "need_help": bool(topic.need_help),
+        }
+
+    return {
+        "round": int(round_no),
+        "total": len(topics),
+        "mastered": sum(1 for t in topics if is_mastered(t)),
+        "remaining": len(candidates),
+        "pending_pretest": sum(1 for t in topics if not t.pretested),
+        "visited": sum(1 for tid in visited if any(t.topic_id == tid for t in candidates)),
+        "steps": [],
+        "next": None,
+        "last_round_done": bool(candidates) and all(t.topic_id in visited for t in candidates),
+        "blocked": [t.topic_id for t in topics if fact_status(t) == BLOCKED],
+        "done": bool(topics) and all(t.pretested for t in topics) and not candidates,
+        "by_topic": by_topic,
+        "decided_by_model": True,
     }
 
 

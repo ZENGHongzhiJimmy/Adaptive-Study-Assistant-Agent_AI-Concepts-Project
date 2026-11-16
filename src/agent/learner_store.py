@@ -3,12 +3,11 @@
 Storage is split from the policy on purpose: ``policy.py`` is pure and unit
 testable, this module owns the schema and the read/write.
 
-Why a separate set of tables instead of reusing ``student_topic_state``?
-The P2 tables are the *CLI harness* state (0-1 mastery, alpha smoothing, one
-row per topic string).  The product tracks a richer, per-material record
-(0-100 mastery, error book, reading counters, rolling round).  Two different
-models, two different tables - the same policy function decides both, which is
-the point of the refactor.
+Why its own tables?  The retired CLI harness kept a 0-1 mastery with alpha
+smoothing in a separate table set (deleted 2026-11-16).  The product tracks a
+richer, per-material record: 0-100 mastery, error book, reading counters,
+rolling round.  Two different models would have meant two different schemas;
+now there is only this one, and every consumer reads the same rows.
 
 Tables
 ------

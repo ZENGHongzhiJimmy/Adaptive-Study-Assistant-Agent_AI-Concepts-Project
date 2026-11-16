@@ -1,7 +1,7 @@
 # Adaptive Study Assistant Agent — 学生端
 
 > **面向自主学习的自适应学习助手**  
-> 学生自主上传课程资料，系统基于 LLM 与 RAG 自动解析并生成讲解与 quiz，提供自主学习路径推荐与 AI 问答。
+> 学生自主上传课程资料，系统基于 LLM 与 RAG 自动解析并生成讲解与 quiz；学习路径由大模型 Agent 决定下一步，并提供课程资料 AI 问答。
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 
@@ -18,7 +18,7 @@
 | 项目名称 | Adaptive Study Assistant Agent — 学生端                                  |
 | 项目类型 | 课程项目 / 原型系统                                                           |
 | 目标用户 | 需要自主学习专业课程知识的大学生                                                      |
-| 核心能力 | 学生自主上传课程资料 → LLM 自动解析并生成 quiz；学习主页按资料文件分类进入独立学习模块；课程资料 + AI 问答；学习进度追踪 |
+| 核心能力 | 学生自主上传课程资料 → LLM 自动解析并生成 quiz；学习主页按资料文件分类进入独立学习模块；大模型 Agent 决定下一步；课程资料 · AI 问答；学习进度追踪 |
 
 
 
@@ -48,7 +48,7 @@
 学生上传课程资料（每份资料 = 一个独立学习模块）
     → LLM 自动解析资料、抽取知识点并生成讲解与 quiz
     → 学习主页按「课程资料文件」分类展示模块卡片，点击选择一份资料
-    → 进入该资料模块后才显示自主学习路径：Pre-test → 推荐活动 → 进度追踪
+    → 进入该资料模块后才显示自主学习路径：Pre-test → Agent 决策的下一步 → 进度追踪
     → 模块内可展开查看课件解析后的知识点（讲解要点 / 生成测验 / 掌握度）
     → 学生完成讲解 / 练习 / 复习，系统只更新该资料的掌握度并重新规划
 ```
@@ -64,22 +64,24 @@
 | 页面                | 功能                                                                             |
 | ----------------- | ------------------------------------------------------------------------------ |
 | **学习主页**          | 平台功能概览、自主学习规划、课程资料文件卡片（知识点数 / 掌握度 / 解析状态）；点击卡片选中资料，点「进入学习模块」进入对应模块             |
-| **资料学习模块**（选中资料后） | 该资料的课件解析概览、自主学习路径（先 Pre-test，再由 Agent 推荐下一步）、课件解析后的知识点（可展开查看讲解要点与生成测验）、本资料学习记录 |
-| **课程资料 · 问答**     | 自主上传课程资料（PDF / TXT / MD）、AI 解析资料生成知识点与 quiz、AI 问答（带引用出处）、从资料列表直接进入模块           |
+| **资料学习模块**（选中资料后） | 该资料的课件解析概览、自主学习路径（先 Pre-test，再由大模型 Agent 决定下一步）、课件解析后的知识点（可展开查看讲解要点与生成测验）、本资料学习记录 |
+| **课程资料 · AI 问答**     | 自主上传课程资料（PDF / TXT / MD）、AI 解析资料生成知识点与 quiz、AI 问答（带引用出处）、从资料列表直接进入模块           |
 | **学习进度**          | 按资料范围筛选的整体掌握度、各知识点掌握度条形图、学习轨迹                                                  |
 
-> **按资料隔离**：每个知识点通过 `_materialId` 绑定所属资料，Pre-test 状态、掌握度、推荐活动与学习记录都只在该资料模块内生效，不同资料之间互不干扰。
+> **按资料隔离**：每个知识点通过 `_materialId` 绑定所属资料，Pre-test 状态、掌握度、Agent 的下一步与学习记录都只在该资料模块内生效，不同资料之间互不干扰。
 
-三种学习活动（由 `src/agent/policy.py` 按「错题本 + 连续失败 + 是否学过讲解」分派，不是单纯的分数阈值）：
+三种学习活动。**下一步由 LLM 在合法候选里挑选并给出理由**（`planner_llm.py`）；下表是候选的成立条件，只描述"什么时候可以做"，不规定"应该先做哪个"：
 
-| 活动        | 触发条件（policy.decide 的分支顺序）     | 说明                                                             |
+| 活动        | 何时可能被推荐（候选条件）              | 说明                                                             |
 | --------- | ----------------------------- | -------------------------------------------------------------- |
-| **知识点讲解** | 连续 2 次练习正确率 < 50%（重学）／ 从未看过讲解 | 基于上传资料生成的分页讲解，可随时暂停提问（RAG + LLM 现场作答，并附引用出处）；看完最多到 55%         |
-| **知识复习**  | 错题本还有 ≥ 2 道题                  | 针对历史错误的闪卡回顾，只清错题、不涨掌握度                                         |
-| **练习测验**  | 上面都不满足，且题库非空                  | 针对资料内容生成的测验题；`Δ = clamp(round((正确率×100 − 掌握度)×0.6), −10, +25)` |
-| **收尾**    | 掌握度 ≥ 80% 且错题清空               | 该知识点结束，不再推荐活动                                                  |
+| **知识点讲解** | 有讲解页，且未掌握                  | 基于上传资料生成的分页讲解，可随时暂停提问（RAG + LLM 现场作答，并附引用出处）；看完最多到 55%         |
+| **知识复习**  | 错题本还有 ≥ 1 道题                 | 针对历史错误的闪卡回顾，只清错题、不涨掌握度                                         |
+| **练习测验**  | 题库非空                          | 针对资料内容生成的测验题；`Δ = clamp(round((正确率×100 − 掌握度)×0.6), −10, +25)` |
+| **收尾**    | 掌握度 ≥ 80% 且错题清空               | 不是候选动作：达标后该知识点移出候选，由 `policy.is_mastered()` 判定                     |
 
-自适应规划遵循 `Plan → Act（浏览器）→ Observe → Update → Re-plan` 闭环：每次作答后由 agent 更新掌握度与错题本，再重新排出本轮下一步。
+模型的选择可以与任何"经验规则"不同——这正是"决策权在模型"的含义；每次选择都会附带一句引用具体数字的理由，显示在界面的「判定依据」里。
+
+自适应规划遵循 `Plan → Act（浏览器）→ Observe → Update → Re-plan` 闭环：每次作答后由 agent 更新掌握度与错题本，再由模型重新决定下一步。
 
 ---
 
@@ -88,23 +90,23 @@
 ```mermaid
 flowchart LR
     subgraph FE["浏览器 · 原生 HTML / CSS / JS"]
-        PAGES["学习主页 · 资料学习模块<br/>问答 · 进度 · Pre-test / 学习活动"]
+        PAGES["学习主页 · 资料学习模块<br/>AI 问答 · 进度 · Pre-test / 学习活动"]
         STATE[("localStorage<br/>资料 / 知识点 · Agent 计划快照")]
         PAGES <--> STATE
     end
 
     subgraph AGENT["Agent 运行时 · src/agent/"]
         GRAPH["LangGraph<br/>observe → planner"]
-        POLICY["policy.py<br/>唯一的规划 + 掌握度规则"]
+        POLICY["policy.py<br/>合法候选 · 掌握度测量"]
         LEARN[("SQLite learner_*<br/>掌握度 · 错题本 · 轮次 · 决策轨迹")]
         GRAPH --> POLICY --> LEARN
     end
 
     subgraph API["FastAPI · src/api/ · /api/*"]
-        UP["上传 · 解析<br/>upload / parse / quiz/generate"]
+        UP["上传 · 解析<br/>upload / parse"]
         QA["RAG 问答<br/>qa/ask"]
         AG["Agent 接口<br/>agent/plan · observe · pre-test"]
-        MG["资料管理<br/>health / status / progress / delete / reset"]
+        MG["资料管理<br/>health / status / delete / reset"]
     end
 
     subgraph CAP["能力层 · src/ingestion · retrieval · utils"]
@@ -130,7 +132,7 @@ flowchart LR
 
 上传 → 切片向量化入库 → LLM 生成知识点 / 讲解 / quiz → 前端按资料归属；问答时检索相关片段 + LLM 作答并附引用。
 
-**规划只有一条路径**：页面上的「下一步」不再是前端算出来的，而是 `POST /api/agent/plan` 调用 LangGraph agent，由 `src/agent/policy.py` 决策后返回。前端只缓存与渲染这份快照（`localStorage` 里的 `agent.plans`），没有任何备用规则——后端不可用时界面显示「Agent 未连接」，不会偷偷换一套逻辑。
+**规划只有一条路径**：页面上的「下一步」是 `POST /api/agent/plan` 调用 LangGraph agent，由 `src/agent/planner_llm.py` 让大模型在合法候选里决策后返回（`policy.py` 只提供候选与掌握度测量）。前端缓存与渲染这份快照（`localStorage` 里的 `agent.plans`），后端不可用时界面显示「Agent 未连接」。
 
 ---
 
@@ -153,7 +155,7 @@ flowchart LR
 ```
 js/ui.js              # 图标 + 通用 UI 组件（toast / bar / ring / card）
 js/data.js            # 活动类型 + 问答文案
-js/engine.js          # 按资料隔离的知识模型 + Agent 计划快照（规则在服务端）
+js/engine.js          # 按资料隔离的知识模型 + Agent 计划快照（决策在服务端）
 js/api.js             # 后端 HTTP API 封装（含 /api/agent/*）
 js/views-student.js   # 学习主页 / 资料模块 / 问答 / 进度 / Pre-test / 活动视图
 js/app.js             # 应用外壳 + hash 路由（含资料模块与资料级路由参数）
@@ -171,8 +173,35 @@ js/app.js             # 应用外壳 + hash 路由（含资料模块与资料级
 | 文本向量化    | **Hashing（确定性词袋哈希）**      | 无外部模型依赖，离线可复现的文本向量                                                |
 | 资料解析     | **PyMuPDF** + 纯文本         | PDF / TXT / MD 提取正文                                               |
 | Agent 编排 | **LangGraph**             | `observe → planner` 两个节点：先更新状态，再重新规划；`/api/agent/*` 直接 invoke 这个图 |
-| 规划策略     | **`src/agent/policy.py`** | 唯一实现（讲解 / 练习 / 复习 / 收尾 + 滚动轮次），无 LLM、纯函数，实验脚本复用同一份                |
+| 决策（下一步） | **LLM**（`src/agent/planner_llm.py`） | 模型在合法候选里挑一个动作并给出理由；结构化 JSON，重试与多轮重问后仍不合法才本步不给决策 |
+| 合法性与测量   | **`src/agent/policy.py`** | 定义合法动作空间、掌握度更新、掌握判定、滚动轮次；纯函数，产品与实验共用 |
 | 学习状态     | **SQLite（`learner_*` 表）** | 掌握度、错题本、轮次、决策轨迹（`learner_step`）由服务端持久化                            |
+
+### 5.1 决策由模型做，测量由代码做
+
+一句话：**"下一步学什么"交给 LLM，"学会了没有"留在代码里。**
+
+| 归谁 | 内容 | 位置 |
+| --- | --- | --- |
+| LLM | 从候选里选一个动作 + 写出理由（引用掌握度与错题数） | `LLMPlanner.choose()` |
+| 代码 | 枚举合法候选：没题不能练、未前测不入列、已掌握不入列 | `legal_candidates()` |
+| 代码 | 校验模型的选择：幻觉 id、不存在的活动、原样重复上一步 | `validate_choice()` |
+| 代码 | 只给事实：状态、掌握度、错题数；**不产生任何候选旁的动作** | `policy.plan_facts()` |
+| 代码 | 把模型选择写成计划里唯一的下一步，并标记该知识点的判定 | `apply_decision()` |
+| 代码 | 掌握度更新 / 掌握判定 / 轮次推进（**未改动**） | `policy.apply_result()` 等 |
+
+**为什么掌握度不交给模型**：掌握度是度量，是 learning gain 的地面真值。把度量交给被评估的对象，实验就没有结论了——所以 `apply_result` / `is_mastered` / `plan_material` 保持纯函数，模型只碰"选哪个"。
+
+开关与失败处理（**没有自动降级到规则**）：
+
+- `config.yaml -> agent.planner`：`llm`（默认）或 `rule`（显式的演示/测试模式，不会自动切换过去）
+- 无 Key → 不构造任何"规则计划"顶替；响应 `agent.decided_by = unavailable`、`model_connected = false`、`unavailable_reason = no_api_key`，前端直接显示"未接入模型"
+- 主模型返回了"没法用的内容"（截断、散文、JSON 非法、选了不存在的知识点）→ **交给重判模型再问一次**：`agent.planner_escalation_models`（默认取 `llm.fallback_models`，也可以写主模型自己以换更多 token 预算），token 预算提到 1200，仍由模型决策。成功时 `decision.escalated = true`、`decision.rounds` 记第几轮，前端在"判定依据"处标出"重判"或"第 N 轮重判"
+- 一整轮（主模型 + 重判模型）都没给出可用决策 → **再从主模型开始循环一轮**，共 `agent.planner_rounds`（默认 2）轮；提示词与两档 token 预算都不变，只是换个时机再问一次。实测：同一状态首轮两次都被截断，重问一次就拿到合法 JSON
+- 全部轮次仍然给不出 → 不退回 `policy.decide()`；`decided_by = unavailable`，`unavailable_reason` 为 `call_failed` 或 `bad_output`，`decision.attempts` 列出每次调用的模型、失败原因与轮次，`decision.rounds` 记共跑了几轮，`next` 为空
+- 计划里的 `steps` 只有模型选中的那一步；`by_topic` 只有事实（`pretest / ready / done / blocked`），不含代码猜的动作
+- 同一学情命中决策缓存 → 不再调用模型，同状态必然同决策（8 seed 重跑可比）
+- **延迟**：单次决策 4–6 s（8 个知识点约 1.4k prompt token；包含错误回灌与升级重判的平均值是 5.2 s）。为不让这几秒挡住页面，`/api/agent/observe` 支持 `decide=false`：先返回掌握度更新（约 10 ms），前端渲染结果页，再用 `/api/agent/plan` 把"下一步"补上。学生按下"完成"到看见分数是即时的
 
 ---
 
@@ -199,20 +228,18 @@ Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
 │       └── app.js                  # 应用外壳 + 路由
 ├── src/
 │   ├── api/                        # ★ 学生端 HTTP API
-│   │   ├── app.py                  # FastAPI 应用与路由（资料 / 问答 / 进度）
+│   │   ├── app.py                  # FastAPI 应用与路由（资料 / 问答）
 │   │   ├── agent.py                # /api/agent/*：规划、状态更新、Pre-test、轨迹
 │   │   ├── services.py             # 资料解析 / quiz 生成 / RAG 问答
 │   │   └── run.py                  # 启动入口
 │   ├── agent/                      # Agent 运行时
-│   │   ├── policy.py               # ★ 唯一的自适应策略（决策 + 掌握度 + 滚动轮次）
+│   │   ├── policy.py               # ★ 掌握度更新 / 掌握判定 / 事实视图（plan_facts；decide 仅 rule 模式）
+│   │   ├── planner_llm.py          # ★ LLM 决策器：合法候选 + 结构化输出 + 校验 + 缓存（无规则回退）
+│   │   ├── prompts/                # 提示词（decision.py 决策、templates.py 讲解）
 │   │   ├── learner_store.py        # learner_topic / learner_roll / learner_step
-│   │   ├── serve.py                # LangGraph 图 + 服务封装（产品实际调用）
-│   │   ├── graph.py                # CLI 闭环（python -m src.agent.run），含 Teach 渲染
-│   │   ├── planner.py              # CLI 阈值规划器（0–1 标度，实验不使用）
-│   │   └── run.py                  # CLI 驱动
+│   │   └── serve.py                # LangGraph 图 + 服务封装（产品实际调用）
 │   ├── ingestion/                  # PDF/TXT 解析与切片
 │   ├── retrieval/                  # 向量库与嵌入
-│   ├── student_model/              # CLI 侧学生状态模型 + events 日志
 │   └── utils/                      # 配置 / LLM 客户端 / 密钥守卫
 ├── data/
 │   ├── course_materials/           # 课程 PDF（不入库）
@@ -292,17 +319,16 @@ npm start        # 或 node server.js
 | GET    | `/api/materials/{material_id}` | 查询资料解析状态与缓存结果（刷新后恢复）                                                                                                                                                       |
 | DELETE | `/api/materials/{material_id}` | 删除指定资料：磁盘文件、ChromaDB 向量、解析缓存、知识点与 agent 学习状态一并清理；在跑的解析线程随后会看到删除标记并丢弃结果                                                                                                     |
 | POST   | `/api/materials/reset`         | 重置全部数据（上传资料、课程材料、ChromaDB 索引与向量库文件），平台回到初始状态                                                                                                                               |
-| POST   | `/api/quiz/generate`           | 基于资料生成 quiz（可选独立入口）                                                                                                                                                        |
 | POST   | `/api/qa/ask`                  | RAG + LLM 问答，返回 `{ answer, sources, grounded, mode }`；可选 `material_id` / `material_name`（限定检索资料）与 `topic` / `focus`（知识点讲解页随堂提问：当前知识点名 + 当页讲解内容，答案按助教讲解方式组织，`mode="tutor"`） |
-| GET    | `/api/progress`                | 已解析知识点列表（掌握度由 agent 在 SQLite 中维护，见 8.1）                                                                                                                                    |
 
-`/api/quiz/generate` 与 `/api/progress` 是可选的独立入口，当前前端不调用；页面上的规划与掌握度全部来自 `/api/agent/*`。
+页面上的规划与掌握度全部来自 `/api/agent/*`。
 
 ### 8.1 Agent 接口（页面上的「下一步」唯一来源）
 
 | 方法   | 路径                               | 说明                                                                  |
 | ---- | -------------------------------- | ------------------------------------------------------------------- |
 | GET  | `/api/agent/policy`              | 当前服务的策略与引擎：`{policy:"adaptive-v1", engine:"langgraph"}`             |
+| GET  | `/api/agent/progress/{material_id}` | 等待决策时的实时进度：`{busy, attempts, rounds}`；前端据此在真的重问/换模型时才提示 |
 | POST | `/api/agent/plan`                | 重新规划：返回 `{round, steps, next, by_topic, topics}`；`next` 就是界面上的「下一步」 |
 | POST | `/api/agent/observe`             | 一次活动结束后更新状态并重新规划：返回 `{result:{before,after,delta,note}, ...plan}`   |
 | POST | `/api/agent/pre-test`            | 写入各知识点的起点分（答对 45% / 答错 20% / 跳过不变）                                  |
@@ -322,36 +348,38 @@ curl -X POST http://127.0.0.1:8000/api/materials/parse \
 
 ### 8.2 方法 vs 基线（报告口径）
 
-报告里只能有一个 method。当前仓库里确实存在两套掌握度模型，但它们不是"两份没写完的实现"，而是 **method 与 baseline**，边界由 `tests/test_p9_single_method.py` 守着：
+仓库里只剩**一套**掌握度模型：`src/agent/policy.py`（`adaptive-v1`，0–100 标度）。旧的 CLI 阈值链路（`graph.py` / `planner.py` / `student_model/`，0–1 标度 + EMA）已于 2026-11-16 删除，边界由 `tests/test_p9_single_method.py` 守着：模块不得复活，产品路径也不得 import。
 
-| 维度 | Method（被评估） | Baseline（仅对照） |
+| 维度 | Method（被评估） | 实验基线（仅对照） |
 | ---- | ---- | ---- |
-| 代码 | `src/agent/policy.py`（`adaptive-v1`） | `src/student_model/mastery.py` + `src/agent/planner.py` |
-| 谁在用 | 产品 `/api/agent/*`（`serve.py`）；实验里的 `adaptive` 方法 | 仅 `src/agent/graph.py`（旧 CLI 链路，实验不使用） |
-| 掌握度标度 | 0–100 整数百分比 | 0–1 浮点 |
-| 更新式 | `Δ = clamp(round((正确率×100 − m) × 0.6), −10, +25)`；讲解首次 +10、重看 +2、封顶 55 | `m' = 0.7·m + 0.3·p` |
-| 达标条件 | `m ≥ 80` **且**错题本为空 | `m ≥ 0.85`（无错题概念） |
-| 决策输入 | 掌握度 + 错题本 + `failStreak` + 讲解次数 + 内容可用性 | 掌握度 + `recent_errors` + 上一步活动 |
-| 阈值来源 | 代码常量，随每次规划下发（`mastered_at` / `explain_cap`） | `config.yaml` 的 `mastery:` / `planner:` 段 |
-| 报告角色 | **method** | **遗留 CLI 实现（非实验基线）** |
+| 调度器 | LLM 在合法候选里选（`planner_llm.py`，产品与实验是同一份代码） | `methods.CyclicPlanner`：固定 explain→practice→practice |
+| 掌握度更新 | `policy.apply_result`（+10 首次讲解 / +2 重看 / 封顶 55 / Δ clamp −10~+25） | 同一份 `policy.py`，所有方法共用 |
+| 达标条件 | `m ≥ 80` **且**错题本为空 | 同一份判定 |
+| 决策输入 | 掌握度 + 错题本 + `failStreak` + 讲解次数 + 内容可用性 + 轮次 | 无输入（固定课程表） |
+| 报告角色 | **method** | baseline |
 
-> 实验的三条基线（LLM-only / RAG / Fixed-strategy）定义在 `experiments/methods.py`，是 `(content, planner)` 配对；其中固定课程表用 `methods.CyclicPlanner`，**不是** `planner.py`。报告口径以 `policy.py` + `methods.py` 这一条链路为准。
+> 实验的三条基线（LLM-only / RAG / Fixed-strategy）定义在 `experiments/methods.py`，是 `(content, planner)` 配对；其中固定课程表用 `methods.CyclicPlanner`。报告口径以 `policy.py` + `methods.py` 这一条链路为准。
+
+> **决策者与测量者的分工**：产品的"下一步"由 LLM 在合法候选里选（`planner_llm.py`）；掌握度更新、达标判定、轮次推进 100% 在 `policy.py`。`policy.decide()` 只服务显式 `agent.planner: "rule"` 这一演示/测试模式，不在产品常态路径上。**实验口径一致**：`adaptive` 分支回放的是模型的决策（`experiments/data/decisions.json`），没有记录就报错，绝不退回规则。
 
 两条纪律：
 
-1. `config.yaml` 的 `mastery:` 与 `planner:` 两段已显式标注 **BASELINE**，且不含 method 的任何常量——method 的数字只在 `policy.py` 里有一份。
+1. `config.yaml` 里**没有**任何方法常量，只留基础设施参数；文件里明确写着 "The evaluated method's numbers are NOT here"，方法的数字只有在 `policy.py` 里的一份。
 2. 前端不保存任何阈值：`isMastered()` 读快照的 `by_topic[topic_id].mastered`，文案里的百分比读 `mastered_at`。所以界面上的"已掌握"与报告里的判定永远是同一个函数算的。
 
 ---
 
 ## 9. 实验
 
-实验分两步：先把课程讲义冻结成题库与两种讲解条件，再离线跑四个 tutor 的等预算对比。两步各有一个脚本和一个产物：
+实验分三步：先把课程讲义冻结成题库与两种讲解条件，再让**真正的 agent** 为每条学情做一次决策并冻结，最后离线回放四个 tutor 的等预算对比。
 
-| 步骤 | 脚本 | 内容 | 产物 |
-| ---- | ---- | ---- | ---- |
-| 内容准备（先） | `experiments/content.py` | 两种讲解条件的生成与打分，16 次模型调用 | `data/materials.json` |
-| 等预算对比（后） | `experiments/run_experiment.py` | 四个 tutor 对比，160 次会话 | `results/e1_main.json` + 6 张图 |
+| 步骤 | 脚本 | 内容 | 产物 | 是否调用模型 |
+| ---- | ---- | ---- | ---- | ---- |
+| 内容准备 | `experiments/content.py` | 两种讲解条件的生成与打分，16 次调用 | `data/materials.json` | 一次 |
+| 决策建库 | `experiments/collect_decisions.py` | agent 为每个会话每一步做决策，1172 条 | `data/decisions.json` | 一次（约 1200 次） |
+| 等预算对比 | `experiments/run_experiment.py` | 四方法 × 5 画像 × 8 种子 = 160 次会话 | `results/e1_main.json` + 3 张图 | **不调用** |
+
+这样切分的理由：agent 的"下一步"由模型决定，既慢（4–6 s/步）又随机。**决策只买一次**，之后改指标、改图、重跑统计全是离线读取，不再消耗额度；同时"同一学情 → 同一决策"也保证了配对比较（同画像同种子）成立。
 
 内容准备是对比实验的输入：模拟学生把讲解带来的增益乘以算出的 `coverage`，所以先有覆盖率的测量，才有 LLM-only 与 RAG 的差距。对比实验本身离线运行，不联网、不需要 API Key。
 
@@ -417,11 +445,11 @@ python -m experiments.content --force    # 全部重新生成
 | `llm_only` | LLM-only | 每点 1 讲解 + 1 练习 | —（proposal 的 LLM-only Tutor） |
 | `rag` | RAG | 每点 1 讲解 + 1 练习 | 检索（proposal 的 RAG Tutor） |
 | `fixed` | RAG | 讲解→练习→练习，固定循环 | 教学流程（proposal 的 Fixed-strategy Tutor） |
-| `adaptive` | RAG | `policy.plan_material()` | 读学生状态（本方法） |
+| `adaptive` | RAG | **LLM agent**（`planner_llm.py`，回放冻结决策） | 读学生状态自己决定下一步（本方法） |
 
-相邻两行只差一个变量，所以差值可归因：`llm_only → rag` 是检索，`rag → fixed` 是教学流程，`fixed → adaptive` 是自适应。
+相邻两行只差一个变量，所以差值可归因：`llm_only → rag` 是检索，`rag → fixed` 是教学流程，`fixed → adaptive` 是"由模型而不是课程表决定下一步"。
 
-`adaptive` 直接调用 `src/agent/policy.py`，没有复制一份逻辑（`tests/test_p10_experiment.py` 用 monkeypatch 校验这次调用）。
+`adaptive` 走的不是另一套实现：实验调用产品同一个 `LLMPlanner`，产物是"学情 → 决策"的冻结表（`experiments/decisions.py`）。回放时若某状态不在表里，脚本直接报错而不是退回 `policy.decide()`——否则测的就不是 agent 了。
 
 ### 9.4 一次会话怎么跑
 
@@ -429,52 +457,65 @@ python -m experiments.content --force    # 全部重新生成
 
 一次会话：前测（每点 1 道探针定起点）→ 循环「调度器选活动 → 学生现场作答 → `policy.apply_result` 更新掌握度 → 重新规划」→ 到预算或全部掌握为止 → 后测（同一组探针题的期望得分）。
 
-讲解增益乘以该知识点的 `coverage`；练习增益不缩放，因为四个方法共用同一套练习题，题目质量固定，只有讲解在变。
+两条与"活动价值"有关的建模前提，都在模拟器 docstring 里写明：
+
+- **讲解增益 × `coverage`**：没讲到考点的讲解教不会考点。这是 LLM-only 与 RAG 差距的来源。
+- **练习增益 × 已受教程度**：`instruction = 0.3 + 0.7 × min(1, 读到过的最好覆盖率)`。不加这一项，模拟器会给出一个荒谬的最优解——**什么都不读、只刷题**得分最高（0.178 vs 固定循环 0.164），等于说没被讲过的东西也能靠做题学会。
+
+agent 侧还有一条规则性约束（不是偏好，属于"合法性"）：**一轮之内每个待学知识点只安排一次**。`legal_candidates()` 把本轮已服务的知识点移出候选，模型仍然决定选哪个点、做什么活动。没有这条约束时实测 32 步里有 15 步压在两个点上，另外三个点一次没读过——这和迁移到模型之前"规则排课保证覆盖"的行为相比是退步。
 
 ### 9.5 主实验结果
 
 ```bash
-python -m experiments.run_experiment --seeds 8 --budget 32
+python -m experiments.collect_decisions      # 只跑一次：agent 做 1172 次决策
+python -m experiments.run_experiment         # 离线回放，秒级完成
 ```
 
-160 次会话（4 方法 × 5 画像 × 8 种子）约 2 秒完成，结果写入 `experiments/results/e1_main.json`：
+160 次会话（4 方法 × 5 画像 × 8 种子），结果写入 `experiments/results/e1_main.json`：
 
 ```
-method          pre   post    gain   nGain  learned  steps    eff  toTarget    cov    MAE
-llm_only      0.501  0.624   0.123   0.286      3.5   31.3  0.116      25.8  0.274  0.093
-rag           0.501  0.644   0.143   0.324      3.7   31.3  0.123      25.8  0.439  0.095
-fixed         0.501  0.664   0.163   0.367      4.1   31.0  0.140      25.8  0.439  0.086
-adaptive      0.501  0.672   0.171   0.377      4.1   30.7  0.143      25.8  0.439  0.097
+method          pre   post    gain     sd  mastered  steps
+llm_only      0.501  0.577  +0.076  0.031      2.48   31.4
+rag           0.501  0.606  +0.105  0.040      2.98   31.3
+fixed         0.501  0.615  +0.114  0.045      3.15   31.1
+adaptive      0.501  0.633  +0.132  0.050      3.42   31.1
 ```
 
-配对差值（同画像同种子，bootstrap 95% CI）：
+配对差值（同画像同种子，bootstrap 95% CI，40 对）：
 
-| 对照 | Δgain | 95% CI | 胜场 |
-| ---- | ---- | ---- | ---- |
-| LLM-only Tutor | +0.049 | [+0.040, +0.057] | 39/40 |
-| RAG Tutor | +0.029 | [+0.023, +0.035] | 38/40 |
-| Fixed-strategy Tutor | +0.008 | [+0.003, +0.013] | 26/40 |
+| 对照 | Δgain | 95% CI | d_z | 胜场 | Δ达标知识点（胜场） |
+| ---- | ---- | ---- | ---- | ---- | ---- |
+| LLM-only Tutor | **+0.057** | [+0.049, +0.064] | +2.26 | 40/40 | +0.95（15/40） |
+| RAG Tutor | **+0.027** | [+0.023, +0.032] | +1.91 | 39/40 | +0.45（11/40） |
+| Fixed-strategy Tutor | **+0.018** | [+0.013, +0.022] | +1.20 | 35/40 | +0.28（9/40） |
 
-1. 检索是单项收益最大的一步：同样调度、同样题目，只把讲解换成检索版，增益 0.123 → 0.143。
-2. 教学流程的收益与之相当：加上讲解→练习→练习的固定循环后升到 0.163。
-3. 自适应再进一步但幅度小：0.163 → 0.171，胜场 26/40。在 8 个难度相近的知识点上，固定流程已接近上限；自适应的价值更多体现在少花 0.3 个活动收工（30.7 vs 31.0）。
-4. 专长反转成立：`struggling` 下 adaptive 0.122、LLM-only 0.063；`strong` 下四者几乎打平（0.068–0.076）。
+> 达标知识点的胜场少是**打平**造成的，不是负向：`strong` 画像四个方法都拿到 8/8，`struggling` 多数在 0，这些配对记为平局；均值差为正来自 `medium` / `mixed` 的那几次会话。
 
-`activities_to_target` 四个方法都是 25.8——"全部 8 点达到 0.75"由学生能力上限决定，不区分方法，所以效率改用 `eff`。
+相邻两档的链式差值（同一批 40 对）：
 
-### 9.6 指标定义
+| 改动 | Δgain | 95% CI | d_z | 胜场 |
+| ---- | ---- | ---- | ---- | ---- |
+| 加检索（`llm_only → rag`） | +0.029 | [+0.025, +0.033] | +2.44 | 40/40 |
+| 加教学流程（`rag → fixed`） | +0.010 | [+0.007, +0.013] | +0.98 | 35/40 |
+| 决策交给模型（`fixed → adaptive`） | **+0.018** | [+0.013, +0.022] | +1.20 | 35/40 |
+
+1. **检索仍是最大的一步**：同样调度、同样题目，只把讲解换成检索版，增益 0.076 → 0.105，40/40 全胜，d_z = 2.4。
+2. **教学流程再加一档**：固定循环把增益推到 0.114（相对 RAG +0.010，35/40）。
+3. **把决策权交给模型是第三个显著增量**（+0.018，CI 不含 0，35/40）。它没有被告诉"讲解→练习→练习"这个循环，自己走到了 8.2 讲解 / 17.1 练习 / 5.7 复习，并且 40 次会话产生 **40 条互不相同的活动序列**（固定循环只有 5 条）。
+4. **分画像（`fixed → adaptive` 配对）**：`struggling` +0.024（8/8）、`weak` +0.029（8/8）、`medium` +0.014（8/8）、`mixed` +0.021（7/8），`strong` −0.000（4/8）。**收益集中在还有选择余地的学习者身上**，`strong` 是天花板效应（开局就把 8 个点全部推到 0.75 以上，四个方法都是 8）。
+5. **这个增量是"修"出来的，不是调出来的**：v1 的 agent 与固定循环打平（−0.001），根因是提示词漏掉了两条机制事实——达标要求错题清零、而清空错题本只有复习一条途径。补上之后 `review` 从 0.2 次/会话升到 5.7 次，重读讲解从 11.2 次降到 8.2 次，40 个会话里 39 个出现复习（首次出现在第 17 步，中位数）。同一批种子上的提示词消融：**v1 → v2 = +0.016 [+0.010, +0.022]，17/20，d_z = 1.09**（`results/e1_main_v1.json` 与 `data/decisions_v1.json` 保留为对照）。
+
+> 实验口径的一个细节：`adaptive` 的决策是**冻结后回放**的，所以它是"模型产出的策略"而不是"每次重新采样"。这才让同画像同种子的配对比较成立，也让改指标、改图、重跑统计不再产生 API 成本。三行基线在 v1/v2 两次运行中逐对完全相同（最大绝对差 0.000000），所以 v1→v2 的差值只能来自 agent 那一行。
+
+### 9.6 指标定义（只保留三个）
 
 | 指标 | 定义 |
 | ---- | ---- |
 | `pre` / `post` | 探针题期望得分均值（0–1）；`post` 即 Final Mastery |
-| `learning_gain` | `post − pre` |
-| `nGain` | 归一化增益 `(post − pre) / (1 − pre)` |
-| `learned` | 后测 ≥ 0.75 的知识点个数（与 Agent 内部达标线无关，避免自证） |
-| `eff` | `learned / steps`，每花一个活动换来多少达标知识点 |
-| `toTarget` | 全部知识点达到 0.75 所需活动数；未达到记满预算，会被截断 |
-| `cov` | 该方法所用讲解的平均覆盖率 |
-| `MAE` | `|Agent 掌握度 − 学生真实水平|` |
-| `tokens` / 延迟 | 生成整套讲解的 LLM 成本，来自 `materials.json` |
+| `learning_gain` | `post − pre`，主指标 |
+| `mastered_topics` | 后测 ≥ 0.75 的知识点个数（0–8），与 Agent 内部达标线无关，避免自证 |
+
+去掉的指标及原因：`normalized_gain` 与 `learning_gain` 排序完全一致；`estimate_mae` 衡量的是"Agent 是否自估准确"，与"帮学生学多少"无关且四个方法都靠同一个 `apply_result` 更新；`activities_to_target` 会被"开局已过线"的强学习者记成 1 步，均值失真；`content_quality` / 活动配比是机制描述，不是结果指标，放在正文而不是表里。
 
 ### 9.7 出图
 
@@ -482,18 +523,13 @@ adaptive      0.501  0.672   0.171   0.377      4.1   30.7  0.143      25.8  0.4
 python -m experiments.plots
 ```
 
-只读 `e1_main.json` 与 `materials.json`，不重新模拟，因此图与提交的 JSON 一一对应。6 张 300 dpi PNG 写入 `experiments/results/figures/`，英文图注为同目录 `CAPTIONS.md`：
+只读 `e1_main.json`，不重新模拟，因此图与提交的 JSON 一一对应。3 张 300 dpi PNG 写入 `experiments/results/figures/`：
 
 | 文件 | 内容 | 对应论点 |
 | ---- | ---- | ---- |
 | `fig1_learning_gain.png` | 四方法学习增益 + 95% CI | 主结果 |
-| `fig2_learning_curve.png` | 探针分数随活动数的曲线 | 过程而不仅是终点 |
-| `fig3_gain_by_profile.png` | 按画像拆分的增益 | 专长反转 |
-| `fig4_paired_delta.png` | 配对差值 + bootstrap CI | 显著性 |
-| `fig5_content_quality.png` | 覆盖率 / 贴讲义程度 / LLM 成本 | 检索买到了什么 |
-| `fig6_activity_mix.png` | 各方法活动配比 | 机制 |
-
-`fig2` 中提前结束（全部掌握）的会话在后续 checkpoint 没有读数，脚本把最终分数结转（LOCF）到剩余 checkpoint；否则缺数据的恰好是学得最快的会话，会让最先停的方法看起来最差。
+| `fig2_gain_by_profile.png` | 按画像拆分的增益 | 收益集中在有选择余地的画像 |
+| `fig3_paired_delta.png` | 配对差值 + bootstrap CI | 显著性与胜场 |
 
 ---
 
@@ -501,22 +537,28 @@ python -m experiments.plots
 
 实验层面（报告必须写明的部分）：
 
-- **模拟学生不是真人**：能力 θ、手滑 8%、蒙对 20%、三条增益假设（讲解收益递减、练习按成功检索计收益、复习只在有错时有效，见 `experiments/simulator.py` 模块 docstring）都是模型假设。实验检验的是"这些假设下四种方法谁更好"，不是人类学习曲线。
+- **模拟学生不是真人**：能力 θ、手滑 8%、蒙对 20%、四条增益假设（讲解收益递减、练习按"正确率 × 已受教程度"计收益、练习不能替代讲解、复习只在有错时有效，见 `experiments/simulator.py` 模块 docstring）都是模型假设。实验检验的是"这些假设下四种方法谁更好"，不是人类学习曲线。
 - **内容质量按线性方式接入**：讲解增益乘以 `coverage` 是一次线性缩放，未校准真实学习者的"覆盖率→掌握度"映射，也未做敏感性扫描。该映射若次线性，RAG 与 LLM-only 的差距被高估；若超线性则被低估。
 - **`coverage` 是词面指标**：数的是"探针考点关键词是否出现在讲解里"，同义改写会漏记，因此绝对值偏低（0.27–0.44）不代表讲解只有三成有效。它适合比较两个条件，不适合当绝对质量分。
-- **每个条件只生成一次**：temperature 0 下每个知识点只有一条讲解，未估计生成方差；16 次调用中出现过 3 次拒答/截断（已重试）。
+- **每个条件只生成一次**：temperature 0 下每个知识点只有一条讲解，未估计生成方差；生成过程中出现过 3 次拒答/截断（已重试）。
 - **RAG 检索可能不是产品那套**：干净 clone 没有 Chroma 索引，脚本回退到同一份 PDF 的 TF-IDF 分块索引；只有 `retrieval_backend` 为 `product-chroma` 时才是产品链路。
-- **难度由人工标注**：`bank.json` 的难度是手工标注，不是实证校准；`policy.decide()` 不按难度选题，只选活动类型。因此实验衡量的是 activity-level adaptation，不是 difficulty-level adaptation。
-- **`toTarget` 被预算截断**：四个方法都停在 25.8 左右，达不到"全部 8 点 ≥ 0.75"就记满 32，所以效率指标改用 `eff`。
-- **自适应的增量很小**：对固定流程只有 +0.008（26/40 胜）。在 8 个难度相近的知识点上，"固定课程表 + 讲解→练习→练习"已接近上限；这是结论的一部分，不是失败。
-- **主实验离线运行**：讲解由内容准备阶段生成一次后冻结在 `materials.json`，模拟阶段不联网、不需要 API Key。
+- **难度由人工标注**：`bank.json` 的难度是手工标注，不是实证校准；模型只能选活动类型与知识点，不选难度。因此实验衡量的是 activity-level adaptation，不是 difficulty-level adaptation。
+- **agent 的优势依赖提示词是否说清机制，这一点必须承认**：v1 提示词下 agent 与固定循环打平（−0.001，CI 跨 0）；补上"达标要求错题清零 / 清空错题本只有复习一条途径"之后为 +0.018。也就是说，0.018 里有多少是"模型会规划"、多少是"提示词把关键约束讲清楚了"，本实验无法完全分离——**准确的表述是"在写清机制事实的前提下，把决策交给模型优于手工循环"**。同一批种子上 v1→v2 的消融为 +0.016（17/20，d_z = 1.09），可作为这个量的上界参考。
+- **`review` 的收益在模拟器里大于产品里**：产品 `policy.apply_result` 给 review 的掌握度增量是 0（只清错题本），模拟器则让 review 真实提升 θ。模型看到的是产品口径（"复习不加掌握度"），它选择复习因此更值得肯定，而不是被模型"利用"了模拟器漏洞。但这确实意味着产品与实验在"复习价值"上不完全等价，属于已知偏差。
+- **样本是 8 个种子**：40 对配对比较，bootstrap CI 以配对差值重采样 2000 次。再收窄 CI 需要更多种子，每多一个种子约 150 次模型调用（决策必须重新采集）。
+- **决策建库有一次 4 个状态的暂时性失败**：首轮里两个模型都没给出可用回复（返回散文/空），会话因此提前结束；清掉这 4 个状态重跑后全部正常回答，最终 `no_decision = 0`。失败原始记录留在 `decisions.json` 的 `meta.recovered_after_retry`，建库脚本的重试轮次已从 3 提到 5。这类失败是**模型层的抖动**，不是策略性质。
+- **决策由一次性建库冻结**：`decisions.json` 是"模型产出的策略"而不是每次重采样。改提示词、改候选规则、改模拟器都会让旧决策失效，必须重新建库——这也是为什么它不是免费的。
+- **主实验离线运行**：讲解与决策都由前置阶段生成一次后冻结（`materials.json` / `decisions.json`），模拟阶段不联网、不需要 API Key。
 
 产品层面：
 
-- **LLM 模型配置与限流**：默认主模型为 OpenRouter 免费模型 `(baidu/ernie-5.5-flash-preview:free)`，`fallback_models` 中配置付费模型 `(deepseek/deepseek-v4.1-flash)` 兜底。主模型正常时只调用免费模型；主模型不可用（下架或 429）时按序切换。可在 `config.yaml -> llm` 更换 `model` 与 `fallback_models`。
+- **决策由 LLM 做出，因此有成本与延迟**：每次“下一步”约 1.4k–2.3k prompt token、4–6 s（v2 提示词比 v1 长，且部分步数会升级到兜底模型）。链路上有四道处理：末尾强指令 + 同模型一次错误回灌 → 换兜底模型重判（`planner_escalation_models`，token 预算 1200）→ 整条链再循环一轮（`planner_rounds`）→ 决策缓存。全部失败时**不用规则顶替**，而是本步返回“无决策”：`agent.decided_by = unavailable`，`unavailable_reason` 取 `no_api_key` / `call_failed` / `bad_output`，`decision.attempts` 记录每次调用的模型与轮次，`next` 为空。
+- **LLM 模型配置**：主模型为付费 `deepseek/deepseek-v4.1-flash-1017`（**钉住的日期快照**，约 $0.0002 / 次决策），`fallback_models` 配第三方 `z-ai/glm-5.3-flash` 兜底（跨厂商，避免同一家挂了两个 id 一起挂）。免费模型已停用：它是 429 限流和"返回散文/被截断"的主要来源。可在 `config.yaml -> llm` 更换；`decisions.json` 的 `meta.model` 记录决策实际用哪个模型，`meta.prompt_hash` 记录决策实际用哪版提示词，二者都进了决策缓存的键，改任一项都必须重建决策库。
+- **页面等待态**：决策的几秒不再阻塞结果页——`observe(decide=false)` 先落状态（~10 ms），结果页立即出现，再用 `/plan` 补上"下一步"；期间按钮转圈、结果页给骨架、页面顶部有进度条，避免用户以为点坏了。等待期间前端轮询 `/api/agent/progress`，只有真的重问 / 换模型时才在卡片里加一行说明，平时不预先承诺重试。
 - **学习状态存于后端 SQLite**：掌握度、错题本、滚动轮次与决策轨迹由 `learner_*` 表持久化，浏览器只缓存最近一次 agent 快照用于渲染。清浏览器数据不丢记录，但换机器/换浏览器共享同一份状态（单用户原型，未做账号隔离）。
 - **嵌入后端**：固定为 `hashing`（确定性词袋哈希 + L2 归一化 cosine），无外部模型依赖、离线可复现；属于词面匹配而非语义嵌入，同义改写与跨语言检索能力有限。
 - **资料格式**：支持 PDF / TXT / MD；PPT 暂不支持（可先导出为 PDF）。
+- **重复上传**：同一个文件（或同名文件）再次上传会作为**新资料**重新解析，各自成为独立模块；不会复用上一次的解析结果。
 - **单用户**：课程原型，未实现多用户认证与数据隔离。
 
 ---

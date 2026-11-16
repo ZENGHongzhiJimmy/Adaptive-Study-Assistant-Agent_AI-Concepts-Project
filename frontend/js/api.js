@@ -129,9 +129,15 @@ const API = (() => {
     });
   }
 
+  /* 等待决策时的实时进度：是否还在算、是否已经重试过（换模型 / 重问）。
+     只在 /api/agent/plan 未返回时轮询，用于「正在等待」的提示。 */
+  async function agentProgress(materialId) {
+    return request('/api/agent/progress/' + encodeURIComponent(materialId));
+  }
+
   return {
     base, isNetworkFailure, getMaterial, uploadMaterial, parseMaterial,
     deleteMaterial, resetMaterials, ask,
-    agentPlan, agentObserve, agentPreTest,
+    agentPlan, agentObserve, agentPreTest, agentProgress,
   };
 })();

@@ -4,6 +4,7 @@ The browser never decides what to do next any more.  It posts the learner state
 it knows about, and these endpoints return the agent's decision:
 
     GET  /api/agent/policy            which policy/engine is serving decisions
+    GET  /api/agent/progress/{id}     live retry progress while a decision runs
     POST /api/agent/plan              Re-plan: what is the next activity?
     POST /api/agent/observe           Update + Re-plan after one activity
     POST /api/agent/pre-test          set the starting mastery per topic
@@ -66,6 +67,10 @@ class ObserveRequest(BaseModel):
     # to build the error book.  Only sent for `practice`.
     quiz: list[dict[str, Any]] = Field(default_factory=list)
     topics: list[dict[str, Any]] = Field(default_factory=list)
+    # False -> update the state and return immediately (``decision_pending``),
+    # then the client calls /plan for the next step.  Keeps the result page from
+    # blocking on the model.  Defaults to True so old callers keep one round-trip.
+    decide: bool = True
 
 
 class PreTestRequest(BaseModel):
@@ -93,6 +98,21 @@ def policy_info() -> dict[str, Any]:
     }
 
 
+@router.get("/progress/{material_id}")
+def progress(material_id: str) -> dict[str, Any]:
+    """Is a decision running right now, and did it already need a retry?
+
+    Polled by the page only while it is waiting for ``/plan``; the retry hint
+    is shown when ``attempts`` is non-empty, i.e. the first shot was rejected
+    and another model / pass is being asked at this moment.
+    """
+    info = get_agent().progress()
+    if info.get("material_id") and info["material_id"] != material_id:
+        # A decision for another material is in flight; do not attribute it here.
+        return {"busy": False, "material_id": "", "elapsed_ms": 0, "rounds": 0, "attempts": []}
+    return info
+
+
 @router.post("/plan")
 def plan(req: PlanRequest) -> dict[str, Any]:
     try:
@@ -111,6 +131,7 @@ def observe(req: ObserveRequest) -> dict[str, Any]:
             req.outcome,
             req.quiz,
             req.topics,
+            req.decide,
         )
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=f"状态更新失败：{type(exc).__name__}: {exc}")

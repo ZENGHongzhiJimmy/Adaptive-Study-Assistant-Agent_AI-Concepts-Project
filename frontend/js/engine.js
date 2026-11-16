@@ -3,7 +3,7 @@
    本版本为「学生端」专用：
    - 学生自主上传课程资料，后端（LLM + RAG）解析并生成 quiz
    - 学习主页按「上传的课程资料文件」分类，每份资料是一个独立学习模块
-   - 选中资料后，才展示该资料的自主学习路径（Pre-test → 推荐活动 → 进度）
+   - 选中资料后，才展示该资料的自主学习路径（Pre-test → Agent 决策的下一步 → 进度）
    - 课程资料 · AI 问答：上传资料 + AI 解析问答（带引用出处）
    - 学习进度：各知识点掌握度与学习轨迹，可切换资料维度
 
@@ -22,7 +22,6 @@ const Engine = (() => {
 
   function blankState() {
     return {
-      role: 'student',
       studentName: 'student1',
       hasPreTest: false,           // 兼容字段：所有资料是否都已完成起点评估
       topics: [],                   // 全部知识点（跨资料），各自带 _materialId
@@ -195,6 +194,19 @@ const Engine = (() => {
      ========================================================= */
 
   function topics() { return state.topics; }
+
+  /* 模型的决策理由偶尔直接写知识点 id（如 t_mwjb0zwd_1），界面必须显示名称。
+     按 id 长度倒序替换，否则 t_xxx_1 会命中 t_xxx_10 的前半段。 */
+  function prettyReason(text) {
+    let out = String(text == null ? '' : text);
+    if (!out) return '';
+    state.topics
+      .filter(t => t && t.id && t.name)
+      .slice()
+      .sort((a, b) => b.id.length - a.id.length)
+      .forEach(t => { out = out.split(t.id).join(t.name); });
+    return out;
+  }
   function topic(id) { return state.topics.find(t => t.id === id); }
 
   function overallMastery(list) {
@@ -366,6 +378,14 @@ const Engine = (() => {
     return run;
   }
 
+  /* 两段式的第二步：掌握度已经写回，单独向 agent 要「下一步」。
+     结果页先用 pending 骨架占位，这个 promise 回来后再渲染一次。 */
+  async function decideNext(ref) {
+    const rec = findMaterial(ref);
+    if (!rec) return null;
+    return syncAgent(rec);
+  }
+
   /* 单个知识点的推荐活动（知识点列表 / 详情页的「推荐」徽标） */
   function plan(topicId) {
     const t = topic(topicId);
@@ -399,6 +419,10 @@ const Engine = (() => {
     const snap = agentSnapshot(rec);
     const d = snap && snap.by_topic ? snap.by_topic[t.id] : null;
     if (!d) return 'none';
+    /* 服务端改为下发「事实状态」（pretest / ready / done / blocked）：
+       「下一步做什么」由模型决定，代码不再为每个知识点猜一个活动。
+       ready 表示可以排，但没被模型选中，因此不显示活动徽标。 */
+    if (d.status) return d.status;
     if (d.mastered || (!d.activity && !d.blocked)) return 'done';
     if (d.blocked) return 'blocked';
     if (d.activity === 'explain' && t.needHelp) return 'help';
@@ -426,6 +450,29 @@ const Engine = (() => {
       };
     }
 
+    /* 服务端给出了「无决策」标记：模型没有选出下一步，且不会退回规则。
+       不能本地猜一个，也不能显示空队列；把理由带上去让界面说清楚。 */
+    if (snap.agent_unavailable) {
+      return {
+        round: snap.round || 1,
+        total: snap.total == null ? ts.length : snap.total,
+        mastered: snap.mastered || 0,
+        remaining: snap.remaining || 0,
+        pendingPretest: snap.pending_pretest || 0,
+        visited: snap.visited || 0, steps: [], more: 0, next: null,
+        lastRoundDone: false, blocked: [], done: false,
+        pendingAgent: true,
+        agentReason: snap.unavailable_reason || 'unavailable',
+        /* 每次尝试的模型与失败原因（服务端只给 model + reason，不含提示词），
+           用来把「限流」和「回复不是 JSON」分开说，而不是一句笼统的重试。 */
+        agentAttempts: (snap.decision && snap.decision.attempts) || [],
+        /* 服务端在主模型与备用模型之间循环了几轮才放弃。1 表示只跑了一轮。 */
+        agentRounds: (snap.decision && snap.decision.rounds) || 1,
+        policy: snap.policy || null,
+        error: null,
+      };
+    }
+
     const byId = id => ts.find(t => t.id === id) || null;
     const steps = (snap.steps || []).map(s => {
       const t = byId(s.topic_id);
@@ -436,6 +483,8 @@ const Engine = (() => {
         rule: s.rule,
         reason: s.reason,
         stage: s.stage,
+        escalated: !!s.escalated,
+        round: s.round || 1,
         nextRound: !!s.next_round,
       };
     }).filter(Boolean);
@@ -457,6 +506,9 @@ const Engine = (() => {
       blocked: (snap.blocked || []).map(byId).filter(Boolean),
       done: !!snap.done,
       pendingAgent: false,
+      /* 状态已更新、决策还在算（两段式 observe 的第一段）：
+         界面显示「正在安排下一步」的骨架，而不是「本轮没有下一步」。 */
+      pendingDecision: !!snap.decision_pending,
       policy: snap.policy || (state.agent && state.agent.policy) || null,
       error: null,
     };
@@ -495,6 +547,9 @@ const Engine = (() => {
       // 错题本需要题目原文与选项：只有练习需要
       quiz: actId === 'practice' ? quizBank(t) : [],
       topics: agentTopics(rec),
+      /* 只要状态更新，不要在同一个请求里等模型决策（3-4 s）。
+         下一步由 decideNext() 单独取，结果页因此能立刻出现。 */
+      decide: false,
     });
 
     if (!r || !r.ok) {
@@ -530,7 +585,10 @@ const Engine = (() => {
       after: after,
       delta: delta,
       note: res.note || '',
+      /* 两段式：这里只拿到掌握度（服务端 decide=false），下一步还在算。
+         界面先渲染数字，再调 Engine.decideNext(rec) 把「下一步」补上。 */
       re: plan(topicId),
+      decisionPending: !!r.data.decision_pending,
     };
   }
 
@@ -586,11 +644,8 @@ const Engine = (() => {
     return ts.filter(t => !t.pretested);
   }
 
-  /* ---------------- 循环阶段 / 角色 ---------------- */
+  /* ---------------- 循环阶段 ---------------- */
   function setStage(s) { state.loopStage = s; save(); }
-  function stage() { return state.loopStage; }
-  function setRole(r) { state.role = r; save(); }
-  function role() { return state.role; }
 
   /* =========================================================
      学生自主上传资料（经后端解析生成知识点与 quiz）
@@ -750,15 +805,6 @@ const Engine = (() => {
   /* =========================================================
      路径信息（学生端语义：按资料出处分组）
      ========================================================= */
-  function published() {
-    return {
-      count: state.topics.length,
-      courses: [],
-      latest: null,
-      note: '',
-    };
-  }
-
   /* 接受资料 rec/id 或知识点数组；不传 = 全部资料 */
   function pathGroups(arg) {
     const list = Array.isArray(arg) ? arg : (arg ? topicsOf(arg) : state.topics);
@@ -775,14 +821,14 @@ const Engine = (() => {
 
   return {
     state, init, reset, save,
-    topics, topic, overallMastery, topicContent,
+    topics, topic, prettyReason, overallMastery, topicContent,
     plan, applyResult, applyPreTest, pretestDone,
     rollPlan, stageOf,
     // Agent：唯一决策来源（/api/agent/*），前端不再自带规则
-    syncAgent, agentSnapshot, agentError, agentTopics,
+    syncAgent, decideNext, agentSnapshot, agentError, agentTopics,
     isMastered, masteredThreshold, masteryGoal, quizBank, explainPages, reviewCards, mistakesOf,
-    setStage, stage, setRole, role,
-    published, pathTopics, pathGroups, pendingTopics,
+    setStage,
+    pathTopics, pathGroups, pendingTopics,
     dismissAppend,
     uploads, addUpload, markUpload, removeUpload, ingestParsed,
     // 资料维度

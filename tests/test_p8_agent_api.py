@@ -18,8 +18,12 @@ from src.api.app import app
 
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
-    """Fresh in-memory-ish agent (temporary SQLite) per test."""
-    service = AgentService(LearnerStore(db_path=tmp_path / "learner.db"))
+    """Fresh in-memory-ish agent (temporary SQLite) per test.
+
+    ``planner=None`` pins the rule path: these tests assert the HTTP contract,
+    not who picked the activity, and they must never need an API key or network.
+    """
+    service = AgentService(LearnerStore(db_path=tmp_path / "learner.db"), planner=None)
     monkeypatch.setattr(agent_module, "_agent", service)
     yield TestClient(app)
     service.close()
@@ -53,6 +57,48 @@ def test_policy_endpoint_reports_the_serving_engine(client):
     assert body["policy"] == "adaptive-v1"
     assert body["engine"] == "langgraph"
     assert body["nodes"] == ["observe", "planner"]
+
+
+def test_progress_is_idle_when_nothing_is_being_decided(client):
+    body = client.get("/api/agent/progress/m1").json()
+    assert body["busy"] is False
+    assert body["attempts"] == []
+
+
+def test_progress_shows_a_retry_while_the_decision_is_running(tmp_path):
+    """等待期间页面要能知道「已经重问了」——这一点只能在 choose() 进行中读到。
+
+    旧实现把重试信息只放在响应里，学生只能事后看到；这个测试钉住的是实时面：
+    第一次尝试失败、第二次还在跑的时候，progress() 已经带着失败记录。
+    """
+    seen: dict = {}
+    service = None
+
+    class _RetryingPlanner:
+        available = True
+        escalated = False
+        cycles_used = 1
+        unavailable_reason = "bad_output"
+        last_error = "not json"
+        attempt_log: list = []
+
+        def choose(self, topics, round_no=1, visited=(), recent=()):  # noqa: ANN001
+            self.attempt_log = [{"model": "primary", "reason": "bad_output", "round": 1}]
+            seen.update(service.progress())
+            return None
+
+    service = AgentService(
+        store=LearnerStore(db_path=tmp_path / "learner.db"),
+        planner=_RetryingPlanner(),
+    )
+    try:
+        service.plan("m1", topics_payload())
+        assert seen["busy"] is True
+        assert seen["material_id"] == "m1"
+        assert [a["reason"] for a in seen["attempts"]] == ["bad_output"]
+        assert service.progress()["busy"] is False, "决策结束后不应再报忙碌"
+    finally:
+        service.close()
 
 
 def test_plan_returns_the_agents_decision(client):
@@ -199,3 +245,39 @@ def test_decision_trace_is_recorded_for_the_report(client):
     assert state["policy"] == "adaptive-v1"
     activities = [row["activity"] for row in state["steps"]]
     assert "practice" in activities and "plan" in activities
+
+
+def test_observe_can_defer_the_decision_to_a_second_call(tmp_path, monkeypatch):
+    """两段式：先落掌握度（快），再单独要下一步（慢）。
+
+    前端靠这个把 2-3 秒的模型决策挡在结果页之外：点「完成」→ 看到分数 →
+    骨架 → 下一步。HTTP 契约必须能表达中间态，否则前端只能干等。
+    """
+    from src.agent.planner_llm import PlannerDecision
+
+    class _FixedPlanner:
+        available = True
+
+        def choose(self, topics, round_no=1, visited=(), recent=()):
+            return PlannerDecision(topic_id="a", activity="practice", reason="x")
+
+    service = AgentService(LearnerStore(db_path=tmp_path / "defer.db"), planner=_FixedPlanner())
+    monkeypatch.setattr(agent_module, "_agent", service)
+    client = TestClient(app)
+    try:
+        payload = topics_payload()
+        body = client.post("/api/agent/observe", json={
+            "material_id": "m1", "topic_id": "a", "activity": "explain",
+            "outcome": {"read": True}, "topics": payload, "decide": False,
+        }).json()
+        assert body["decision_pending"] is True
+        assert body["agent"]["decided_by"] == "pending"
+        assert body["next"] is None
+        assert body["result"]["after"] >= body["result"]["before"]
+
+        after = client.post("/api/agent/plan", json={"material_id": "m1", "topics": []}).json()
+        assert after["decision_pending"] is False
+        assert after["agent"]["decided_by"] == "llm"
+        assert after["next"] is not None
+    finally:
+        service.close()

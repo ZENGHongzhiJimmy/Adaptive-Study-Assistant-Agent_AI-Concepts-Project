@@ -1,19 +1,16 @@
 """Student-facing HTTP API (FastAPI).
 
-Exposes the existing P1/P4 capabilities (RAG + LLM) as a REST API for the
-原生 JS 学生端 frontend:
+Serves the 原生 JS 学生端 frontend with the platform's RAG + LLM capabilities:
 
     GET  /api/health
     POST /api/materials/upload      multipart: 上传课程资料 (PDF/TXT/MD)
     POST /api/materials/parse       LLM 解析资料 -> 抽取知识点 + 生成讲解与 quiz
-    POST /api/quiz/generate         基于已上传资料生成 quiz（可选独立入口）
     POST /api/qa/ask                RAG + LLM 问答，带引用出处
-    GET  /api/progress              学习进度（SQLite 可选；前端本地状态兜底）
     *    /api/agent/*               自适应 agent（LangGraph + policy.py，见 api/agent.py）
 
 Design:
   * Reuses src.utils.llm_client.LLMClient, src.retrieval.* and
-    src.ingestion.* so behaviour matches the CLI path.
+    src.ingestion.*; the experiment builds its content from the same modules.
   * Citations are attached from retrieval metadata (never written by the LLM).
   * Missing API key -> the affected endpoint returns a clear 503 message
     instead of silently degrading; the health endpoint reports key status.
@@ -26,7 +23,7 @@ from typing import Any
 
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from ..utils.config import get_config
 from .agent import close_agent, get_agent, router as agent_router
@@ -79,16 +76,10 @@ class ParseRequest(BaseModel):
     material_id: str
 
 
-class QuizRequest(BaseModel):
-    material_id: str | None = None
-    topic: str | None = None
-    count: int = Field(default=5, ge=1, le=10)
-
-
 class AskRequest(BaseModel):
     question: str
     # 可选的「当前问答资料」：带上后 RAG 检索会限定在该资料范围内，
-    # 不带时保持全局检索（兼容旧调用与 CLI 路径）。
+    # 不带时保持全局检索（兼容不带资料上下文的直接提问）。
     material_id: str | None = None
     material_name: str | None = None
     # 「知识点讲解」页随堂提问：当前知识点名 + 正在阅读的讲解页内容。
@@ -179,18 +170,6 @@ def reset_materials() -> dict[str, Any]:
     return result
 
 
-@app.post("/api/quiz/generate")
-def generate_quiz(req: QuizRequest) -> dict[str, Any]:
-    svc = get_material_service()
-    try:
-        result = svc.generate_quiz(req.material_id, req.topic, req.count)
-    except svc.MissingKey as exc:
-        raise HTTPException(status_code=503, detail=str(exc))
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-    return result
-
-
 @app.post("/api/qa/ask")
 def ask(req: AskRequest) -> dict[str, Any]:
     question = (req.question or "").strip()
@@ -209,12 +188,3 @@ def ask(req: AskRequest) -> dict[str, Any]:
         raise HTTPException(status_code=503, detail=str(exc))
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=f"问答失败：{type(exc).__name__}: {exc}")
-
-
-@app.get("/api/progress")
-def progress() -> dict[str, Any]:
-    svc = get_material_service()
-    return {
-        "topics": svc.list_topics(),
-        "overall_mastery": svc.overall_mastery(),
-    }

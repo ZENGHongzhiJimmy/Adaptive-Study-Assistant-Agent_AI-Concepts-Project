@@ -2,9 +2,9 @@
    views-student.js — 学生端视图
    页面结构：
    1) 学习主页 —— 平台功能 + 自主学习规划 + 按「课程资料文件」分类的模块入口
-   2) 资料模块（选中某份资料后）—— 该资料的自主学习路径（Pre-test → 推荐活动 → 进度）
+   2) 资料模块（选中某份资料后）—— 该资料的自主学习路径（Pre-test → Agent 决策的下一步 → 进度）
       + 课件解析后的知识点（可展开查看讲解与测验）
-   3) 课程资料 · 问答 —— 自主上传资料，AI 解析生成 quiz + 问答
+   3) 课程资料 · AI 问答 —— 自主上传资料，AI 解析生成 quiz + 问答
    4) 学习进度 —— 各知识点掌握度与学习轨迹，可按资料切换
    学生可做的活动：知识点讲解 / 练习测验 / 知识复习
 
@@ -46,17 +46,79 @@ const Student = (() => {
     App.go(`#/student/activity/${type}/${topicId}`);
   }
 
-  /* 完成一次活动：掌握度与错题本由后端 agent 更新（/api/agent/observe），
-     返回后再渲染结果页。A.result 的结构与旧版一致，结果页无需改动。 */
+  /* ---------- 等待决策时的实时提示 ----------
+     后端 /api/agent/progress 会实时报告「试过几次、换没换模型」。等待期间每
+     600ms 看一眼：只有真的重问 / 换模型时才在等待卡片下补一行说明；没发生
+     就不出现，不在等待文案里预先承诺「会自动换备用模型」。 */
+  let WAIT = null;
+
+  function stopWaitWatch() {
+    if (WAIT) { clearInterval(WAIT.timer); WAIT = null; }
+  }
+
+  function startWaitWatch(key) {
+    stopWaitWatch();
+    if (!key) return;
+    WAIT = { key: key, timer: null };
+    WAIT.timer = setInterval(async () => {
+      if (!WAIT || WAIT.key !== key) return;
+      const r = await API.agentProgress(key);
+      if (!WAIT || WAIT.key !== key) return;
+      if (!r || !r.ok || !r.data || !r.data.busy) return;
+      /* attempts 里已经有失败记录，说明这一发已经被拒、正在问下一次 */
+      const tries = r.data.attempts || [];
+      if (!tries.length) return;
+      const rounds = r.data.rounds || 1;
+      const models = new Set(tries.map(a => a.model).filter(Boolean)).size;
+      const what = rounds > 1 ? `第 ${rounds} 轮重问模型`
+        : (models > 1 ? '换到备用模型重问' : '重问主模型');
+      const el = document.getElementById('agent-wait-hint');
+      if (!el) return;
+      el.textContent = `模型没有一次给出决策，正在${what}（已调用 ${tries.length} 次）…`;
+      el.style.display = '';
+    }, 600);
+  }
+
+  /* 完成一次活动：两段式。
+     ① 提交作答 → 服务端只更新掌握度/错题本（几十毫秒），结果页立刻出现；
+     ② 再单独向 agent 要「下一步」（3-4 秒），期间结果页显示骨架。
+     这样点「完成」后页面马上有反应，不会静止几十秒让人以为卡死。 */
   async function finish(outcome) {
     if (!A || A.pending) return;
-    A.pending = true;
-    const r = await Engine.applyResult(A.topicId, A.type, outcome || {});
-    A.pending = false;
-    A.result = r;
+    const act = A;
+    act.pending = true;
+    App.render();                       // 按钮立刻变「正在记录掌握度…」
+
+    const r = await Engine.applyResult(act.topicId, act.type, outcome || {});
+    if (A !== act) return;              // 等待期间用户退出了这个活动
+    act.pending = false;
+    act.result = r;
     if (r && r.failed) UI.toast('Agent 未连接，本次未计入掌握度', 'warn');
     Engine.setStage('replan');
-    App.render();
+    App.render();                       // 结果页先出来（下一步是骨架）
+
+    if (!r || !r.decisionPending) return;
+    const t = Engine.topic(act.topicId);
+    const rec = t ? Engine.materialOfTopic(t) : null;
+    startWaitWatch(rec ? String(rec.materialId || rec.id) : '');
+    try {
+      await Engine.decideNext(rec);     // 关键路径之外，页面已经可用
+    } finally {
+      stopWaitWatch();
+    }
+    if (A !== act) return;
+    App.render();                       // 决策回来，把骨架换成真正的下一步
+  }
+
+  /* 完成按钮：提交后立刻变成「正在记录掌握度…」并禁用。
+     不这样做的话，页面在 3-4 秒里完全没有反应，用户会以为点坏了。 */
+  function finishBtn(label, onclick) {
+    if (A && A.pending) {
+      return `<button class="btn btn-primary" disabled>
+        <span class="agent-spin"></span> 正在记录掌握度…
+      </button>`;
+    }
+    return `<button class="btn btn-primary" onclick="${onclick}">${label} ${I('check', 15)}</button>`;
   }
 
   /* ================= 通用片段 ================= */
@@ -244,7 +306,7 @@ const Student = (() => {
       </div>` : `
       <div class="mat-placeholder">
         ${m.status === 'error'
-          ? `解析失败：${escapeHtml(m.error || '未知错误')}。可在「课程资料 · 问答」移除后重新上传。`
+          ? `解析失败：${escapeHtml(m.error || '未知错误')}。可在「课程资料 · AI 问答」移除后重新上传。`
           : m.status === 'parsed'
             ? '解析完成，但尚未生成知识点。可移除后重新上传。'
             : '资料尚未完成 AI 解析；解析完成后会自动生成知识点、讲解与测验。'}
@@ -394,10 +456,11 @@ const Student = (() => {
           <div class="focus-why">
             <span class="focus-why-ico">${I('sparkles', 15)}</span>
             <div class="focus-why-main">
-              <div class="focus-why-t">${next.reason}</div>
+              <div class="focus-why-t">${escapeHtml(Engine.prettyReason(next.reason))}</div>
               <div class="focus-why-basis">
                 <span class="focus-why-k">判定依据</span>
                 ${ruleTags(next.rule)}
+                ${next.escalated ? `<span class="rule-tag">${next.round > 1 ? `第 ${next.round} 轮重判` : '重判'}</span>` : ''}
               </div>
             </div>
           </div>
@@ -431,16 +494,37 @@ const Student = (() => {
             <button class="btn btn-ghost" onclick="Student.openTopic('${s.topics[0] ? s.topics[0].id : ''}')">回看知识点</button>
           </div>
         </div>
-      </div>` : (roll && roll.pendingAgent ? `
+      </div>` : (roll && roll.pendingAgent ? (() => {
+        /* 两种情况必须分开说：没接入模型（部署问题）vs 模型本轮没给出可用决策。
+           两者都不会退回规则策略，所以不能说「正在请求」搪塞过去。 */
+        const noKey = roll.agentReason === 'no_api_key';
+        const attempts = roll.agentAttempts || [];
+        const rounds = roll.agentRounds || 1;
+        const models = new Set(attempts.map(a => a.model).filter(Boolean)).size;
+        /* 说清「试了几轮、几个模型」，而不是一句笼统的「已重试」：
+           学生看到的是主模型与备用模型来回换了两轮，就知道这不是系统卡死。 */
+        const extra = attempts.length > 1
+          ? `已在 ${models || 1} 个模型之间循环 ${rounds} 轮（共 ${attempts.length} 次调用）`
+          : '已重试';
+        const retryHint = '掌握度和错题都已保存，点「继续」会重新从主模型开始再排一次。';
+        const title = noKey ? '未接入模型' : 'Agent 本轮没有给出下一步';
+        const detail = noKey
+          ? '下一步由大模型决定，服务端未配置模型密钥（OPENROUTER_API_KEY），因此没有可执行的学习路径。'
+          : (roll.agentReason === 'call_failed'
+            ? `模型调用失败（限流、超时或网络异常），${extra}，仍没有得到结果。等一分钟再点「继续」即可，${retryHint}`
+            : roll.agentReason === 'bad_output'
+              ? `模型这次的回复不是可用的决策（常见原因是被截断或没按 JSON 输出），${extra}，仍没有得到结果。再试一次通常就好了：${retryHint}`
+              : (roll.error ? escapeHtml(roll.error)
+                : '模型没有返回可用的决策，稍后重试；系统不会用固定规则替你选一步。'));
+        return `
       <div class="notice mt-16">
         <span class="notice-ico">${I('sparkles', 17)}</span>
         <div style="flex:1">
-          <div class="notice-t">正在向 Agent 请求下一步</div>
-          <div class="notice-d">${roll.error
-            ? escapeHtml(roll.error)
-            : '规划由后端 LangGraph agent 实时生成，请稍候…'}</div>
+          <div class="notice-t">${title}</div>
+          <div class="notice-d">${detail}</div>
         </div>
-      </div>` : (roll && roll.blocked.length ? `
+      </div>`;
+      })() : (roll && roll.blocked.length ? `
       <div class="notice mt-16">
         <span class="notice-ico">${I('bug', 17)}</span>
         <div style="flex:1">
@@ -519,6 +603,10 @@ const Student = (() => {
   function ruleTags(rule) {
     const txt = String(rule || '').trim();
     if (!txt) return '';
+    // 模型决策的标签单独高亮：学生看得出这一步是 LLM 选的，而不是套规则。
+    if (/^LLM/.test(txt)) {
+      return `<span class="rule-tag rule-tag-goal">${escapeHtml(txt)}</span>`;
+    }
     const cmp = txt.match(/^掌握度\s*(\d+)%\s*[<＜]\s*(\d+)%$/);
     if (cmp) {
       return `<span class="rule-tag">掌握度 <b>${cmp[1]}%</b></span>`
@@ -662,14 +750,14 @@ const Student = (() => {
         <span class="notice-ico">${I('sparkles',17)}</span>
         <div style="flex:1">
           <div class="notice-t">Agent 推荐：${p.activity.name}</div>
-          <div class="notice-d">${p.reason}</div>
+          <div class="notice-d">${escapeHtml(Engine.prettyReason(p.reason))}</div>
         </div>
       </div>` : `
       <div class="notice ${p && p.mastered ? 'notice-ok' : ''}">
         <span class="notice-ico">${I(p && p.mastered ? 'check' : 'bug', 17)}</span>
         <div style="flex:1">
           <div class="notice-t">${p && p.mastered ? '这个知识点已掌握' : '暂无可推荐的学习活动'}</div>
-          <div class="notice-d">${p ? p.reason : ''}</div>
+          <div class="notice-d">${p ? escapeHtml(Engine.prettyReason(p.reason)) : ''}</div>
         </div>
       </div>`}
 
@@ -734,8 +822,11 @@ const Student = (() => {
               「${escapeHtml(rec.name)}」答对 ${correct} / ${TS.length} 题${skipNote}。Agent 已为这 ${TS.length} 个知识点建立初始掌握度。
             </div>
             <div class="row mt-16" style="justify-content:center">
-              <button class="btn btn-primary" onclick="Student.commitPretest()">开始学习 ${I('arrowRight',15)}</button>
+              ${P.committing
+                ? `<button class="btn btn-primary" disabled><span class="agent-spin"></span> Agent 正在建立初始路径…</button>`
+                : `<button class="btn btn-primary" onclick="Student.commitPretest()">开始学习 ${I('arrowRight',15)}</button>`}
             </div>
+            ${P.committing ? `<div id="agent-wait-hint" class="text-xs mt-8" style="display:none;color:var(--text-3)"></div>` : ''}
           </div>
         </div>`;
     }
@@ -833,11 +924,19 @@ const Student = (() => {
   }
 
   async function commitPretest() {
+    if (P && P.committing) return;          // 防重复点击
     const rec = Engine.findMaterial(P && P.recId);
     const answers = (P && P.answers) ? P.answers.slice() : [];
     /* Pre-test 的起点分由 agent 决定（/api/agent/pre-test 内部调用
-       policy.apply_pre_test），返回值已写入本地快照，随后直接读 rollPlan。 */
-    await Engine.applyPreTest(answers);
+       policy.apply_pre_test），返回值已写入本地快照，随后直接读 rollPlan。
+       这一步必须等模型（它要同时排出第一步），所以先把按钮切成等待态。 */
+    if (P) { P.committing = true; App.render(); }
+    startWaitWatch(rec ? String(rec.materialId || rec.id) : '');
+    try {
+      await Engine.applyPreTest(answers);
+    } finally {
+      stopWaitWatch();
+    }
     P = null;
     UI.toast('已建立该资料的初始掌握度，开始学习', 'ok');
     /* 默认就是自主规划学习：Pre-test 一结束，直接进入 Agent 排好的第一步，
@@ -888,6 +987,9 @@ const Student = (() => {
       const mRec = Engine.materialOfTopic(r.topic);
       const rollNow = mRec ? Engine.rollPlan(mRec) : null;
       const step = rollNow && rollNow.next ? rollNow.next : null;
+      /* 决策还在路上（两段式的第二段没回来）：不能显示「暂无后续活动」，
+         那是错误结论。给一个明确的等待态，2-4 秒后自动换成真结果。 */
+      const deciding = !step && rollNow && rollNow.pendingDecision;
       const replan = step ? `
           <div class="card card-pad mt-16" style="background:var(--primary-soft);border-color:#c7d2fe">
             <div class="row" style="gap:10px">
@@ -901,13 +1003,29 @@ const Student = (() => {
             <div class="basis-line">
               <span class="focus-why-k">判定依据</span>
               ${ruleTags(step.rule)}
+              ${step.escalated ? `<span class="rule-tag">${step.round > 1 ? `第 ${step.round} 轮重判` : '重判'}</span>` : ''}
             </div>
+            ${step.escalated ? `<div class="text-xs mt-8" style="color:var(--text-3)">
+              本次决策在重问模型之后才给出（第 ${step.round} 轮）。
+            </div>` : ''}
             <div class="row mt-16">
               <button class="btn btn-primary" onclick="Student.start('${step.activity.id}','${step.topic.id}')">
                 继续：${step.activity.name} ${I('arrowRight',15)}
               </button>
               <button class="btn btn-ghost" onclick="App.go('${back}')">返回资料模块</button>
             </div>
+          </div>` : (deciding ? `
+          <div class="card card-pad mt-16 agent-pending gen-anim">
+            <div class="row" style="gap:10px">
+              <span class="agent-spin"></span>
+              <div style="font-weight:700">Agent 正在安排下一步…</div>
+            </div>
+            <div class="text-sm mt-8" style="color:var(--text-2)">
+              掌握度已经记好了。正在按最新的掌握度和错题本重新规划，通常几秒内完成。
+            </div>
+            <div id="agent-wait-hint" class="text-xs mt-8" style="display:none;color:var(--text-3)"></div>
+            <div class="skeleton-line mt-16"></div>
+            <div class="skeleton-line short mt-8"></div>
           </div>` : `
           <div class="card card-pad mt-16" style="background:var(--success-soft);border-color:#bbf7d0">
             <div class="row" style="gap:10px">
@@ -918,14 +1036,14 @@ const Student = (() => {
             </div>
             <div class="text-sm mt-8" style="color:var(--text-2)">${rollNow && rollNow.done
               ? `所有知识点都达到${Engine.masteryGoal(Engine.materialOfTopic(r.topic))}，且错题已纠正，Agent 不再安排新的活动。`
-              : (r.re ? r.re.reason : '')}</div>
+              : (r.re ? escapeHtml(Engine.prettyReason(r.re.reason)) : '')}</div>
             <div class="row mt-16">
               <button class="btn btn-primary" onclick="App.go('${back}')">
                 回到资料模块 · 查看整体路径 ${I('arrowRight',15)}
               </button>
               <button class="btn btn-ghost" onclick="Student.openTopic('${r.topic.id}')">查看知识点情况</button>
             </div>
-          </div>`;
+          </div>`);
 
       return `
         <div class="runner">
@@ -1015,7 +1133,7 @@ const Student = (() => {
           <button class="btn btn-ghost" ${A.i === 0 ? 'disabled' : ''} onclick="Student.slide(-1)">上一页</button>
           <span class="spacer"></span>
           ${last
-            ? `<button class="btn btn-primary" onclick="Student.finish({})">完成讲解 ${I('check',15)}</button>`
+            ? finishBtn('完成讲解', 'Student.finish({})')
             : `<button class="btn btn-primary" onclick="Student.slide(1)">下一页 ${I('arrowRight',15)}</button>`}
         </div>
       </div>`;
@@ -1180,7 +1298,7 @@ const Student = (() => {
       </div>
       <div class="row mt-16">
         ${A.i === A.qs.length - 1
-          ? `<button class="btn btn-primary" onclick="Student.finishPractice()">完成练习 ${I('check',15)}</button>`
+          ? finishBtn('完成练习', 'Student.finishPractice()')
           : `<button class="btn btn-primary" onclick="Student.nextQ()">下一题 ${I('arrowRight',15)}</button>`}
       </div>` : '';
 
@@ -1246,7 +1364,7 @@ const Student = (() => {
         <button class="btn btn-ghost" ${A.i === 0 ? 'disabled' : ''} onclick="Student.card(-1)">上一张</button>
         <div class="spacer"></div>
         <span class="text-sm" style="color:var(--text-3)">${A.i + 1} / ${A.cards.length}</span>
-        ${last ? `<button class="btn btn-primary" onclick="Student.finish({})">完成复习 ${I('check',15)}</button>`
+        ${last ? finishBtn('完成复习', 'Student.finish({})')
                : `<button class="btn btn-primary" onclick="Student.card(1)">下一张 ${I('arrowRight',15)}</button>`}
       </div>`;
   }
@@ -1794,7 +1912,14 @@ const Student = (() => {
               </button>
             </div>` : `
             <div class="text-sm mt-16" style="color:var(--text-3)">
-              ${roll.done ? '本资料已全部掌握，路径完成。' : '本轮没有可排的活动，先完成 Pre-test。'}
+              ${roll.done ? '本资料已全部掌握，路径完成。'
+                : roll.pendingPretest ? '还有知识点没有做 Pre-test，先完成它 Agent 才能排下一步。'
+                : roll.pendingAgent ? (roll.agentReason === 'no_api_key'
+                    ? 'Agent 未接入模型：服务端没有配置模型密钥，无法决定下一步。'
+                    : roll.agentReason === 'call_failed'
+                      ? `Agent 调用模型失败（限流或超时），已在 ${roll.agentRounds || 1} 轮内重试，暂时没有下一步，稍后重试即可。`
+                      : `Agent 本轮没有给出下一步${(roll.agentRounds || 1) > 1 ? `（主模型与备用模型已循环 ${roll.agentRounds} 轮）` : ''}，点「继续」会重新从主模型排一次。`)
+                : '本轮没有可排的活动。'}
             </div>`}
         </div>
       </div>` : '';
