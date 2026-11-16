@@ -203,3 +203,39 @@ def test_decision_trace_is_recorded_for_the_report(client):
     assert state["policy"] == "adaptive-v1"
     activities = [row["activity"] for row in state["steps"]]
     assert "practice" in activities and "plan" in activities
+
+
+def test_observe_can_defer_the_decision_to_a_second_call(tmp_path, monkeypatch):
+    """两段式：先落掌握度（快），再单独要下一步（慢）。
+
+    前端靠这个把 2-3 秒的模型决策挡在结果页之外：点「完成」→ 看到分数 →
+    骨架 → 下一步。HTTP 契约必须能表达中间态，否则前端只能干等。
+    """
+    from src.agent.planner_llm import PlannerDecision
+
+    class _FixedPlanner:
+        available = True
+
+        def choose(self, topics, round_no=1, visited=(), recent=()):
+            return PlannerDecision(topic_id="a", activity="practice", reason="x")
+
+    service = AgentService(LearnerStore(db_path=tmp_path / "defer.db"), planner=_FixedPlanner())
+    monkeypatch.setattr(agent_module, "_agent", service)
+    client = TestClient(app)
+    try:
+        payload = topics_payload()
+        body = client.post("/api/agent/observe", json={
+            "material_id": "m1", "topic_id": "a", "activity": "explain",
+            "outcome": {"read": True}, "topics": payload, "decide": False,
+        }).json()
+        assert body["decision_pending"] is True
+        assert body["agent"]["decided_by"] == "pending"
+        assert body["next"] is None
+        assert body["result"]["after"] >= body["result"]["before"]
+
+        after = client.post("/api/agent/plan", json={"material_id": "m1", "topics": []}).json()
+        assert after["decision_pending"] is False
+        assert after["agent"]["decided_by"] == "llm"
+        assert after["next"] is not None
+    finally:
+        service.close()

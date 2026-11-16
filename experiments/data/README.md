@@ -1,6 +1,6 @@
 # 实验数据集
 
-这个目录是两步共用的数据：一份课件原件、一份模型抽取的原始结果、一份人工整理后的题库，外加内容准备阶段生成的讲解。主实验只读 `bank.json` 与 `materials.json`，两者都是冻结产物。
+这个目录是三步共用的数据：一份课件原件、一份模型抽取的原始结果、一份人工整理后的题库，外加两步"生成一次、之后冻结"的产物——讲解与 agent 的决策。主实验只读 `bank.json` / `materials.json` / `decisions.json`，三者都是冻结产物。
 
 ```
 experiments/data/
@@ -9,7 +9,8 @@ experiments/data/
 │   └── Experiment(Lecture 1 Intro 2026).pdf   ← 课程发的实验用讲义（68 页，9.7 MB）
 ├── parse_raw.json                  ← 产品 EXTRACT 流程读这份 PDF 的输出（20 个知识点）
 ├── bank.json                       ← 实验实际使用的题库（8 个知识点 × 7 题 = 56 题）
-└── materials.json                  ← 两种讲解条件（LLM-only / RAG）的原文与打分
+├── materials.json                  ← 两种讲解条件（LLM-only / RAG）的原文与打分
+└── decisions.json                  ← agent 的决策日志（607 条"学情 → 下一步"）
 ```
 
 ## 1. 数据来源
@@ -73,6 +74,25 @@ python -m experiments.content --score-only  # 只重算分，不调模型
 
 检索优先走产品自己的 Chroma 索引；干净 clone 里通常没有索引，脚本会回退到用本目录 PDF 现建的 TF-IDF 索引，切块参数与产品一致（800 字符、100 重叠）。实际使用的后端写在 `retrieval_backend` 字段里，本次为 `tfidf-chunks`。
 
+## 3.5 agent 的决策日志（decisions.json）
+
+`adaptive` 这一路不写死任何规则：每一步由 `src/agent/planner_llm.py` 让模型在合法候选里选。这个调用很贵（约 1.5k prompt token、2–4 s/步）也很随机，所以只做一次，把结果按"学情哈希 → 决策"冻结下来：
+
+```bash
+python -m experiments.collect_decisions            # 补齐缺失的决策（可中断、可续跑）
+python -m experiments.collect_decisions --dry-run  # 只回放，报告覆盖情况，不调模型
+```
+
+| 项 | 值 |
+| ---- | ---- |
+| 条目 | 607 条（5 画像 × 4 种子 × 32 步，去重后） |
+| 主模型 | `deepseek/deepseek-v4.1-flash`，510 条 |
+| 升级到兜底模型 | 97 条（16.0%，首答不可用时换 `z-ai/glm-5.3-flash`） |
+| 建模失败 | 0 |
+| 每条内容 | `topic_id`、`activity`、一句理由、模型名、是否升级 |
+
+键是"模型看到的全部信息"的哈希（知识点状态、轮次、本轮已服务、最近 4 步、模型名），所以换成别的模型或别的提示词，旧条目自动失效而不是被静默复用。`run_experiment` 以只读方式打开它：**某个状态查不到就报错**，绝不退回 `policy.decide()`——否则实验测的就不是 agent。
+
 ## 4. 复现 / 换数据
 
 ```bash
@@ -88,8 +108,11 @@ python -m experiments.bank --check
 # 生成/评分两种讲解条件（需要 API key，只跑一次）
 python -m experiments.content
 
-# 跑实验（离线，不调用 LLM，读的是已冻结的 bank.json 与 materials.json）
-python -m experiments.run_experiment --seeds 8 --budget 32
+# 让 agent 为每条学情做一次决策（调模型，只跑一次；已有条目免费复用）
+python -m experiments.collect_decisions --seeds 4 --budget 32
+
+# 跑实验（离线，不调用 LLM，读的是已冻结的 bank.json / materials.json / decisions.json）
+python -m experiments.run_experiment --seeds 4 --budget 32
 
 # 出图
 python -m experiments.plots

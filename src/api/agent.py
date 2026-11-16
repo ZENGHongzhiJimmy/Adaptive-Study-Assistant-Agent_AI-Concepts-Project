@@ -66,6 +66,10 @@ class ObserveRequest(BaseModel):
     # to build the error book.  Only sent for `practice`.
     quiz: list[dict[str, Any]] = Field(default_factory=list)
     topics: list[dict[str, Any]] = Field(default_factory=list)
+    # False -> update the state and return immediately (``decision_pending``),
+    # then the client calls /plan for the next step.  Keeps the result page from
+    # blocking on the model.  Defaults to True so old callers keep one round-trip.
+    decide: bool = True
 
 
 class PreTestRequest(BaseModel):
@@ -111,6 +115,7 @@ def observe(req: ObserveRequest) -> dict[str, Any]:
             req.outcome,
             req.quiz,
             req.topics,
+            req.decide,
         )
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=f"状态更新失败：{type(exc).__name__}: {exc}")

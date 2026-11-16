@@ -1,0 +1,6732 @@
+[
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "struggling",
+  "seed": 1,
+  "pre": 0.2312,
+  "post": 0.28,
+  "learning_gain": 0.0488,
+  "normalized_gain": 0.0635,
+  "mastered_topics": 0,
+  "mastered_rate": 0.0,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.0,
+  "estimate_mae": 0.0772,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 15,
+   "practice": 17,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 20,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 20,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 22,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 18,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 22,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 19,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 51,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 32,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 17,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 17,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 27,
+    "mastery_after": 29,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 24,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 17,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 17,
+    "mastery_after": 19,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 26,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 17,
+    "mastery_after": 19,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 27,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 17,
+    "mastery_after": 19,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 28,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 51,
+    "mastery_after": 41,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 32,
+    "mastery_after": 34,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 30,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 22,
+    "mastery_after": 24,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 22,
+    "mastery_after": 12,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 29,
+    "mastery_after": 19,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "struggling",
+  "seed": 2,
+  "pre": 0.2319,
+  "post": 0.2943,
+  "learning_gain": 0.0624,
+  "normalized_gain": 0.0812,
+  "mastered_topics": 0,
+  "mastered_rate": 0.0,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.0,
+  "estimate_mae": 0.1006,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 16,
+   "practice": 16,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "explain",
+   "practice",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 20,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 20,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 22,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 18,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 22,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 19,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 47,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 27,
+    "mastery_after": 29,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 21,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 27,
+    "mastery_after": 29,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 22,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 17,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 35,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 35,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 17,
+    "mastery_after": 19,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 26,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 35,
+    "mastery_after": 37,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 27,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 35,
+    "mastery_after": 37,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 28,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 47,
+    "mastery_after": 49,
+    "wrong": 2,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 29,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 22,
+    "mastery_after": 39,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 22,
+    "mastery_after": 39,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 29,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 29,
+    "mastery_after": 54,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "struggling",
+  "seed": 3,
+  "pre": 0.2326,
+  "post": 0.2891,
+  "learning_gain": 0.0565,
+  "normalized_gain": 0.0737,
+  "mastered_topics": 0,
+  "mastered_rate": 0.0,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.0,
+  "estimate_mae": 0.0608,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 15,
+   "practice": 17,
+   "review": 0
+  },
+  "activities": [
+   "practice",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "explain",
+   "explain",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 35,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 2,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 35,
+    "mastery_after": 45,
+    "wrong": 4,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 10,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 20,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 22,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 18,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 32,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 19,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 35,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 48,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 26,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 17,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 26,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 17,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 17,
+    "mastery_after": 19,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 26,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 17,
+    "mastery_after": 19,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 27,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 26,
+    "mastery_after": 28,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 28,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 26,
+    "mastery_after": 28,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 29,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 48,
+    "mastery_after": 49,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 35,
+    "mastery_after": 37,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 31,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 32,
+    "mastery_after": 34,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 32,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 22,
+    "mastery_after": 24,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "struggling",
+  "seed": 4,
+  "pre": 0.2311,
+  "post": 0.3087,
+  "learning_gain": 0.0776,
+  "normalized_gain": 0.101,
+  "mastered_topics": 0,
+  "mastered_rate": 0.0,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.0,
+  "estimate_mae": 0.0966,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 12,
+   "practice": 20,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 20,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 20,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 22,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 18,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 22,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 19,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 51,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 62,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 35,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 26,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 41,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 41,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 26,
+    "mastery_after": 28,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 26,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 35,
+    "mastery_after": 37,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 27,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 62,
+    "mastery_after": 55,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 28,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 22,
+    "mastery_after": 39,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 22,
+    "mastery_after": 24,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 41,
+    "mastery_after": 46,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 51,
+    "mastery_after": 41,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 41,
+    "mastery_after": 46,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "weak",
+  "seed": 1,
+  "pre": 0.3205,
+  "post": 0.4682,
+  "learning_gain": 0.1477,
+  "normalized_gain": 0.2174,
+  "mastered_topics": 0,
+  "mastered_rate": 0.0,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.0,
+  "estimate_mae": 0.1085,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 11,
+   "practice": 21,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 20,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 22,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 18,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 57,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 19,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 27,
+    "mastery_after": 29,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 21,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 32,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 47,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 47,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 47,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 57,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 26,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 32,
+    "mastery_after": 34,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 27,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 22,
+    "mastery_after": 12,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 28,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 29,
+    "mastery_after": 19,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 57,
+    "mastery_after": 68,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 47,
+    "mastery_after": 49,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 47,
+    "mastery_after": 49,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 47,
+    "mastery_after": 49,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "weak",
+  "seed": 2,
+  "pre": 0.3229,
+  "post": 0.4628,
+  "learning_gain": 0.1399,
+  "normalized_gain": 0.2066,
+  "mastered_topics": 0,
+  "mastered_rate": 0.0,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.0,
+  "estimate_mae": 0.0799,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 12,
+   "practice": 20,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 20,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 22,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 18,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 52,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 19,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 27,
+    "mastery_after": 29,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 20,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 35,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 32,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 48,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 47,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 67,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 35,
+    "mastery_after": 37,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 26,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 57,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 27,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 32,
+    "mastery_after": 34,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 28,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 66,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 47,
+    "mastery_after": 37,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 22,
+    "mastery_after": 39,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 29,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 48,
+    "mastery_after": 64,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "weak",
+  "seed": 3,
+  "pre": 0.3252,
+  "post": 0.4691,
+  "learning_gain": 0.1438,
+  "normalized_gain": 0.2131,
+  "mastered_topics": 0,
+  "mastered_rate": 0.0,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.0,
+  "estimate_mae": 0.0925,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 13,
+   "practice": 19,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 20,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 18,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 22,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 19,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 27,
+    "mastery_after": 29,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 20,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 51,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 51,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 52,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 27,
+    "mastery_after": 29,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 24,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 35,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 35,
+    "mastery_after": 37,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 26,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 22,
+    "mastery_after": 22,
+    "wrong": 4,
+    "note": "再次重学讲解，不再计分"
+   },
+   {
+    "step": 27,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 42,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 28,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 51,
+    "mastery_after": 50,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 29,
+    "mastery_after": 54,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 29,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 51,
+    "mastery_after": 76,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 35,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "weak",
+  "seed": 4,
+  "pre": 0.3203,
+  "post": 0.4632,
+  "learning_gain": 0.1429,
+  "normalized_gain": 0.2102,
+  "mastered_topics": 0,
+  "mastered_rate": 0.0,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.0,
+  "estimate_mae": 0.0768,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 13,
+   "practice": 19,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 20,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 22,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 18,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 27,
+    "mastery_after": 29,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 19,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 27,
+    "mastery_after": 29,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 20,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 48,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 42,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 66,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 22,
+    "mastery_after": 39,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 26,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 29,
+    "mastery_after": 29,
+    "wrong": 3,
+    "note": "再次重学讲解，不再计分"
+   },
+   {
+    "step": 27,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 42,
+    "mastery_after": 44,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 28,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 29,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 57,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 66,
+    "mastery_after": 56,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 48,
+    "mastery_after": 64,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 42,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "medium",
+  "seed": 1,
+  "pre": 0.5634,
+  "post": 0.7451,
+  "learning_gain": 0.1817,
+  "normalized_gain": 0.4162,
+  "mastered_topics": 3,
+  "mastered_rate": 0.375,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.0938,
+  "estimate_mae": 0.0791,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 11,
+   "practice": 21,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 30,
+    "mastery_after": 32,
+    "wrong": 0,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 10,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 47,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 18,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 32,
+    "mastery_after": 57,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 19,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 66,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 66,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 47,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 24,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 47,
+    "mastery_after": 64,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 57,
+    "mastery_after": 82,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 26,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 72,
+    "mastery_after": 62,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 27,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 66,
+    "mastery_after": 56,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 28,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 66,
+    "mastery_after": 56,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 47,
+    "mastery_after": 72,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 56,
+    "mastery_after": 81,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 56,
+    "mastery_after": 81,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 62,
+    "mastery_after": 55,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "medium",
+  "seed": 2,
+  "pre": 0.5681,
+  "post": 0.7421,
+  "learning_gain": 0.174,
+  "normalized_gain": 0.4028,
+  "mastered_topics": 3,
+  "mastered_rate": 0.375,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.0938,
+  "estimate_mae": 0.1295,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 9,
+   "practice": 23,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 87,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 18,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 52,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 19,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 47,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 62,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 77,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 42,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 77,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 42,
+    "mastery_after": 44,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 26,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 77,
+    "mastery_after": 91,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 27,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 77,
+    "mastery_after": 67,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 28,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 47,
+    "mastery_after": 64,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 66,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 66,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 62,
+    "mastery_after": 55,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 44,
+    "mastery_after": 48,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "medium",
+  "seed": 3,
+  "pre": 0.5728,
+  "post": 0.7383,
+  "learning_gain": 0.1655,
+  "normalized_gain": 0.3874,
+  "mastered_topics": 2,
+  "mastered_rate": 0.25,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.0625,
+  "estimate_mae": 0.1305,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 11,
+   "practice": 21,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 63,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 18,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 47,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 19,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 47,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 20,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 67,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 42,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 42,
+    "mastery_after": 44,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 26,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 72,
+    "mastery_after": 62,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 27,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 72,
+    "mastery_after": 89,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 28,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 47,
+    "mastery_after": 64,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 47,
+    "mastery_after": 72,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 63,
+    "mastery_after": 55,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 87,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "medium",
+  "seed": 4,
+  "pre": 0.5642,
+  "post": 0.7516,
+  "learning_gain": 0.1874,
+  "normalized_gain": 0.4299,
+  "mastered_topics": 4,
+  "mastered_rate": 0.5,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.125,
+  "estimate_mae": 0.0895,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 8,
+   "practice": 23,
+   "review": 1
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "review",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 27,
+    "mastery_after": 52,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 18,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 77,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 19,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 57,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 57,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t05_data_driven",
+    "activity": "review",
+    "mastery_before": 57,
+    "mastery_after": 57,
+    "wrong": 0,
+    "note": "已重新讲解 2 道错题，回到练习验证"
+   },
+   {
+    "step": 26,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 66,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 27,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 77,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 28,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 77,
+    "mastery_after": 67,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 57,
+    "mastery_after": 82,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 72,
+    "mastery_after": 62,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 72,
+    "mastery_after": 89,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "strong",
+  "seed": 1,
+  "pre": 0.8035,
+  "post": 0.8626,
+  "learning_gain": 0.0591,
+  "normalized_gain": 0.3008,
+  "mastered_topics": 8,
+  "mastered_rate": 1.0,
+  "steps": 29,
+  "activities_to_target": 1,
+  "reached_all": true,
+  "efficiency": 0.2759,
+  "estimate_mae": 0.0431,
+  "stop_reason": "finished",
+  "mix": {
+   "explain": 8,
+   "practice": 18,
+   "review": 3
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "review",
+   "practice",
+   "review",
+   "practice",
+   "review",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 77,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 18,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 19,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 57,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 77,
+    "mastery_after": 76,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 57,
+    "mastery_after": 82,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 72,
+    "mastery_after": 89,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 76,
+    "mastery_after": 75,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t03_deep_learning",
+    "activity": "review",
+    "mastery_before": 75,
+    "mastery_after": 75,
+    "wrong": 0,
+    "note": "已重新讲解 1 道错题，回到练习验证"
+   },
+   {
+    "step": 25,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 75,
+    "mastery_after": 75,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 26,
+    "topic_id": "t03_deep_learning",
+    "activity": "review",
+    "mastery_before": 75,
+    "mastery_after": 75,
+    "wrong": 0,
+    "note": "已重新讲解 1 道错题，回到练习验证"
+   },
+   {
+    "step": 27,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 75,
+    "mastery_after": 75,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 28,
+    "topic_id": "t03_deep_learning",
+    "activity": "review",
+    "mastery_before": 75,
+    "mastery_after": 75,
+    "wrong": 0,
+    "note": "已重新讲解 1 道错题，回到练习验证"
+   },
+   {
+    "step": 29,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 75,
+    "mastery_after": 90,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "strong",
+  "seed": 2,
+  "pre": 0.8062,
+  "post": 0.8678,
+  "learning_gain": 0.0616,
+  "normalized_gain": 0.3177,
+  "mastered_topics": 8,
+  "mastered_rate": 1.0,
+  "steps": 26,
+  "activities_to_target": 1,
+  "reached_all": true,
+  "efficiency": 0.3077,
+  "estimate_mae": 0.028,
+  "stop_reason": "finished",
+  "mix": {
+   "explain": 8,
+   "practice": 18,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 77,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 18,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 19,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 87,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 87,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 72,
+    "mastery_after": 89,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 72,
+    "mastery_after": 89,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 26,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 77,
+    "mastery_after": 91,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "strong",
+  "seed": 3,
+  "pre": 0.809,
+  "post": 0.8721,
+  "learning_gain": 0.0631,
+  "normalized_gain": 0.3303,
+  "mastered_topics": 8,
+  "mastered_rate": 1.0,
+  "steps": 32,
+  "activities_to_target": 1,
+  "reached_all": true,
+  "efficiency": 0.25,
+  "estimate_mae": 0.0504,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 9,
+   "practice": 22,
+   "review": 1
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "review"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 30,
+    "mastery_after": 32,
+    "wrong": 0,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 10,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 32,
+    "mastery_after": 28,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 18,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 66,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 19,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 87,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 57,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 28,
+    "mastery_after": 53,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 57,
+    "mastery_after": 53,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 66,
+    "mastery_after": 86,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 26,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 72,
+    "mastery_after": 89,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 27,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 72,
+    "mastery_after": 89,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 28,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 53,
+    "mastery_after": 66,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 53,
+    "mastery_after": 66,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 66,
+    "mastery_after": 86,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 66,
+    "mastery_after": 71,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "review",
+    "mastery_before": 71,
+    "mastery_after": 71,
+    "wrong": 0,
+    "note": "已重新讲解 1 道错题，回到练习验证"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "strong",
+  "seed": 4,
+  "pre": 0.8044,
+  "post": 0.8559,
+  "learning_gain": 0.0515,
+  "normalized_gain": 0.2631,
+  "mastered_topics": 8,
+  "mastered_rate": 1.0,
+  "steps": 18,
+  "activities_to_target": 1,
+  "reached_all": true,
+  "efficiency": 0.4444,
+  "estimate_mae": 0.0514,
+  "stop_reason": "finished",
+  "mix": {
+   "explain": 7,
+   "practice": 11,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "practice",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 70,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 3,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 70,
+    "mastery_after": 88,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 18,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 87,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "mixed",
+  "seed": 1,
+  "pre": 0.5456,
+  "post": 0.6921,
+  "learning_gain": 0.1466,
+  "normalized_gain": 0.3225,
+  "mastered_topics": 5,
+  "mastered_rate": 0.625,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.1562,
+  "estimate_mae": 0.0657,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 13,
+   "practice": 19,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 20,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 22,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 18,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 42,
+    "mastery_after": 44,
+    "wrong": 2,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 19,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 87,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 42,
+    "mastery_after": 44,
+    "wrong": 2,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 22,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 72,
+    "mastery_after": 74,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 47,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 25,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 22,
+    "mastery_after": 24,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 26,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 44,
+    "mastery_after": 69,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 27,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 44,
+    "mastery_after": 34,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 28,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 69,
+    "mastery_after": 59,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 74,
+    "mastery_after": 64,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 24,
+    "mastery_after": 24,
+    "wrong": 3,
+    "note": "再次重学讲解，不再计分"
+   },
+   {
+    "step": 31,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 47,
+    "mastery_after": 72,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 34,
+    "mastery_after": 44,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "mixed",
+  "seed": 2,
+  "pre": 0.5757,
+  "post": 0.7114,
+  "learning_gain": 0.1357,
+  "normalized_gain": 0.3198,
+  "mastered_topics": 5,
+  "mastered_rate": 0.625,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.1562,
+  "estimate_mae": 0.1039,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 11,
+   "practice": 21,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 27,
+    "mastery_after": 29,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 18,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 87,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 19,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 57,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 62,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 62,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 67,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 32,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 32,
+    "mastery_after": 34,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 26,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 29,
+    "mastery_after": 54,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 27,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 72,
+    "mastery_after": 89,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 28,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 57,
+    "mastery_after": 53,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 62,
+    "mastery_after": 70,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 62,
+    "mastery_after": 70,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 34,
+    "mastery_after": 34,
+    "wrong": 3,
+    "note": "再次重学讲解，不再计分"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "mixed",
+  "seed": 3,
+  "pre": 0.6052,
+  "post": 0.7416,
+  "learning_gain": 0.1363,
+  "normalized_gain": 0.3454,
+  "mastered_topics": 4,
+  "mastered_rate": 0.5,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.125,
+  "estimate_mae": 0.0655,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 10,
+   "practice": 22,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 52,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 47,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 18,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 45,
+    "mastery_after": 35,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 19,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 62,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 20,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 52,
+    "mastery_after": 66,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 21,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 87,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 72,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 57,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 35,
+    "mastery_after": 37,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 26,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 47,
+    "mastery_after": 64,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 27,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 72,
+    "mastery_after": 74,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 28,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 57,
+    "mastery_after": 82,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 62,
+    "mastery_after": 55,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 66,
+    "mastery_after": 71,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 87,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 37,
+    "mastery_after": 60,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   }
+  ]
+ },
+ {
+  "method": "adaptive",
+  "content": "rag",
+  "planner": "agent",
+  "profile": "mixed",
+  "seed": 4,
+  "pre": 0.5535,
+  "post": 0.6961,
+  "learning_gain": 0.1426,
+  "normalized_gain": 0.3194,
+  "mastered_topics": 4,
+  "mastered_rate": 0.5,
+  "steps": 32,
+  "activities_to_target": 32,
+  "reached_all": false,
+  "efficiency": 0.125,
+  "estimate_mae": 0.1016,
+  "stop_reason": "budget",
+  "mix": {
+   "explain": 11,
+   "practice": 21,
+   "review": 0
+  },
+  "activities": [
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "explain",
+   "practice",
+   "explain",
+   "explain",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice",
+   "practice"
+  ],
+  "trace": [
+   {
+    "step": 1,
+    "topic_id": "t01_what_is_ai",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 2,
+    "topic_id": "t02_ml_definition",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 3,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 20,
+    "mastery_after": 30,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 4,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 5,
+    "topic_id": "t04_big_data_4v",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 6,
+    "topic_id": "t05_data_driven",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 7,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 8,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "完成首次讲解学习"
+   },
+   {
+    "step": 9,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 55,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 10,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 11,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 30,
+    "mastery_after": 27,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 12,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 4,
+    "note": "答对 0 / 4 题"
+   },
+   {
+    "step": 13,
+    "topic_id": "t04_big_data_4v",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 14,
+    "topic_id": "t05_data_driven",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 15,
+    "topic_id": "t08_ml_taxonomy",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 80,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 16,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 45,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 17,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "explain",
+    "mastery_before": 27,
+    "mastery_after": 29,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 18,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 55,
+    "mastery_after": 67,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 19,
+    "topic_id": "t03_deep_learning",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 47,
+    "wrong": 4,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 20,
+    "topic_id": "t06_ai_tasks",
+    "activity": "explain",
+    "mastery_before": 45,
+    "mastery_after": 47,
+    "wrong": 3,
+    "note": "重看讲解，只做少量巩固"
+   },
+   {
+    "step": 21,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 67,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 22,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 29,
+    "mastery_after": 42,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 23,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 47,
+    "mastery_after": 37,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 24,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 47,
+    "mastery_after": 64,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 25,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 57,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 26,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 67,
+    "mastery_after": 57,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 27,
+    "topic_id": "t03_deep_learning",
+    "activity": "practice",
+    "mastery_before": 37,
+    "mastery_after": 45,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 28,
+    "topic_id": "t07_regression_vs_classification",
+    "activity": "practice",
+    "mastery_before": 42,
+    "mastery_after": 32,
+    "wrong": 3,
+    "note": "答对 1 / 4 题"
+   },
+   {
+    "step": 29,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 64,
+    "mastery_after": 71,
+    "wrong": 1,
+    "note": "答对 3 / 4 题"
+   },
+   {
+    "step": 30,
+    "topic_id": "t01_what_is_ai",
+    "activity": "practice",
+    "mastery_before": 57,
+    "mastery_after": 53,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   },
+   {
+    "step": 31,
+    "topic_id": "t02_ml_definition",
+    "activity": "practice",
+    "mastery_before": 57,
+    "mastery_after": 82,
+    "wrong": 0,
+    "note": "答对 4 / 4 题"
+   },
+   {
+    "step": 32,
+    "topic_id": "t06_ai_tasks",
+    "activity": "practice",
+    "mastery_before": 71,
+    "mastery_after": 61,
+    "wrong": 2,
+    "note": "答对 2 / 4 题"
+   }
+  ]
+ }
+]

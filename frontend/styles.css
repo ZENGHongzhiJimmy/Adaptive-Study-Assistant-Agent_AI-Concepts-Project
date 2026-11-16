@@ -1088,3 +1088,46 @@ body.modal-open { overflow: hidden; }
 /* 进度页资料筛选 */
 .chip-active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .chip-active:hover { background: var(--primary-600); }
+
+/* ---------------- Agent 决策等待态 ----------------
+   决策要 2-4 秒，页面必须一直在动：按钮转圈、结果页给骨架、
+   顶部给一条细进度条。没有这些，用户会以为点坏了而重复点击。 */
+
+.agent-spin {
+  width: 15px; height: 15px; border-radius: 50%;
+  border: 2px solid var(--border-2); border-top-color: var(--primary);
+  animation: agentSpin .75s linear infinite;
+  display: inline-block; flex: 0 0 auto;
+}
+@keyframes agentSpin { to { transform: rotate(360deg); } }
+
+.btn[disabled] { opacity: .72; cursor: progress; }
+.btn[disabled] .agent-spin { border-top-color: #fff; border-color: rgba(255,255,255,.45); }
+
+.agent-pending { border-style: dashed; border-color: var(--border-2); }
+.skeleton-line {
+  height: 10px; border-radius: 6px; background: var(--surface-3);
+  animation: agentPulse 1.4s ease-in-out infinite;
+}
+.skeleton-line.short { width: 52%; }
+@keyframes agentPulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+
+/* 顶部细进度条：进入页面后向 agent 要下一步的那几秒 */
+.agent-bar {
+  height: 3px; border-radius: 999px; overflow: hidden;
+  background: var(--surface-3); margin-bottom: 14px;
+}
+.agent-bar::after {
+  content: ''; display: block; height: 100%; width: 38%;
+  background: var(--primary); border-radius: 999px;
+  animation: agentBar 1.25s ease-in-out infinite;
+}
+@keyframes agentBar {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
+.agent-wait {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12.5px; color: var(--text-2);
+}

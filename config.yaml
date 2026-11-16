@@ -15,11 +15,18 @@ platform:
 
 llm:
   # Primary model (OpenRouter id). Change this to switch models.
-  model: baidu/ernie-5.5-flash-preview:free
+  #
+  # PAID model on purpose. The free tier was the main source of two problems:
+  # 429 throttling (50 req/day) and replies that came back truncated or as
+  # prose instead of JSON. Cost is ~$0.0002 per decision at 2.5k prompt tokens.
+  model: deepseek/deepseek-v4.1-flash
 
-  # Fallback models tried in order when the primary model is unavailable.
+  # Fallback models tried in order when the primary model is unavailable
+  # (retired id / 429 / network). A DIFFERENT vendor on purpose: if DeepSeek's
+  # endpoint is down, another DeepSeek id would be down with it.
+  # Measured on the same 22-topic state: 3.6-4.5 s, JSON-clean.
   fallback_models:
-    - deepseek/deepseek-v4.1-flash
+    - z-ai/glm-5.3-flash
 
   # Key / endpoint env var names (values live in .env, never here).
   api_key_env: OPENROUTER_API_KEY

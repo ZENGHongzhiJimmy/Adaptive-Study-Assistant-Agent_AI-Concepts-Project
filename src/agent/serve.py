@@ -69,6 +69,10 @@ class AgentGraphState(TypedDict, total=False):
     # invoke*: ``learner_step`` is written after the graph returns, and without
     # this the model would be blind to its own last move and repeat it.
     last_activity: dict[str, Any] | None
+    # Two-phase observe: ``False`` means "update the state now, decide later in
+    # a separate call".  The browser uses it so the mastery change paints
+    # immediately instead of waiting 3-4 s for the model.
+    decide: bool
     plan: dict[str, Any]
 
 
@@ -164,6 +168,14 @@ class AgentService:
             if planner is None:
                 return {"plan": plan_material(state["topics"], round_no, visited)}
 
+            if not state.get("decide", True):
+                # The caller split Observe from Re-plan to keep the UI
+                # responsive: hand back the facts with an explicit "decision not
+                # computed yet" marker.  Not a failure, so no agent_unavailable.
+                plan = plan_facts(state["topics"], round_no, visited)
+                plan["decision_pending"] = True
+                return {"plan": plan}
+
             plan = plan_facts(state["topics"], round_no, visited)
             recent = list(store.recent_steps(state["material_id"], limit=5))
             just_now = state.get("last_activity")
@@ -242,7 +254,11 @@ class AgentService:
     def _envelope(self, plan: dict[str, Any], topics: Sequence[TopicState]) -> dict[str, Any]:
         decision = plan.get("decision") or {}
         model_mode = self.planner is not None
-        decided_by = str(decision.get("source") or ("unavailable" if model_mode else "rule"))
+        if plan.get("decision_pending"):
+            # asked for the state only; the next step arrives in a second call
+            decided_by = "pending"
+        else:
+            decided_by = str(decision.get("source") or ("unavailable" if model_mode else "rule"))
         return {
             "policy": self.policy,
             "agent": {
@@ -266,6 +282,10 @@ class AgentService:
             # tell "no API key" apart from "the model is thinking".
             "agent_unavailable": bool(plan.get("agent_unavailable")),
             "unavailable_reason": plan.get("unavailable_reason") or "",
+            # True only for the split observe call: mastery is updated, the next
+            # step is still being decided.  The page renders the numbers at once
+            # and fills the "next step" card in when the second call lands.
+            "decision_pending": bool(plan.get("decision_pending")),
             # Thresholds travel with every decision so the UI never needs its
             # own copy.  Before this, engine.js hardcoded 80 / 55 and would
             # silently disagree with the server the moment the policy changed.
@@ -314,8 +334,16 @@ class AgentService:
         outcome: dict[str, Any] | None = None,
         quiz: Sequence[dict[str, Any]] | None = None,
         topics_payload: Sequence[dict[str, Any]] | None = None,
+        decide: bool = True,
     ) -> dict[str, Any]:
-        """Absorb one finished activity, update state, then re-plan."""
+        """Absorb one finished activity, update state, then re-plan.
+
+        ``decide=False`` stops after the state update: the payload carries the
+        mastery delta and ``decision_pending = True``, and the client asks
+        ``plan()`` right after.  Two round-trips instead of one, but the first
+        one costs ~10 ms, so the student sees "58% → 66%" instantly instead of
+        staring at a frozen button for 3-4 s.
+        """
         started = time.perf_counter()
         topics = self._hydrate(material_id, topics_payload)
         round_no, visited = self.store.load_roll(material_id)
@@ -331,6 +359,7 @@ class AgentService:
                     "outcome": outcome or {},
                     "quiz": list(quiz or []),
                 },
+                "decide": decide,
             }
         )
         plan = final.get("plan") or self._safety_plan(topics, round_no, visited)

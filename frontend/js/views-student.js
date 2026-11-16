@@ -46,17 +46,41 @@ const Student = (() => {
     App.go(`#/student/activity/${type}/${topicId}`);
   }
 
-  /* 完成一次活动：掌握度与错题本由后端 agent 更新（/api/agent/observe），
-     返回后再渲染结果页。A.result 的结构与旧版一致，结果页无需改动。 */
+  /* 完成一次活动：两段式。
+     ① 提交作答 → 服务端只更新掌握度/错题本（几十毫秒），结果页立刻出现；
+     ② 再单独向 agent 要「下一步」（3-4 秒），期间结果页显示骨架。
+     这样点「完成」后页面马上有反应，不会静止几十秒让人以为卡死。 */
   async function finish(outcome) {
     if (!A || A.pending) return;
-    A.pending = true;
-    const r = await Engine.applyResult(A.topicId, A.type, outcome || {});
-    A.pending = false;
-    A.result = r;
+    const act = A;
+    act.pending = true;
+    App.render();                       // 按钮立刻变「正在记录掌握度…」
+
+    const r = await Engine.applyResult(act.topicId, act.type, outcome || {});
+    if (A !== act) return;              // 等待期间用户退出了这个活动
+    act.pending = false;
+    act.result = r;
     if (r && r.failed) UI.toast('Agent 未连接，本次未计入掌握度', 'warn');
     Engine.setStage('replan');
-    App.render();
+    App.render();                       // 结果页先出来（下一步是骨架）
+
+    if (!r || !r.decisionPending) return;
+    const t = Engine.topic(act.topicId);
+    const rec = t ? Engine.materialOfTopic(t) : null;
+    await Engine.decideNext(rec);       // 关键路径之外，页面已经可用
+    if (A !== act) return;
+    App.render();                       // 决策回来，把骨架换成真正的下一步
+  }
+
+  /* 完成按钮：提交后立刻变成「正在记录掌握度…」并禁用。
+     不这样做的话，页面在 3-4 秒里完全没有反应，用户会以为点坏了。 */
+  function finishBtn(label, onclick) {
+    if (A && A.pending) {
+      return `<button class="btn btn-primary" disabled>
+        <span class="agent-spin"></span> 正在记录掌握度…
+      </button>`;
+    }
+    return `<button class="btn btn-primary" onclick="${onclick}">${label} ${I('check', 15)}</button>`;
   }
 
   /* ================= 通用片段 ================= */
@@ -753,7 +777,9 @@ const Student = (() => {
               「${escapeHtml(rec.name)}」答对 ${correct} / ${TS.length} 题${skipNote}。Agent 已为这 ${TS.length} 个知识点建立初始掌握度。
             </div>
             <div class="row mt-16" style="justify-content:center">
-              <button class="btn btn-primary" onclick="Student.commitPretest()">开始学习 ${I('arrowRight',15)}</button>
+              ${P.committing
+                ? `<button class="btn btn-primary" disabled><span class="agent-spin"></span> Agent 正在建立初始路径…</button>`
+                : `<button class="btn btn-primary" onclick="Student.commitPretest()">开始学习 ${I('arrowRight',15)}</button>`}
             </div>
           </div>
         </div>`;
@@ -852,10 +878,13 @@ const Student = (() => {
   }
 
   async function commitPretest() {
+    if (P && P.committing) return;          // 防重复点击
     const rec = Engine.findMaterial(P && P.recId);
     const answers = (P && P.answers) ? P.answers.slice() : [];
     /* Pre-test 的起点分由 agent 决定（/api/agent/pre-test 内部调用
-       policy.apply_pre_test），返回值已写入本地快照，随后直接读 rollPlan。 */
+       policy.apply_pre_test），返回值已写入本地快照，随后直接读 rollPlan。
+       这一步必须等模型（它要同时排出第一步），所以先把按钮切成等待态。 */
+    if (P) { P.committing = true; App.render(); }
     await Engine.applyPreTest(answers);
     P = null;
     UI.toast('已建立该资料的初始掌握度，开始学习', 'ok');
@@ -907,6 +936,9 @@ const Student = (() => {
       const mRec = Engine.materialOfTopic(r.topic);
       const rollNow = mRec ? Engine.rollPlan(mRec) : null;
       const step = rollNow && rollNow.next ? rollNow.next : null;
+      /* 决策还在路上（两段式的第二段没回来）：不能显示「暂无后续活动」，
+         那是错误结论。给一个明确的等待态，2-4 秒后自动换成真结果。 */
+      const deciding = !step && rollNow && rollNow.pendingDecision;
       const replan = step ? `
           <div class="card card-pad mt-16" style="background:var(--primary-soft);border-color:#c7d2fe">
             <div class="row" style="gap:10px">
@@ -928,6 +960,17 @@ const Student = (() => {
               </button>
               <button class="btn btn-ghost" onclick="App.go('${back}')">返回资料模块</button>
             </div>
+          </div>` : (deciding ? `
+          <div class="card card-pad mt-16 agent-pending gen-anim">
+            <div class="row" style="gap:10px">
+              <span class="agent-spin"></span>
+              <div style="font-weight:700">Agent 正在安排下一步…</div>
+            </div>
+            <div class="text-sm mt-8" style="color:var(--text-2)">
+              掌握度已经记好了。正在按最新的掌握度和错题本重新规划，通常 2–4 秒。
+            </div>
+            <div class="skeleton-line mt-16"></div>
+            <div class="skeleton-line short mt-8"></div>
           </div>` : `
           <div class="card card-pad mt-16" style="background:var(--success-soft);border-color:#bbf7d0">
             <div class="row" style="gap:10px">
@@ -945,7 +988,7 @@ const Student = (() => {
               </button>
               <button class="btn btn-ghost" onclick="Student.openTopic('${r.topic.id}')">查看知识点情况</button>
             </div>
-          </div>`;
+          </div>`);
 
       return `
         <div class="runner">
@@ -1035,7 +1078,7 @@ const Student = (() => {
           <button class="btn btn-ghost" ${A.i === 0 ? 'disabled' : ''} onclick="Student.slide(-1)">上一页</button>
           <span class="spacer"></span>
           ${last
-            ? `<button class="btn btn-primary" onclick="Student.finish({})">完成讲解 ${I('check',15)}</button>`
+            ? finishBtn('完成讲解', 'Student.finish({})')
             : `<button class="btn btn-primary" onclick="Student.slide(1)">下一页 ${I('arrowRight',15)}</button>`}
         </div>
       </div>`;
@@ -1200,7 +1243,7 @@ const Student = (() => {
       </div>
       <div class="row mt-16">
         ${A.i === A.qs.length - 1
-          ? `<button class="btn btn-primary" onclick="Student.finishPractice()">完成练习 ${I('check',15)}</button>`
+          ? finishBtn('完成练习', 'Student.finishPractice()')
           : `<button class="btn btn-primary" onclick="Student.nextQ()">下一题 ${I('arrowRight',15)}</button>`}
       </div>` : '';
 
@@ -1266,7 +1309,7 @@ const Student = (() => {
         <button class="btn btn-ghost" ${A.i === 0 ? 'disabled' : ''} onclick="Student.card(-1)">上一张</button>
         <div class="spacer"></div>
         <span class="text-sm" style="color:var(--text-3)">${A.i + 1} / ${A.cards.length}</span>
-        ${last ? `<button class="btn btn-primary" onclick="Student.finish({})">完成复习 ${I('check',15)}</button>`
+        ${last ? finishBtn('完成复习', 'Student.finish({})')
                : `<button class="btn btn-primary" onclick="Student.card(1)">下一张 ${I('arrowRight',15)}</button>`}
       </div>`;
   }

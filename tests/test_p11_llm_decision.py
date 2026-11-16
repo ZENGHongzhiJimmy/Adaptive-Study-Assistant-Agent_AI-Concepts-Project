@@ -391,8 +391,93 @@ def test_confirmation_after_an_escalated_decision_still_ships_one_step(tmp_path:
     assert len(updated["steps"]) == 1
 
 
+def test_candidates_cover_every_topic_when_the_list_is_truncated() -> None:
+    """Flat truncation used to hide every topic after the 10th.
+
+    22 topics x 3 activities = 66 pairs with a limit of 30: the old code kept
+    the first 30, so topics 11-22 never appeared in the prompt at all.  Filling
+    round-robin guarantees every topic is visible, without ranking anything.
+    """
+    topics = [
+        TopicState(topic_id=f"t{i}", name=f"Topic {i}", mastery=20, pretested=True,
+                   explain_pages=1, quiz_count=1, mistakes=[{"q": "x"}], errors=1)
+        for i in range(22)
+    ]
+    picked = legal_candidates(topics, limit=30)
+    assert len(picked) == 30
+    assert {c.topic_id for c in picked} == {t.topic_id for t in topics}
+    # first pass is one activity per topic, in dataset order
+    assert [c.topic_id for c in picked[:22]] == [t.topic_id for t in topics]
+
+
 # ---------------------------------------------------------------------------
-# 5. the decision reaches the plan and the envelope
+# 5. split observe: state first, decision second
+# ---------------------------------------------------------------------------
+
+def test_observe_without_decide_reports_pending_and_keeps_the_numbers(tmp_path: Path) -> None:
+    """The result page must be able to paint before the model answers."""
+    class _Exploding:
+        available = True
+
+        def choose(self, topics, round_no=1, visited=(), recent=()):
+            raise AssertionError("decide=False must not ask the model")
+
+    store = LearnerStore(tmp_path / "p11e.db")
+    try:
+        svc = AgentService(store=store, planner=_Exploding())
+        payload = [{"topic_id": "a", "name": "A", "mastery": 30, "pretested": True,
+                    "explain_pages": 1, "quiz_count": 2}]
+        plan = svc.observe(
+            "m5", "a", "practice",
+            outcome={"total": 2, "correct": 2},
+            quiz=[], topics_payload=payload, decide=False,
+        )
+        assert plan["decision_pending"] is True
+        assert plan["agent"]["decided_by"] == "pending"
+        assert plan["next"] is None and plan["steps"] == []
+        assert plan["agent_unavailable"] is False
+        # the measurement is already there: that is the part the page shows first
+        assert plan["result"]["after"] > plan["result"]["before"]
+        assert plan["topics"][0]["mastery"] == plan["result"]["after"]
+
+        # second half of the round trip: the decision lands on its own
+        class _Later:
+            available = True
+
+            def choose(self, topics, round_no=1, visited=(), recent=()):
+                return PlannerDecision(topic_id="a", activity="practice", reason="x")
+
+        after = AgentService(store=store, planner=_Later()).plan("m5")
+        assert after["decision_pending"] is False
+        assert after["next"] is not None
+    finally:
+        store.close()
+
+
+def test_full_observe_still_decides_in_one_call(tmp_path: Path) -> None:
+    class _FixedPlanner:
+        available = True
+
+        def choose(self, topics, round_no=1, visited=(), recent=()):
+            return PlannerDecision(topic_id="a", activity="practice", reason="x")
+
+    store = LearnerStore(tmp_path / "p11f.db")
+    try:
+        svc = AgentService(store=store, planner=_FixedPlanner())
+        plan = svc.observe(
+            "m6", "a", "explain", outcome={"read": True},
+            quiz=[], topics_payload=[{"topic_id": "a", "name": "A", "mastery": 30,
+                                      "pretested": True, "explain_pages": 1, "quiz_count": 2}],
+        )
+        assert plan["decision_pending"] is False
+        assert plan["agent"]["decided_by"] == "llm"
+        assert plan["next"]["activity"] == "practice"
+    finally:
+        store.close()
+
+
+# ---------------------------------------------------------------------------
+# 6. the decision reaches the plan and the envelope
 # ---------------------------------------------------------------------------
 
 def test_plan_facts_contains_no_activity_at_all() -> None:

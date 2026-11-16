@@ -34,7 +34,17 @@ Modelling assumptions (explicit, not empirical findings)
 3. **Review teaches only if there are errors to review.** Reviewing an empty
    error book changes nothing; that is what makes "review" a wasted step for a
    policy that fires it blindly.
-4. **No forgetting, no item memory.** Ability never decays and the learner does
+4. **Practice consolidates instruction, it does not replace it.** An item can
+   only be answered, and therefore only teach, in proportion to how much of the
+   topic was actually presented. Without this term the model had a degenerate
+   optimum: pure practice with no reading at all scored highest
+   (0.178 vs 0.164 for the fixed teaching loop), i.e. the simulator claimed a
+   learner can learn a topic nobody ever taught. `INSTRUCTION_FLOOR` is the
+   residual effect of feedback on items the learner has no instruction for
+   (they can still see whether they were right); `exposure` is the coverage of
+   the best explanation read so far, so a better explanation makes every later
+   practice round worth more.
+5. **No forgetting, no item memory.** Ability never decays and the learner does
    not remember individual items. The second assumption is what lets the same
    probe items be reused for pre- and post-test without inflating the post score:
    the score is a function of ability, not of item exposure. A real learner would
@@ -64,6 +74,9 @@ RATE_REVIEW = 0.30
 # cut-off would make the model itself punish any policy that re-reads, which is
 # an artefact of the simulator, not a property of learning.
 EXPLAIN_DECAY = 0.45
+#: Practice without any instruction still teaches a little - the learner sees
+#: feedback on the items - but at most this fraction of its potential.
+INSTRUCTION_FLOOR = 0.30
 
 
 @dataclass(frozen=True)
@@ -119,6 +132,9 @@ class SimulatedStudent:
             jitter = (((seed * 7919 + index * 104729) % 1000) / 1000.0 - 0.5) * 2.0
             self.theta[topic.topic_id] = profile.theta + jitter * profile.spread
         self.explain_runs: dict[str, int] = {t.topic_id: 0 for t in topics}
+        #: How much of each topic has actually been presented, in [0, 1].  The
+        #: coverage of the best explanation read so far; 0 means "never taught".
+        self.exposure: dict[str, float] = {t.topic_id: 0.0 for t in topics}
         self._topics: dict[str, Topic] = {t.topic_id: t for t in topics}
         self._rng = _Random(seed)
         self.activities = 0
@@ -164,6 +180,11 @@ class SimulatedStudent:
             return 0.0
         return max(0.0, (ceiling - theta) / (ceiling - THETA_MIN))
 
+    def _instruction(self, topic_id: str) -> float:
+        """How much practice can teach on a topic, given what was presented."""
+        exposure = self.exposure.get(topic_id, 0.0)
+        return INSTRUCTION_FLOOR + (1.0 - INSTRUCTION_FLOOR) * max(0.0, min(1.0, exposure))
+
     def _grow(self, topic_id: str, rate: float) -> float:
         if rate <= 0:
             return 0.0
@@ -194,6 +215,11 @@ class SimulatedStudent:
             factor = EXPLAIN_DECAY ** runs
             self.explain_runs[topic_id] = runs + 1
             gain = self._grow(topic_id, RATE_EXPLAIN * factor * max(0.0, quality))
+            # A better explanation leaves the learner better prepared for every
+            # later practice round on this topic.
+            self.exposure[topic_id] = max(
+                self.exposure.get(topic_id, 0.0), max(0.0, min(1.0, quality))
+            )
         elif activity == "practice":
             # Learning by successful retrieval: an attempt that succeeds teaches,
             # an attempt that fails mostly does not. The alternative (gain peaks
@@ -201,7 +227,9 @@ class SimulatedStudent:
             # a learner who answers everything wrong learns as much as one who
             # answers half right - it rewards failure. The ceiling is handled by
             # the headroom factor instead.
-            gain = self._grow(topic_id, RATE_PRACTICE * accuracy)
+            gain = self._grow(
+                topic_id, RATE_PRACTICE * accuracy * self._instruction(topic_id)
+            )
         elif activity == "review":
             gain = self._grow(topic_id, RATE_REVIEW) if had_errors else 0.0
         self.activities += 1

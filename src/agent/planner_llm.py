@@ -99,10 +99,10 @@ class Candidate:
 
     def line(self, index: int) -> str:
         label = ACTIVITY_LABEL.get(self.activity, self.activity)
-        return (
-            f"C{index} | {self.topic_id} | {self.activity} ({label}) | {self.name}"
-            f" | 掌握度 {self.mastery}% | 错题 {self.wrong}"
-        )
+        # Mastery / mistake count deliberately omitted: the topic table above
+        # already carries them, and repeating them here used to add ~600 prompt
+        # tokens per decision (i.e. ~0.3 s of prefill) for zero new information.
+        return f"C{index} | {self.topic_id} | {self.activity} ({label}) | {self.name}"
 
 
 def _candidate(topic: TopicState, activity: str) -> Candidate:
@@ -120,25 +120,65 @@ def _candidate(topic: TopicState, activity: str) -> Candidate:
 
 
 def legal_candidates(
-    topics: Sequence[TopicState], limit: int = 30
+    topics: Sequence[TopicState], limit: int = 30, visited: Sequence[str] = ()
 ) -> list[Candidate]:
     """Every activity that is objectively possible right now.
 
-    Ordering is a plain enumeration (dataset order x explain/practice/review),
-    deliberately *not* a ranking: sorting by mastery would smuggle the old rule
-    back in through the prompt.
+    Two facts decide what is legal, and neither is a preference:
+
+    * **Availability** - a topic with no quiz cannot be practised, a mastered
+      topic is finished, an un-pre-tested topic has no starting point.
+    * **Round coverage** - within one round every ready topic is served once
+      before any topic is served twice.  Without this the model can spend the
+      whole session on the topic it finds interesting (measured: 15 of 32
+      activities on two topics, three topics never read), which starves the
+      material exactly like the pre-round scheduling did before the decision
+      moved to the model.  The model still chooses *which* due topic and *which*
+      activity; the round only says that everyone gets a turn.
+      ``visited`` empty means a new round, so the filter is inactive.
+
+    Ordering inside the due set is a plain enumeration (dataset order x
+    explain/practice/review), deliberately *not* a ranking: sorting by mastery
+    would smuggle the old rule back in through the prompt.
+
+    When there are more possible pairs than ``limit``, the list is filled
+    **round-robin across topics** instead of being truncated.  Flat truncation
+    silently hid every topic after the 10th (22 topics x 3 activities = 66,
+    limit 30), so the model could not even see most of the material.
     """
-    out: list[Candidate] = []
+    served = set(visited or ())
+    buckets: list[list[Candidate]] = []
+    due: list[list[Candidate]] = []
     for topic in topics:
         if not topic.pretested or is_mastered(topic):
             continue
+        row: list[Candidate] = []
         if topic.explain_pages > 0:
-            out.append(_candidate(topic, EXPLAIN))
+            row.append(_candidate(topic, EXPLAIN))
         if topic.quiz_count > 0:
-            out.append(_candidate(topic, PRACTICE))
+            row.append(_candidate(topic, PRACTICE))
         if topic.wrong_count > 0:
-            out.append(_candidate(topic, REVIEW))
-    return out[:limit] if limit > 0 else out
+            row.append(_candidate(topic, REVIEW))
+        if row:
+            buckets.append(row)
+            if topic.topic_id not in served:
+                due.append(row)
+
+    pool = due or buckets
+
+    if limit <= 0:
+        return [c for row in pool for c in row]
+
+    out: list[Candidate] = []
+    depth = 0
+    while len(out) < limit and any(len(row) > depth for row in pool):
+        for row in pool:
+            if len(row) > depth:
+                out.append(row[depth])
+                if len(out) >= limit:
+                    break
+        depth += 1
+    return out
 
 
 # --------------------------------------------------------------------------
@@ -146,12 +186,11 @@ def legal_candidates(
 # --------------------------------------------------------------------------
 
 def _topic_line(topic: TopicState) -> str:
-    read = f"已读({topic.explain_runs} 次)" if topic.explain_done else "未读"
-    pages = f"{topic.explain_pages} 页" if topic.explain_pages else "无"
+    read = f"已读 {topic.explain_runs} 次" if topic.explain_done else "未读"
     return (
         f"{topic.topic_id} | {topic.name or topic.topic_id}"
         f" | 掌握度 {_pct(topic.mastery)}% | 错题 {topic.wrong_count}"
-        f" | 讲解 {pages}/{read} | 题库 {topic.quiz_count} 题"
+        f" | 讲解{read} | 题库 {topic.quiz_count} 题"
         f" | 连续低分 {topic.fail_streak}"
     )
 
@@ -190,13 +229,24 @@ def build_user_message(
     remaining = sum(1 for t in topics if t.pretested and not is_mastered(t))
 
     goal = (
-        f"学习目标：每个知识点掌握度 >= {_pct(MASTERED)}% 且错题清零才算完成；"
-        f"只看掌握度、错题没清的点不算完成。"
-        f"（讲解本身最多把掌握度推到 {_pct(EXPLAIN_CAP)}%）"
+        f"学习目标：让学习者真正掌握尽可能多的知识点"
+        f"（判定条件：掌握度 >= {_pct(MASTERED)}% 且错题清零）。\n"
+        "系统机制（选活动前请先理解）：\n"
+        f"- 讲解：建立概念。第一次读收益最大，重看收益很小；讲解最多把掌握度推到 "
+        f"{_pct(EXPLAIN_CAP)}%。\n"
+        "- 练习：本轮答对的题会从错题本移除，答错会加入；掌握度的提升取决于本轮正确率。\n"
+        "- 复习：逐题纠正错题，本身不提高掌握度；没有错题时复习不产生任何学习。\n"
+        "- 连续两次练习正确率低于 50%，说明概念还没建立，应该回到讲解。\n"
+        "请判断每个知识点现在缺的是「概念」「验证」还是「纠错」，据此选活动；"
+        "并把有限的学习机会给最需要它的知识点。"
     )
+    served = [t.topic_id for t in topics if t.topic_id in set(visited)]
     progress = (
         f"进度：第 {int(round_no)} 轮；共 {total} 个知识点，已掌握 {mastered} 个，"
-        f"待学 {remaining} 个，未前测 {pending_pretest} 个；本轮已服务 {len(list(visited))} 个。"
+        f"待学 {remaining} 个，未前测 {pending_pretest} 个；"
+        f"本轮已服务 {len(served)} 个"
+        + (f"（{'、'.join(served)}）" if served else "")
+        + "。本轮内每个知识点最多安排一次，候选清单里只有本轮还没轮到的知识点。"
     )
     topics_block = (
         "知识点现状（id | 名称 | 掌握度 | 错题 | 讲解 | 题库 | 连续低分）：\n"
@@ -449,7 +499,7 @@ class LLMPlanner:
             self.last_error = "未配置 OPENROUTER_API_KEY"
             return None
 
-        candidates = legal_candidates(topics, self.max_candidates)
+        candidates = legal_candidates(topics, self.max_candidates, visited)
         if not candidates:
             # Nothing legal to do: either everything is mastered or everything
             # is blocked.  Not a failure - the plan's own flags say which.

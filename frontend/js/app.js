@@ -113,6 +113,9 @@ const App = (() => {
   function needsAgent(rec) {
     const snap = Engine.agentSnapshot(rec);
     if (!snap) return true;
+    // 两段式中间态：掌握度已经存下、下一步还没算完（例如正好这时刷新了页面）。
+    // 不补这一次请求，页面会永远停在「正在安排下一步」的骨架上。
+    if (snap.decision_pending) return true;
     return Number(snap.total) !== Engine.topicsOf(rec).length;
   }
 
@@ -196,12 +199,29 @@ const App = (() => {
         </div>
       </header>`;
 
+    /* 正在向 agent 要「下一步」时，页面顶部有一条进度条。
+       没有它，首次进入资料页的那 3-4 秒看起来就像页面渲染坏了。
+       做题页不显示（那一步不需要模型）。 */
+    const waiting = (() => {
+      const seg = h.replace('#/', '').split('/');
+      if (seg[1] === 'activity') return false;
+      const rec = routeMaterial(h);
+      if (!rec || !Engine.topicsOf(rec).length) return false;
+      if (Engine.state.agent && Engine.state.agent.error) return false;
+      return needsAgent(rec);
+    })();
+
     document.getElementById('app').innerHTML = `
       ${sidebar}
       <main class="main">
         ${topbar}
         <div class="content">
-          <div class="content-inner page-in">${view()}</div>
+          <div class="content-inner page-in">
+            ${waiting ? `<div class="agent-bar"></div>
+              <div class="agent-wait mb-16"><span class="agent-spin"></span>
+                Agent 正在按最新掌握度安排下一步…</div>` : ''}
+            ${view()}
+          </div>
         </div>
       </main>`;
 

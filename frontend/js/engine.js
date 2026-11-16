@@ -366,6 +366,14 @@ const Engine = (() => {
     return run;
   }
 
+  /* 两段式的第二步：掌握度已经写回，单独向 agent 要「下一步」。
+     结果页先用 pending 骨架占位，这个 promise 回来后再渲染一次。 */
+  async function decideNext(ref) {
+    const rec = findMaterial(ref);
+    if (!rec) return null;
+    return syncAgent(rec);
+  }
+
   /* 单个知识点的推荐活动（知识点列表 / 详情页的「推荐」徽标） */
   function plan(topicId) {
     const t = topic(topicId);
@@ -483,6 +491,9 @@ const Engine = (() => {
       blocked: (snap.blocked || []).map(byId).filter(Boolean),
       done: !!snap.done,
       pendingAgent: false,
+      /* 状态已更新、决策还在算（两段式 observe 的第一段）：
+         界面显示「正在安排下一步」的骨架，而不是「本轮没有下一步」。 */
+      pendingDecision: !!snap.decision_pending,
       policy: snap.policy || (state.agent && state.agent.policy) || null,
       error: null,
     };
@@ -521,6 +532,9 @@ const Engine = (() => {
       // 错题本需要题目原文与选项：只有练习需要
       quiz: actId === 'practice' ? quizBank(t) : [],
       topics: agentTopics(rec),
+      /* 只要状态更新，不要在同一个请求里等模型决策（3-4 s）。
+         下一步由 decideNext() 单独取，结果页因此能立刻出现。 */
+      decide: false,
     });
 
     if (!r || !r.ok) {
@@ -556,7 +570,10 @@ const Engine = (() => {
       after: after,
       delta: delta,
       note: res.note || '',
+      /* 两段式：这里只拿到掌握度（服务端 decide=false），下一步还在算。
+         界面先渲染数字，再调 Engine.decideNext(rec) 把「下一步」补上。 */
       re: plan(topicId),
+      decisionPending: !!r.data.decision_pending,
     };
   }
 
@@ -805,7 +822,7 @@ const Engine = (() => {
     plan, applyResult, applyPreTest, pretestDone,
     rollPlan, stageOf,
     // Agent：唯一决策来源（/api/agent/*），前端不再自带规则
-    syncAgent, agentSnapshot, agentError, agentTopics,
+    syncAgent, decideNext, agentSnapshot, agentError, agentTopics,
     isMastered, masteredThreshold, masteryGoal, quizBank, explainPages, reviewCards, mistakesOf,
     setStage, stage, setRole, role,
     published, pathTopics, pathGroups, pendingTopics,
