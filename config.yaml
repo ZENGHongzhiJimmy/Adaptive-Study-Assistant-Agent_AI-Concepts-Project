@@ -3,15 +3,14 @@
 # This file is the SINGLE source of truth for infrastructure knobs (models,
 # paths, retrieval, chunking, seeds). It is NOT the source of truth for the
 # evaluated method: the adaptive policy's constants live in
-# src/agent/policy.py and are deliberately not duplicated here. See the
-# BASELINE block below.
+# src/agent/policy.py and are deliberately not duplicated here.
 # Secrets / endpoints are the only things allowed in .env (see .env.example).
 # NEVER put a real API key here: this file is committed to GitHub.
 # Experiment freeze: do not modify this file; every run logs
-# config_for_log() (version, model, alpha, thresholds, seed) into events.
+# config_for_log() (version, model, embedding, seed) into events.
 
 platform:
-  version: "0.2.0"
+  version: "0.3.0"
 
 llm:
   # Primary model (OpenRouter id). Change this to switch models.
@@ -69,7 +68,7 @@ retrieval:
   top_k: 3
 
 # ---------------------------------------------------------------------------
-# BASELINE configuration - NOT the method under evaluation.
+# The evaluated method's numbers are NOT here.
 #
 # The adaptive policy being evaluated lives in CODE: src/agent/policy.py
 # (POLICY_ID = "adaptive-v1", MASTERED = 80, EXPLAIN_CAP = 55,
@@ -77,48 +76,15 @@ retrieval:
 # Do NOT mirror those numbers here - a second copy in YAML is exactly how the
 # product and the experiment drifted apart before.
 #
-# The two blocks below serve the CLI baseline only:
-#   mastery -> src/student_model/mastery.py  (0-1 scale, alpha*old + ...)
-#   planner -> src/agent/planner.py          (fixed threshold planner, 0-1)
-# They are read by src/agent/graph.py (python -m src.agent.run). Nothing under
-# src/api/ or src/agent/serve.py may read them - guarded by
-# tests/test_p9_single_method.py so the two scales can never sneak back in.
+# The legacy CLI baseline that used to own `mastery:` / `planner:` in this file
+# was removed with src/agent/graph.py + src/student_model/. The experiments'
+# fixed baseline is methods.CyclicPlanner, not a configurable threshold planner.
 # ---------------------------------------------------------------------------
 
-# CLI baseline student state model: new = alpha*old + (1-alpha)*performance.
-# 0-1 scale; the method uses an integer percentage instead.
-mastery:
-  alpha: 0.7
-  initial: 0.0
-  recent_errors_window: 3
-
-# CLI baseline threshold planner: Teach / MCQ / Challenge / Review / Done.
-# Thresholds and target are 0-1 (the method's are 0-100 percentages), so these
-# numbers are NOT comparable with policy.MASTERED. Fixed for the CLI baseline;
-# `target_mastery` stays at 0.85 even though the baseline estimator saturates
-# below it - that saturation is a reported finding, not a knob to tune after
-# the fact.
-planner:
-  mode: rule                 # only "rule" is implemented; kept for config_for_log
-  thresholds:
-    teach_below: 0.4
-    practice_below: 0.7
-    challenge_below: 0.85
-  target_mastery: 0.85
-  review_trigger_errors: 2
-  max_steps: 10              # hard stop for the State Update -> Re-planning back-edge
-
-# P4 LLM content generation + P5 LLM decision module.
+# Who picks the next activity (src/agent/planner_llm.py).
 agent:
-  # Quote the mode: YAML 1.1 would otherwise parse `off` / `on` as booleans.
-  llm_mode: "on"
-  max_json_retries: 2        # retry structured question generation on bad JSON
-  teach_max_chars: 900       # cap the LLM explanation stored in the trace
-  grounded_min_hits: 1       # Teach needs >=1 retrieved chunk for a citation
-
-  # P5: who picks the next activity (src/agent/planner_llm.py).
-  #   "llm"  -> the model chooses among the legal candidates and writes the reason
-  #   "rule" -> policy.decide() only; an explicit demo/test mode, never automatic
+  # "llm"  -> the model chooses among the legal candidates and writes the reason
+  # "rule" -> policy.decide() only; an explicit demo/test mode, never automatic
   # Thresholds stay in policy.py and mastery measurement never leaves code, so
   # the experiments still measure the same thing.  If no API key is configured,
   # "llm" does NOT degrade to "rule": the response says decided_by=unavailable

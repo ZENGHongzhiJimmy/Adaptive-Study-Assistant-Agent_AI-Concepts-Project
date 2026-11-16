@@ -8,12 +8,9 @@ valid. Scoring itself is untouched.
 
 from __future__ import annotations
 
-import json
 import random
 from collections import Counter
 
-from src.agent.evaluator import evaluate_step
-from src.agent.llm_content import parse_question_payload, _reorder_mcq_options
 from src.api.services import MaterialService
 from src.utils.quiz_order import move_correct_to, reorder_quiz, seed_for, target_slots
 
@@ -73,19 +70,3 @@ def test_parse_material_quizzes_are_rebalanced_and_still_score():
     assert all(q["opts"][q["a"]] == "right" for q in quiz)
     # 前端按下标判分：新下标指向的仍然是原来的正确文本
     assert {q["opts"][q["a"]] for q in quiz} == {"right"}
-
-
-def test_agent_mcq_reorder_keeps_evaluator_scoreable():
-    payload = json.dumps({
-        "question": "Which term is the posterior?",
-        "options": {"A": "P(H|D)", "B": "P(D)", "C": "P(H)", "D": "P(D|H)"},
-        "correct_option": "A",
-        "explanation": "P(H|D).",
-    })
-    parsed = parse_question_payload(payload, topic="Bayes Theorem", difficulty="mcq", index=0)
-    mcq = _reorder_mcq_options(parsed)
-    assert mcq.question_id == parsed.question_id
-    assert mcq.options[mcq.correct_option] == "P(H|D)"
-    assert sorted(mcq.options.items()) == sorted(parsed.options.items())
-    assert evaluate_step(mcq.as_dict(), "correct").correct is True
-    assert evaluate_step(mcq.as_dict(), "wrong").correct is False

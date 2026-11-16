@@ -11,7 +11,7 @@ learning simulation then reads that frozen file, exactly like ``bank.json``.
 Conditions
 ----------
 ``rag``       the product's Teach prompt with retrieved lecture excerpts
-              (``TEACH_SYSTEM`` + ``format_context(hits)``).
+              (``TEACH_SYSTEM`` + ``render_context(hits)``).
 ``llm_only``  the same task with no excerpts and a system prompt that says so.
               The RAG prompt ("use ONLY the excerpts") cannot be reused here:
               with no excerpts the model has nothing to comply with, so the
@@ -75,7 +75,7 @@ CONDITIONS = ("llm_only", "rag")
 TOP_K = 3
 MAX_CHARS = 900          # keep the two conditions at comparable length
 MIN_CHARS = 150          # below this a reply is treated as a refusal/truncation
-CONTEXT_CHARS = 600      # per retrieved passage, same as templates.format_context
+CONTEXT_CHARS = 600      # per retrieved passage, both conditions
 
 LLM_ONLY_SYSTEM = """You are a concise university-level tutor for an AI concepts course.
 Rules:
@@ -163,15 +163,13 @@ class ChunkIndex:
 
 
 def build_index(config: dict[str, Any]) -> tuple[Any, str]:
-    """Prefer the product retriever; fall back to the deterministic chunk index."""
-    try:
-        from src.agent.actions import build_retriever
+    """The deterministic chunk index over the source PDF.
 
-        retriever = build_retriever(config)
-        if retriever is not None:
-            return retriever, "product-chroma"
-    except Exception:
-        pass
+    ``materials.json`` was generated with this backend (``retrieval_backend:
+    "tfidf-chunks"``), so regenerating content reproduces the committed file
+    byte-for-byte instead of depending on whether a Chroma index happens to
+    exist on the machine.
+    """
     index = ChunkIndex(SOURCE_PDF)
     return index, index.name
 

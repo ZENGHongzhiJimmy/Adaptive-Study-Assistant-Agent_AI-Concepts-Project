@@ -4,8 +4,8 @@ Before this module existed there were two planners:
 
 * ``frontend/js/engine.js``  - what the demo actually ran (error book +
   fail-streak + rolling rounds, mastery on a 0-100 scale);
-* ``src/agent/planner.py``   - the threshold planner used by the LangGraph
-  CLI (mastery 0-1, ``Teach/MCQ/Challenge/Review``).
+* a threshold planner in the retired CLI loop (mastery 0-1,
+  ``Teach/MCQ/Challenge/Review``).
 
 That split is indefensible in a report: the agent being demoed was not the
 agent being evaluated, and the two disagreed on thresholds *and* on the
@@ -16,10 +16,9 @@ mastery update rule. This module is now the single source of truth:
 * the experiment harness (``experiments/methods.py`` /
   ``experiments/run_experiment.py``) calls the same functions.
 
-``planner.py`` is kept as the legacy threshold planner used by the LangGraph
-CLI (``graph.py``), but it is NOT one of the baselines.  The three
-baselines are (content, planner) pairs defined in ``experiments/methods.py``;
-the fixed-strategy one is ``methods.CyclicPlanner``.  This module remains the
+The retired CLI loop was deleted on 2026-11-16.  The three experiment baselines
+are (content, planner) pairs defined in ``experiments/methods.py``; the
+fixed-strategy one is ``methods.CyclicPlanner``.  This module remains the
 single policy shared by the product and the adaptive arm of the main experiment.
 
 Design notes
@@ -575,7 +574,7 @@ def plan_facts(
     needs (round, mastered, remaining, thresholds arrive in the envelope) and
     every per-topic status, but ``steps`` is empty and ``next`` is ``None`` until
     ``apply_decision`` puts the model's choice in.  Nothing here calls
-    ``decide()`` - that function is the experiment baseline now.
+    ``decide()`` - that function only serves the explicit ``rule`` mode.
     """
     visited = list(visited or [])
     candidates = [t for t in topics if fact_status(t) == READY]

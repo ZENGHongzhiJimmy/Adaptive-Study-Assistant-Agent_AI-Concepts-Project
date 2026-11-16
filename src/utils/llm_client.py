@@ -1,16 +1,18 @@
-"""OpenAI-compatible LLM client for OpenRouter (P0 smoke call + P4 content).
+"""OpenAI-compatible LLM client for OpenRouter (transport + smoke call).
 
 OpenRouter is OpenAI-compatible, so a plain ``openai.OpenAI`` client with a
 custom ``base_url`` is enough; switching models only changes ``llm.model`` in
-config.yaml (see README 9.3 / 15). P4 defaults to a free ``:free`` model.
+config.yaml (see README 9.3 / 15).  This module is the only place that talks to
+a provider: the product's decision step and the experiment's content bank both
+go through ``chat()``.
 
-Key safety (P4):
+Key safety:
   * The real key is read ONLY from the local, git-ignored ``.env``.
-  * It is never printed, never written into events/config snapshots, and never
-    placed in config.yaml (``python -m src.utils.secret_guard`` enforces this).
+  * It is never printed, never written into run metadata/config snapshots, and
+    never placed in config.yaml (``python -m src.utils.secret_guard`` enforces
+    this).
   * When it is missing, ``key_setup_message()`` gives explicit setup steps and
-    callers fail fast (exit code 2). The platform defaults to using the LLM;
-    ``python -m src.agent.run --offline`` is the explicit no-key opt-out.
+    callers fail fast (exit code 2) instead of silently degrading.
 
 Usage:
     python -m src.utils.llm_client --check              # offline config/status

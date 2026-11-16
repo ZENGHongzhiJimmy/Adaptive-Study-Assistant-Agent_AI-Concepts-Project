@@ -34,9 +34,10 @@ re-asks the same question on ``planner_escalation_models`` (defaults to
 ``llm.fallback_models``, i.e. the paid model) with a larger token budget.  The
 model still decides; only the model changes.
 
-Boundary note: this module must not import ``src/agent/llm_content.py`` (the
-CLI's content generator) - that would drag the CLI chain onto the product path
-guarded by ``tests/test_p9``.  The few helpers needed here are re-stated below.
+Boundary note: this module owns the decision contract end to end - the facts it
+sends, the candidate list it allows, the JSON it parses and the validation that
+follows.  Measurement stays in ``policy.py``; nothing here decides what counts
+as mastery, and nothing here falls back to a rule when the model cannot answer.
 """
 
 from __future__ import annotations

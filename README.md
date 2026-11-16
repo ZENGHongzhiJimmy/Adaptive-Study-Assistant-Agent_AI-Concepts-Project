@@ -227,22 +227,18 @@ Adaptive-Study-Assistant-Agent_AI-Concepts-Project/
 │       └── app.js                  # 应用外壳 + 路由
 ├── src/
 │   ├── api/                        # ★ 学生端 HTTP API
-│   │   ├── app.py                  # FastAPI 应用与路由（资料 / 问答 / 进度）
+│   │   ├── app.py                  # FastAPI 应用与路由（资料 / 问答）
 │   │   ├── agent.py                # /api/agent/*：规划、状态更新、Pre-test、轨迹
 │   │   ├── services.py             # 资料解析 / quiz 生成 / RAG 问答
 │   │   └── run.py                  # 启动入口
 │   ├── agent/                      # Agent 运行时
-│   │   ├── policy.py               # ★ 掌握度更新 / 掌握判定 / 事实视图（plan_facts；decide 仅实验）
+│   │   ├── policy.py               # ★ 掌握度更新 / 掌握判定 / 事实视图（plan_facts；decide 仅 rule 模式）
 │   │   ├── planner_llm.py          # ★ LLM 决策器：合法候选 + 结构化输出 + 校验 + 缓存（无规则回退）
-│   │   ├── prompts/                # 提示词（decision.py 决策、templates.py CLI 讲解/出题）
+│   │   ├── prompts/                # 提示词（decision.py 决策、templates.py 讲解）
 │   │   ├── learner_store.py        # learner_topic / learner_roll / learner_step
-│   │   ├── serve.py                # LangGraph 图 + 服务封装（产品实际调用）
-│   │   ├── graph.py                # CLI 闭环（python -m src.agent.run），含 Teach 渲染
-│   │   ├── planner.py              # CLI 阈值规划器（0–1 标度，实验不使用）
-│   │   └── run.py                  # CLI 驱动
+│   │   └── serve.py                # LangGraph 图 + 服务封装（产品实际调用）
 │   ├── ingestion/                  # PDF/TXT 解析与切片
 │   ├── retrieval/                  # 向量库与嵌入
-│   ├── student_model/              # CLI 侧学生状态模型 + events 日志
 │   └── utils/                      # 配置 / LLM 客户端 / 密钥守卫
 ├── data/
 │   ├── course_materials/           # 课程 PDF（不入库）
@@ -350,26 +346,23 @@ curl -X POST http://127.0.0.1:8000/api/materials/parse \
 
 ### 8.2 方法 vs 基线（报告口径）
 
-报告里只能有一个 method。当前仓库里确实存在两套掌握度模型，但它们不是"两份没写完的实现"，而是 **method 与 baseline**，边界由 `tests/test_p9_single_method.py` 守着：
+仓库里只剩**一套**掌握度模型：`src/agent/policy.py`（`adaptive-v1`，0–100 标度）。旧的 CLI 阈值链路（`graph.py` / `planner.py` / `student_model/`，0–1 标度 + EMA）已于 2026-11-16 删除，边界由 `tests/test_p9_single_method.py` 守着：模块不得复活，产品路径也不得 import。
 
-| 维度 | Method（被评估） | Baseline（仅对照） |
+| 维度 | Method（被评估） | 实验基线（仅对照） |
 | ---- | ---- | ---- |
-| 代码 | `src/agent/policy.py`（`adaptive-v1`） | `src/student_model/mastery.py` + `src/agent/planner.py` |
-| 谁在用 | 产品 `/api/agent/*`（`serve.py`）；实验里的 `adaptive` 方法 | 仅 `src/agent/graph.py`（旧 CLI 链路，实验不使用） |
-| 掌握度标度 | 0–100 整数百分比 | 0–1 浮点 |
-| 更新式 | `Δ = clamp(round((正确率×100 − m) × 0.6), −10, +25)`；讲解首次 +10、重看 +2、封顶 55 | `m' = 0.7·m + 0.3·p` |
-| 达标条件 | `m ≥ 80` **且**错题本为空 | `m ≥ 0.85`（无错题概念） |
-| 决策输入 | 掌握度 + 错题本 + `failStreak` + 讲解次数 + 内容可用性 | 掌握度 + `recent_errors` + 上一步活动 |
-| 阈值来源 | 代码常量，随每次规划下发（`mastered_at` / `explain_cap`） | `config.yaml` 的 `mastery:` / `planner:` 段 |
-| 报告角色 | **method** | **遗留 CLI 实现（非实验基线）** |
+| 调度器 | LLM 在合法候选里选（`planner_llm.py`，产品与实验是同一份代码） | `methods.CyclicPlanner`：固定 explain→practice→practice |
+| 掌握度更新 | `policy.apply_result`（+10 首次讲解 / +2 重看 / 封顶 55 / Δ clamp −10~+25） | 同一份 `policy.py`，所有方法共用 |
+| 达标条件 | `m ≥ 80` **且**错题本为空 | 同一份判定 |
+| 决策输入 | 掌握度 + 错题本 + `failStreak` + 讲解次数 + 内容可用性 + 轮次 | 无输入（固定课程表） |
+| 报告角色 | **method** | baseline |
 
-> 实验的三条基线（LLM-only / RAG / Fixed-strategy）定义在 `experiments/methods.py`，是 `(content, planner)` 配对；其中固定课程表用 `methods.CyclicPlanner`，**不是** `planner.py`。报告口径以 `policy.py` + `methods.py` 这一条链路为准。
+> 实验的三条基线（LLM-only / RAG / Fixed-strategy）定义在 `experiments/methods.py`，是 `(content, planner)` 配对；其中固定课程表用 `methods.CyclicPlanner`。报告口径以 `policy.py` + `methods.py` 这一条链路为准。
 
-> **决策者与测量者的分工**：产品的"下一步"由 LLM 在合法候选里选（`planner_llm.py`），`policy.decide()` 不再出现在产品路径上（只剩实验基线与显式 `rule` 模式）；掌握度更新、达标判定、轮次推进仍 100% 在 `policy.py`。**实验口径已对齐**：`adaptive` 分支回放的是模型的决策（`experiments/data/decisions.json`），不再调用 `policy.decide()`；若某状态没有记录，脚本直接报错而不是退回规则——否则测的就不是 agent 了。
+> **决策者与测量者的分工**：产品的"下一步"由 LLM 在合法候选里选（`planner_llm.py`）；掌握度更新、达标判定、轮次推进 100% 在 `policy.py`。`policy.decide()` 只服务显式 `agent.planner: "rule"` 这一演示/测试模式，不在产品常态路径上。**实验口径一致**：`adaptive` 分支回放的是模型的决策（`experiments/data/decisions.json`），没有记录就报错，绝不退回规则。
 
 两条纪律：
 
-1. `config.yaml` 的 `mastery:` 与 `planner:` 两段已显式标注 **BASELINE**，且不含 method 的任何常量——method 的数字只在 `policy.py` 里有一份。
+1. `config.yaml` 里**没有**任何方法常量，只留基础设施参数；文件里明确写着 "The evaluated method's numbers are NOT here"，方法的数字只有在 `policy.py` 里的一份。
 2. 前端不保存任何阈值：`isMastered()` 读快照的 `by_topic[topic_id].mastered`，文案里的百分比读 `mastered_at`。所以界面上的"已掌握"与报告里的判定永远是同一个函数算的。
 
 ---

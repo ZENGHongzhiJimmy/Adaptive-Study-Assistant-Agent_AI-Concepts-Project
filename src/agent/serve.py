@@ -1,14 +1,10 @@
 """The runtime the product actually calls: a LangGraph agent over ``policy.py``.
 
-Before this module, ``src/agent/graph.py`` was a side artefact - only the CLI
-ran it, while the web app decided everything in JavaScript.  A reviewer asking
-"where is the agent, and is it the same logic as the page?" had no good answer.
-
-This module closes that gap.  The decision the UI shows now comes from a
-compiled LangGraph graph: ``observe`` folds the result into the learner state
-with ``policy.apply_result`` (measurement), ``planner`` asks the model which
-legal activity to do next (``planner_llm``) and falls back to *no decision* -
-never to a rule-made one - when the model cannot answer.
+The decision the UI shows comes from a compiled LangGraph graph: ``observe``
+folds the result into the learner state with ``policy.apply_result``
+(measurement), ``planner`` asks the model which legal activity to do next
+(``planner_llm``) and falls back to *no decision* - never to a rule-made one -
+when the model cannot answer.
 
     observe ──► planner          (after one activity: Update → Re-plan)
                   │
@@ -20,14 +16,14 @@ the student reads / answers - and comes back as an observation.  State lives in
 SQLite (``learner_store``) so a page refresh, a second tab or an experiment rerun
 see exactly the same trajectory.
 
-``policy.decide()`` is not reachable from this module any more.  It still exists
-as the ``adaptive`` baseline in ``experiments/methods.py`` and behind the
-explicit ``agent.planner: "rule"`` switch (tests, offline demo).
+``policy.decide()`` is not reachable from this module.  It survives only behind
+the explicit ``agent.planner: "rule"`` switch (tests / offline demo), where
+``policy.plan_material`` builds the step; the experiment's ``adaptive`` arm uses
+the same ``LLMPlanner`` as this module, replayed from a frozen decision log.
 
-Why not run ``graph.py`` here?  That graph renders content (Teach text, MCQ
-generation through the LLM).  The web layer already has the parsed material and
-would pay an LLM call per page render.  Different action surface, same
-measurement, documented in README §5.
+Content (the explanation text the student reads, the quiz they answer) is
+rendered by the web layer, which already holds the parsed material.  This graph
+therefore plans only, and never pays an LLM call per page render.
 """
 
 from __future__ import annotations

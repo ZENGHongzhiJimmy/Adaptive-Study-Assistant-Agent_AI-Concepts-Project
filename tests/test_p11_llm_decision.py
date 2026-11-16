@@ -26,7 +26,6 @@ from pathlib import Path
 
 import pytest
 
-from src.agent import planner_llm
 from src.agent.learner_store import LearnerStore
 from src.agent.planner_llm import (
     LLMPlanner,
@@ -37,7 +36,7 @@ from src.agent.planner_llm import (
     make_planner,
     validate_choice,
 )
-from src.agent.policy import TopicState, plan_facts, plan_material
+from src.agent.policy import TopicState, plan_facts
 from src.agent.serve import AgentService
 
 

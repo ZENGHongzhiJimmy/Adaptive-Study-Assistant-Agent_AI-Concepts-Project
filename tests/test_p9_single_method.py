@@ -8,12 +8,13 @@ two threshold sets (80/55 vs 0.4/0.7/0.85).  Both survived because nothing in
 the test suite noticed the duplication, so the product and the experiment could
 drift apart silently.
 
-There is now exactly one method: ``src/agent/policy.py``.  The old formula and
-the old thresholds still exist, but only as the *baseline* arm (``graph.py`` ->
-``planner.py`` / ``mastery.py``).  These tests assert the boundary holds:
+There is now exactly one method: ``src/agent/policy.py``.  The second formula
+and the old thresholds lived in the legacy CLI chain, which was deleted on
+2026-11-16 (``graph.py`` / ``planner.py`` / ``student_model/``).  These tests
+assert the boundary still holds:
 
 * constants live in one place and have one scale (0-100);
-* the product path never imports the baseline modules;
+* the retired modules stay deleted and never appear on the product path;
 * the frontend carries no threshold of its own - it reads ``snap.mastered_at``;
 * the verdict ("mastered") is computed server-side and travels with the plan,
   so the badge the student sees cannot disagree with the number the report
@@ -34,7 +35,7 @@ from src.agent.serve import AgentService
 ROOT = Path(__file__).resolve().parents[1]
 
 # Everything that serves the shipped product.  None of these may touch the
-# baseline formula or the baseline threshold planner.
+# retired CLI chain or re-introduce a second mastery scale.
 PRODUCT_FILES = [
     ROOT / "src/api/app.py",
     ROOT / "src/api/agent.py",
@@ -44,7 +45,10 @@ PRODUCT_FILES = [
     ROOT / "src/agent/learner_store.py",
 ]
 
-BASELINE_MODULES = ("planner", "mastery", "student_model")
+# Removed on 2026-11-16 together with the legacy CLI loop.  They must not come
+# back on the product path: a single import would mean two mastery scales again.
+RETIRED_MODULES = ("graph", "run", "planner", "actions", "llm_content",
+                   "questions", "evaluator", "student_model")
 
 
 def _imported_names(path: Path) -> list[str]:
@@ -74,20 +78,36 @@ def test_method_constants_are_declared_once() -> None:
     assert (policy.DELTA_MIN, policy.DELTA_MAX) == (-10, 25)
 
 
-def test_baseline_modules_are_not_on_the_product_path() -> None:
-    """A regression here means the old formula sneaked back into the product."""
+def test_retired_cli_chain_is_gone() -> None:
+    """The legacy loop is deleted; nothing may import it again."""
+    for name in ("graph.py", "run.py", "planner.py", "actions.py",
+                 "llm_content.py", "questions.py", "evaluator.py"):
+        assert not (ROOT / "src/agent" / name).exists(), f"{name} must stay deleted"
+    assert not (ROOT / "src/student_model").exists()
+
+
+def test_retired_modules_are_not_on_the_product_path() -> None:
+    """A regression here means the old loop sneaked back into the product."""
+    def retired(name: str) -> bool:
+        # Relative imports arrive as bare module names ("graph"); absolute ones
+        # as "src.agent.graph". Anything else (e.g. "langgraph.graph") is not ours.
+        return name in RETIRED_MODULES or any(
+            name == f"src.agent.{mod}" or name == f"src.student_model.{mod}"
+            for mod in RETIRED_MODULES
+        )
+
     offenders: list[str] = []
     for path in PRODUCT_FILES:
         for name in _imported_names(path):
-            if any(name == mod or name.endswith("." + mod) for mod in BASELINE_MODULES):
+            if retired(name):
                 offenders.append(f"{path.name} -> {name}")
-    assert offenders == [], "product code must not import baseline modules: " + ", ".join(offenders)
+    assert offenders == [], "product code must not import retired modules: " + ", ".join(offenders)
 
 
 def test_config_does_not_duplicate_method_constants() -> None:
-    """config.yaml keeps the baseline block, but the method's numbers are code."""
+    """The method's numbers are code, and config.yaml says so explicitly."""
     text = (ROOT / "config.yaml").read_text(encoding="utf-8")
-    assert "BASELINE configuration - NOT the method" in text
+    assert "The evaluated method's numbers are NOT here" in text
     # The 0-100 method values must not appear as YAML keys/values.
     assert "mastered_at:" not in text
     assert "explain_cap:" not in text

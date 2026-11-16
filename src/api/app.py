@@ -1,7 +1,6 @@
 """Student-facing HTTP API (FastAPI).
 
-Exposes the existing P1/P4 capabilities (RAG + LLM) as a REST API for the
-原生 JS 学生端 frontend:
+Serves the 原生 JS 学生端 frontend with the platform's RAG + LLM capabilities:
 
     GET  /api/health
     POST /api/materials/upload      multipart: 上传课程资料 (PDF/TXT/MD)
@@ -11,7 +10,7 @@ Exposes the existing P1/P4 capabilities (RAG + LLM) as a REST API for the
 
 Design:
   * Reuses src.utils.llm_client.LLMClient, src.retrieval.* and
-    src.ingestion.* so behaviour matches the CLI path.
+    src.ingestion.*; the experiment builds its content from the same modules.
   * Citations are attached from retrieval metadata (never written by the LLM).
   * Missing API key -> the affected endpoint returns a clear 503 message
     instead of silently degrading; the health endpoint reports key status.
@@ -80,7 +79,7 @@ class ParseRequest(BaseModel):
 class AskRequest(BaseModel):
     question: str
     # 可选的「当前问答资料」：带上后 RAG 检索会限定在该资料范围内，
-    # 不带时保持全局检索（兼容旧调用与 CLI 路径）。
+    # 不带时保持全局检索（兼容不带资料上下文的直接提问）。
     material_id: str | None = None
     material_name: str | None = None
     # 「知识点讲解」页随堂提问：当前知识点名 + 正在阅读的讲解页内容。

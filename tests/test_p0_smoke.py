@@ -22,7 +22,7 @@ EXPECTED_PACKAGES = {
 }
 
 SKELETON_DIRS = (
-    "src/utils", "src/ingestion", "src/retrieval", "src/student_model",
+    "src/utils", "src/ingestion", "src/retrieval",
     "src/agent/prompts", "experiments/data",
     "experiments/results", "tests", "report",
     "data/course_materials", "data/chroma_db",
@@ -33,13 +33,10 @@ SKELETON_DIRS = (
 
 def test_config_loads_required_sections():
     cfg = load_config()
-    for section in ("platform", "llm", "paths", "mastery", "planner", "experiment"):
+    for section in ("platform", "llm", "paths", "experiment"):
         assert section in cfg
-    assert 0.0 <= float(cfg["mastery"]["alpha"]) <= 1.0
-    t = cfg["planner"]["thresholds"]
-    assert t["teach_below"] < t["practice_below"] < t["challenge_below"]
-    assert cfg["planner"]["max_steps"] > 0  # back-edge must terminate
-    assert cfg["evaluation"]["subjective_rubric_enabled"] is False  # P3 MCQ-only
+    assert cfg["agent"]["planner"] in {"llm", "rule"}   # who decides the next step
+    assert cfg["evaluation"]["subjective_rubric_enabled"] is False  # MCQ-only
     assert isinstance(cfg["experiment"]["seed"], int)
 
 
@@ -47,12 +44,10 @@ def test_config_for_log_is_secret_free_and_stable():
     snapshot = config_for_log(load_config())
     assert set(snapshot) == {
         "platform_version", "model", "embedding_model", "embedding_backend",
-        "retrieval_top_k", "mastery_alpha", "planner_mode", "llm_mode",
-        "planner_thresholds", "target_mastery", "max_steps",
-        "subjective_rubric_enabled", "seed",
+        "retrieval_top_k", "planner_mode", "subjective_rubric_enabled", "seed",
     }
     assert not any("key" in str(v).lower() for v in snapshot.values())
-    json.dumps(snapshot)  # must be serializable into events
+    json.dumps(snapshot)  # must be serializable into run metadata
 
 
 def test_config_yaml_contains_no_secret_value():
