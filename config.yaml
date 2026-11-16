@@ -97,15 +97,33 @@ agent:
   planner_max_candidates: 30   # 8 topics x 3 activities = 24, so this never bites
   planner_cache: true          # identical state -> identical decision on rerun
 
-  # Escalation when the free model answers with something unusable (truncated
+  # Escalation when the model answers with something unusable (truncated
   # reasoning, prose instead of JSON, a topic that is not in the list).  The
   # transport layer only switches models on 429/404/network errors, so a 200
   # response with a bad body would otherwise lose the decision entirely.
-  # This is still a MODEL decision - it just asks a stronger model.
-  #   null -> reuse llm.fallback_models (the paid one); [] -> disable
-  planner_escalation_models: null
+  #
+  # Listed explicitly as the SAME model as `llm.model`, and that is the point:
+  # measured 2026-11-16, deepseek-v4.1-flash-1017 spends its whole 700-token
+  # budget narrating the choice and is cut off before the JSON ("Needs concept?
+  # Has" - completion_tokens == 700 exactly).  Switching vendor did not fix it
+  # (z-ai/glm-5.3-flash also opened with prose), so escalation re-asks the same
+  # model with planner_escalation_max_tokens and the parse-error feedback.  The
+  # regular budget above stays at 700 - this only buys room on the retry.
+  #   null -> reuse llm.fallback_models; [] -> disable; list -> ask these in order
+  planner_escalation_models:
+    - deepseek/deepseek-v4.1-flash-1017
   planner_escalation_max_tokens: 1200   # truncation is a common cause; give room
-  planner_escalation_retries: 1         # one error-feedback retry on the strong model
+  planner_escalation_retries: 1         # one error-feedback retry on the escalation model
+
+  # Full passes over [primary, *planner_escalation_models] before giving up.
+  #  1 -> old behaviour: primary, escalation, then "no decision"
+  #  2 -> primary, escalation, primary again, escalation again
+  # Why loop: when every model in one pass truncates its reasoning, that is a
+  # per-call accident, not a property of the state.  The prompt and both token
+  # budgets stay exactly as configured - the second pass only asks again, and
+  # in practice that is what recovers the round.  Worst case is
+  # rounds x models x (retries + 1) calls, so this is a latency/robustness dial.
+  planner_rounds: 2
 
 evaluation:
   subjective_rubric_enabled: false

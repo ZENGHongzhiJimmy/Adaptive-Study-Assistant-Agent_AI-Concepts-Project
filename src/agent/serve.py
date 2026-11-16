@@ -204,6 +204,10 @@ class AgentService:
                 # only, never prompt text), so the page can tell "rate limited"
                 # apart from "the reply was not JSON" instead of guessing.
                 "attempts": list(getattr(planner, "attempt_log", []) or []),
+                # How many full passes over [primary, fallback] were made
+                # before giving up.  The page says "已在主/备用模型间循环 N 轮"
+                # instead of a vague "已重试".
+                "rounds": int(getattr(planner, "cycles_used", 0) or 0),
             }
             return {"plan": plan}
 

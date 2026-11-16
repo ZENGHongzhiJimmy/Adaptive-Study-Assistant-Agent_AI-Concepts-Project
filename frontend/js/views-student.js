@@ -422,7 +422,7 @@ const Student = (() => {
               <div class="focus-why-basis">
                 <span class="focus-why-k">判定依据</span>
                 ${ruleTags(next.rule)}
-                ${next.escalated ? '<span class="rule-tag">备用模型重判</span>' : ''}
+                ${next.escalated ? `<span class="rule-tag">${next.round > 1 ? `第 ${next.round} 轮重判` : '重判'}</span>` : ''}
               </div>
             </div>
           </div>
@@ -460,15 +460,22 @@ const Student = (() => {
         /* 两种情况必须分开说：没接入模型（部署问题）vs 模型本轮没给出可用决策。
            两者都不会退回规则策略，所以不能说「正在请求」搪塞过去。 */
         const noKey = roll.agentReason === 'no_api_key';
-        const extra = (roll.agentAttempts || []).length > 1
-          ? '已自动改用付费备用模型重判' : '已重试';
+        const attempts = roll.agentAttempts || [];
+        const rounds = roll.agentRounds || 1;
+        const models = new Set(attempts.map(a => a.model).filter(Boolean)).size;
+        /* 说清「试了几轮、几个模型」，而不是一句笼统的「已重试」：
+           学生看到的是主模型与备用模型来回换了两轮，就知道这不是系统卡死。 */
+        const extra = attempts.length > 1
+          ? `已在 ${models || 1} 个模型之间循环 ${rounds} 轮（共 ${attempts.length} 次调用）`
+          : '已重试';
+        const retryHint = '掌握度和错题都已保存，点「继续」会重新从主模型开始再排一次。';
         const title = noKey ? '未接入模型' : 'Agent 本轮没有给出下一步';
         const detail = noKey
           ? '下一步由大模型决定，服务端未配置模型密钥（OPENROUTER_API_KEY），因此没有可执行的学习路径。'
           : (roll.agentReason === 'call_failed'
-            ? `模型调用失败（限流、超时或网络异常），${extra}，仍没有得到结果。等一分钟再点「继续」即可，掌握度和错题都已保存。`
+            ? `模型调用失败（限流、超时或网络异常），${extra}，仍没有得到结果。等一分钟再点「继续」即可，${retryHint}`
             : roll.agentReason === 'bad_output'
-              ? `模型这次的回复不是可用的决策（常见原因是被截断或没按 JSON 输出），${extra}，仍没有得到结果。再试一次通常就好了。`
+              ? `模型这次的回复不是可用的决策（常见原因是被截断或没按 JSON 输出），${extra}，仍没有得到结果。再试一次通常就好了：${retryHint}`
               : (roll.error ? escapeHtml(roll.error)
                 : '模型没有返回可用的决策，稍后重试；系统不会用固定规则替你选一步。'));
         return `
@@ -952,7 +959,7 @@ const Student = (() => {
             <div class="basis-line">
               <span class="focus-why-k">判定依据</span>
               ${ruleTags(step.rule)}
-              ${step.escalated ? '<span class="rule-tag">备用模型重判</span>' : ''}
+              ${step.escalated ? `<span class="rule-tag">${step.round > 1 ? `第 ${step.round} 轮重判` : '重判'}</span>` : ''}
             </div>
             <div class="row mt-16">
               <button class="btn btn-primary" onclick="Student.start('${step.activity.id}','${step.topic.id}')">
@@ -967,7 +974,8 @@ const Student = (() => {
               <div style="font-weight:700">Agent 正在安排下一步…</div>
             </div>
             <div class="text-sm mt-8" style="color:var(--text-2)">
-              掌握度已经记好了。正在按最新的掌握度和错题本重新规划，通常 2–4 秒。
+              掌握度已经记好了。正在按最新的掌握度和错题本重新规划，通常 2–4 秒；
+              若模型这次没给出可用决策，会自动换到备用模型再问一轮，可能需要十几秒。
             </div>
             <div class="skeleton-line mt-16"></div>
             <div class="skeleton-line short mt-8"></div>
@@ -1862,8 +1870,8 @@ const Student = (() => {
                 : roll.pendingAgent ? (roll.agentReason === 'no_api_key'
                     ? 'Agent 未接入模型：服务端没有配置模型密钥，无法决定下一步。'
                     : roll.agentReason === 'call_failed'
-                      ? 'Agent 调用模型失败（限流或超时），暂时没有下一步，稍后重试即可。'
-                      : 'Agent 本轮没有给出下一步，请稍后重试。')
+                      ? `Agent 调用模型失败（限流或超时），已在 ${roll.agentRounds || 1} 轮内重试，暂时没有下一步，稍后重试即可。`
+                      : `Agent 本轮没有给出下一步${(roll.agentRounds || 1) > 1 ? `（主模型与备用模型已循环 ${roll.agentRounds} 轮）` : ''}，点「继续」会重新从主模型排一次。`)
                 : '本轮没有可排的活动。'}
             </div>`}
         </div>

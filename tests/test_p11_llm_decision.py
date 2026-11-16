@@ -243,9 +243,30 @@ def test_unusable_replies_yield_no_decision() -> None:
     stub = _Stub("我觉得应该先复习错题。", "还是先复习吧。")
     planner = _planner(stub)
     assert planner.choose(_topics(), 1, [], []) is None
-    assert planner.calls == 2          # retried once, then gave up
-    assert planner.failures == 1
+    # retried once per pass, and the whole chain is asked twice before giving up
+    assert planner.calls == 4
+    assert planner.cycles_used == 2
+    assert planner.failures == 2
     assert planner.unavailable_reason == "bad_output"
+
+
+def test_second_pass_recovers_a_round_lost_to_truncation() -> None:
+    """A pass lost to truncated reasoning is re-asked, not reported as a dead end."""
+    stub = _RoutedStub({
+        "free/model": ["先分析：t_gd 57%……", "还是先分析。", _reply("t_bayes", "practice")],
+        "paid/model": ["先讲解 t_gd。", "还是先讲解。"],
+    })
+    planner = _client_with_fallback(stub)
+    decision = planner.choose(_topics(), 1, [], [])
+    assert decision is not None and decision.topic_id == "t_bayes"
+    assert decision.attempt_round == 2      # the first pass produced nothing
+    assert decision.escalated is True       # so it is never sold as a first try
+    assert planner.cycles_used == 2
+    assert stub.models == [
+        "free/model", "free/model",         # pass 1: retry, then truncated
+        "paid/model", "paid/model",         # pass 1: escalation, also truncated
+        "free/model",                       # pass 2: same prompt, usable JSON
+    ]
 
 
 def test_a_bad_first_reply_is_recovered_by_the_retry() -> None:
@@ -330,12 +351,14 @@ def test_escalation_records_both_failures_when_no_model_can_decide() -> None:
     assert planner.choose(_topics(), 1, [], []) is None
     assert planner.unavailable_reason == "bad_output"
     assert planner.escalated is False
+    assert planner.cycles_used == 2
     # the message names every model that was asked, so the UI can say so
     assert "free/model" in planner.last_error and "paid/model" in planner.last_error
-    # one record per model that was asked (the retries inside a model are
-    # already folded into that model's single verdict)
-    assert [(a["model"], a["reason"]) for a in planner.attempt_log] == [
-        ("free/model", "bad_output"), ("paid/model", "bad_output")
+    # one record per model per pass (the retries inside a model are already
+    # folded into that model's single verdict), tagged with the pass number
+    assert [(a["model"], a["reason"], a["round"]) for a in planner.attempt_log] == [
+        ("free/model", "bad_output", 1), ("paid/model", "bad_output", 1),
+        ("free/model", "bad_output", 2), ("paid/model", "bad_output", 2),
     ]
 
 
@@ -365,7 +388,8 @@ def test_escalation_can_be_disabled_explicitly() -> None:
     planner = LLMPlanner(cfg, client=stub)
     assert planner.escalation_models == []
     assert planner.choose(_topics(), 1, [], []) is None
-    assert stub.models == ["free/model", "free/model"]
+    # no fallback model, so the passes only re-ask the primary (2 retries x 2)
+    assert stub.models == ["free/model"] * 4
 
 
 def test_a_throttled_free_model_still_escalates() -> None:

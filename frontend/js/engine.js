@@ -453,6 +453,8 @@ const Engine = (() => {
         /* 每次尝试的模型与失败原因（服务端只给 model + reason，不含提示词），
            用来把「限流」和「回复不是 JSON」分开说，而不是一句笼统的重试。 */
         agentAttempts: (snap.decision && snap.decision.attempts) || [],
+        /* 服务端在主模型与备用模型之间循环了几轮才放弃。1 表示只跑了一轮。 */
+        agentRounds: (snap.decision && snap.decision.rounds) || 1,
         policy: snap.policy || null,
         error: null,
       };
@@ -469,6 +471,7 @@ const Engine = (() => {
         reason: s.reason,
         stage: s.stage,
         escalated: !!s.escalated,
+        round: s.round || 1,
         nextRound: !!s.next_round,
       };
     }).filter(Boolean);

@@ -30,9 +30,9 @@ Escalation (P12): a free model sometimes answers with a truncated / off-format
 reply, which is a *content* failure, not an HTTP failure - ``LLMClient.chat``
 only switches models on 429/404/network errors, so the decision would simply be
 lost.  ``choose()`` therefore asks once, and if no usable decision came back it
-re-asks the same question on ``planner_escalation_models`` (defaults to
-``llm.fallback_models``, i.e. the paid model) with a larger token budget.  The
-model still decides; only the model changes.
+re-asks the same question on ``planner_escalation_models`` with a larger token
+budget.  The model still decides; what changes is the model and/or the room it
+gets.  Listing the primary's own id is legal - see ``_escalation_models``.
 
 Boundary note: this module owns the decision contract end to end - the facts it
 sends, the candidate list it allows, the JSON it parses and the validation that
@@ -350,6 +350,10 @@ class PlannerDecision:
     #: stronger model made the call instead.  Surfaced in the UI so a decision
     #: that only appeared after escalation is never mistaken for a first-try one.
     escalated: bool = False
+    #: Which pass over the model chain produced this decision (1 = first pass).
+    #: 2+ means the first pass was lost - usually to truncated reasoning - and
+    #: the same question was asked again rather than shipping no step.
+    attempt_round: int = 1
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -363,6 +367,9 @@ class PlannerDecision:
             "latency_ms": round(float(self.latency_ms), 2),
             "tokens": int(self.tokens),
             "escalated": bool(self.escalated),
+            # Passes over the model chain it took to get this decision. Same key
+            # as the failure envelope, so the page reads one field either way.
+            "rounds": int(self.attempt_round),
         }
 
 
@@ -420,6 +427,12 @@ class LLMPlanner:
         self.escalation_retries = max(
             0, int(agent_cfg.get("planner_escalation_retries", self.retries))
         )
+        # How many full passes over [primary, *escalation_models] to make before
+        # giving up. 1 = the old single-pass behaviour; 2 or more = re-ask the
+        # same question on the same models, which is what recovers a round lost
+        # to truncated reasoning.  Worst-case call count is
+        # rounds * len(chain) * (retries + 1), so keep it small.
+        self.rounds = max(1, int(agent_cfg.get("planner_rounds", 2)))
         # A stronger model usually needs more room for its reasoning tokens;
         # truncation is one of the reasons escalation happens in the first place.
         self.escalation_max_tokens = int(
@@ -434,6 +447,8 @@ class LLMPlanner:
         self.last_error = ""
         # True when the last successful decision came from an escalation model.
         self.escalated = False
+        # How many passes over the chain the last ``choose()`` actually used.
+        self.cycles_used = 0
         # Per-attempt record (model + reason), for the trace and the UI.  Never
         # contains prompt text - only which model answered and how it failed.
         self.attempt_log: list[dict[str, Any]] = []
@@ -447,17 +462,38 @@ class LLMPlanner:
         transport layer already uses for 429/404.  Reusing it means there is one
         list to maintain, not two that can drift.  ``agent.planner_escalation_models``
         overrides it (``[]`` disables escalation entirely).
+
+        The primary's own id is allowed in this list on purpose.  Escalation is
+        not only a change of model: it also re-asks with
+        ``planner_escalation_max_tokens`` and the parse-error feedback from the
+        failed attempt.  When the failure is "the model narrated its reasoning
+        past the token cap", swapping vendors does not help - the same model
+        with more room does.  Naming it here is explicit configuration, not a
+        silent duplicate.
         """
-        primary = str(self.model or getattr(self.client, "model", "") or "")
         raw = agent_cfg.get("planner_escalation_models")
         if raw is None:
             raw = (config.get("llm", {}) or {}).get("fallback_models", [])
         out: list[str] = []
         for item in raw or []:
             name = str(item).strip()
-            if name and name != primary and name not in out:
+            if name and name not in out:
                 out.append(name)
         return out
+
+    @property
+    def model_chain(self) -> list[str | None]:
+        """The models asked in one pass: primary first, then the fallbacks.
+
+        ``None`` in slot 0 means "whatever ``llm.model`` says" - the client
+        resolves it.  Duplicates are dropped so a pass never asks one model
+        twice in a row, which would waste a call without changing the odds.
+        """
+        chain: list[str | None] = [self.model]
+        for name in self.escalation_models:
+            if name not in chain:
+                chain.append(name)
+        return chain
 
     @property
     def available(self) -> bool:
@@ -472,19 +508,26 @@ class LLMPlanner:
     ) -> PlannerDecision | None:
         """Pick the next (topic, activity), or ``None`` when the model cannot.
 
-        Two stages, and both are still the *model* deciding:
+        The chain is asked in cycles, and every shot is still the *model*
+        deciding (the prompt and the token budget never change):
 
-        1. the configured model (usually the free one), with ``planner_retries``
-           error-feedback retries;
+        1. the configured model, with ``planner_retries`` error-feedback retries;
         2. if that produced nothing usable, the same question again on
-           ``escalation_models`` (the paid model) with a bigger token budget.
-           A free model can fail silently - HTTP 200 with a truncated or
-           off-format body - and the transport layer only switches models on
-           429/404/network errors, so without stage 2 that state would simply
-           ship no next step.
+           ``escalation_models`` (the fallback) with its own token budget;
+        3. if the whole chain still produced nothing, start over at step 1 -
+           ``planner_rounds`` full passes in total.
 
-        ``None`` is returned only after every model refused; ``unavailable_reason``
-        then names the last failure, and ``last_error`` lists every attempt.
+        Step 3 exists because a thinking model can spend its entire budget on
+        prose and never reach the JSON: that is a per-call accident, not a
+        property of the state. One pass therefore loses the round whenever both
+        models truncate on the same attempt (observed in practice), while the
+        next pass usually succeeds with the identical prompt. Re-asking is
+        cheaper and more honest than shipping no step, and "no step" stays
+        reserved for a genuinely dead endpoint or a missing key.
+
+        ``None`` is returned only after every pass refused; ``unavailable_reason``
+        then names the last failure, ``last_error`` lists every attempt, and
+        ``cycles_used`` reports how many passes were needed.
         """
         self.unavailable_reason = ""
         self.last_error = ""
@@ -518,20 +561,33 @@ class LLMPlanner:
 
         last_step = _last_activity(recent)
 
-        decision = self._attempt(
-            message, candidates, last_step,
-            model=self.model, max_tokens=self.max_tokens,
-            retries=self.retries, escalated=False,
-        )
-        if decision is None:
-            for model in self.escalation_models:
+        # One prompt, one budget, several shots: primary -> fallback ->
+        # primary -> fallback ... up to ``planner_rounds`` passes.  Nothing
+        # about the question changes between passes, so a pass that fails on
+        # truncation is worth exactly one more try.
+        chain = self.model_chain
+        decision = None
+        self.cycles_used = 1
+        for cycle in range(1, self.rounds + 1):
+            self.cycles_used = cycle
+            for index, model in enumerate(chain):
                 decision = self._attempt(
-                    message, candidates, last_step,
-                    model=model, max_tokens=self.escalation_max_tokens,
-                    retries=self.escalation_retries, escalated=True,
+                    message,
+                    candidates,
+                    last_step,
+                    model=model,
+                    max_tokens=self.max_tokens if index == 0 else self.escalation_max_tokens,
+                    retries=self.retries if index == 0 else self.escalation_retries,
+                    # Only the very first shot of the very first pass is a
+                    # "first try"; anything later is a re-judgement and the UI
+                    # says so.
+                    escalated=not (cycle == 1 and index == 0),
+                    attempt_round=cycle,
                 )
                 if decision is not None:
                     break
+            if decision is not None:
+                break
 
         if decision is None:
             reasons = [a["reason"] for a in self.attempt_log if a["reason"] != "ok"]
@@ -561,8 +617,14 @@ class LLMPlanner:
         max_tokens: int,
         retries: int,
         escalated: bool,
+        attempt_round: int = 1,
     ) -> PlannerDecision | None:
-        """One model's shot at the question (plus error-feedback retries)."""
+        """One model's shot at the question (plus error-feedback retries).
+
+        ``attempt_round`` is the pass number over the model chain, recorded on
+        every attempt so the trace and the UI can say "第 2 轮重判" instead of
+        just "escalated".
+        """
         label = str(model or getattr(self.client, "model", "") or "primary")
         system = {"role": "system", "content": DECISION_SYSTEM}
         error = ""
@@ -582,7 +644,8 @@ class LLMPlanner:
                 self.failures += 1
                 self.last_error = f"{type(exc).__name__}: {exc}"
                 self.attempt_log.append(
-                    {"model": label, "reason": "call_failed", "error": str(exc)[:200]}
+                    {"model": label, "reason": "call_failed", "error": str(exc)[:200],
+                     "round": attempt_round}
                 )
                 warnings.warn(
                     f"[decision] {label} 调用失败：{self.last_error}",
@@ -611,15 +674,19 @@ class LLMPlanner:
                 latency_ms=_as_float(getattr(response, "latency_ms", 0.0)),
                 tokens=int(getattr(response, "total_tokens", 0) or 0),
                 escalated=escalated,
+                attempt_round=attempt_round,
             )
             self.decisions += 1
-            self.attempt_log.append({"model": decision.model or label, "reason": "ok"})
+            self.attempt_log.append(
+                {"model": decision.model or label, "reason": "ok", "round": attempt_round}
+            )
             return decision
 
         self.failures += 1
         self.last_error = error or "unknown"
         self.attempt_log.append(
-            {"model": label, "reason": "bad_output", "error": error[:200]}
+            {"model": label, "reason": "bad_output", "error": error[:200],
+             "round": attempt_round}
         )
         warnings.warn(
             f"[decision] {label} 没有给出合法决策：{self.last_error}",
@@ -689,10 +756,12 @@ def apply_decision(
         "mastery": int(round(float(topic.mastery))),
         "wrong": topic.wrong_count,
         "next_round": False,
-        # True when the paid model had to step in: the UI says so, so a
-        # decision that only appeared on the second model is never read as a
-        # first-try answer from the free one.
+        # True when the first pass produced nothing: the UI says so, so a
+        # decision that only appeared on a later pass is never read as a
+        # first-try answer.
         "escalated": bool(decision.escalated),
+        # Which pass over the model chain produced this step (1 = first try).
+        "round": int(decision.attempt_round),
     }
 
     by_topic = dict(plan.get("by_topic") or {})

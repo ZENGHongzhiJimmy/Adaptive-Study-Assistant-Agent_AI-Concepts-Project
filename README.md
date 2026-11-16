@@ -196,8 +196,9 @@ js/app.js             # 应用外壳 + hash 路由（含资料模块与资料级
 
 - `config.yaml -> agent.planner`：`llm`（默认）或 `rule`（显式的演示/测试模式，不会自动切换过去）
 - 无 Key → 不构造任何"规则计划"顶替；响应 `agent.decided_by = unavailable`、`model_connected = false`、`unavailable_reason = no_api_key`，前端直接显示"未接入模型"
-- 主模型返回了"没法用的内容"（截断、散文、JSON 非法、选了不存在的知识点）→ **换兜底模型重判一次**：`agent.planner_escalation_models`（默认取 `llm.fallback_models`），token 预算提到 1200，仍由模型决策。成功时 `decision.escalated = true`，前端在"判定依据"处标出"备用模型重判"
-- 强模型仍然给不出 → 不退回 `policy.decide()`；`decided_by = unavailable`，`unavailable_reason` 为 `call_failed` 或 `bad_output`，`decision.attempts` 列出每个被问过的模型及失败原因，`next` 为空
+- 主模型返回了"没法用的内容"（截断、散文、JSON 非法、选了不存在的知识点）→ **换兜底模型重判**：`agent.planner_escalation_models`（默认取 `llm.fallback_models`），token 预算提到 1200，仍由模型决策。成功时 `decision.escalated = true`、`decision.rounds` 记第几轮，前端在"判定依据"处标出"重判"或"第 N 轮重判"
+- 一整轮（主模型 + 兜底模型）都没给出可用决策 → **再从主模型开始循环一轮**，共 `agent.planner_rounds`（默认 2）轮；提示词与两档 token 预算都不变，只是换个时机再问一次。实测：同一状态首轮两次都被截断，重问一次就拿到合法 JSON
+- 全部轮次仍然给不出 → 不退回 `policy.decide()`；`decided_by = unavailable`，`unavailable_reason` 为 `call_failed` 或 `bad_output`，`decision.attempts` 列出每次调用的模型、失败原因与轮次，`decision.rounds` 记共跑了几轮，`next` 为空
 - 计划里的 `steps` 只有模型选中的那一步；`by_topic` 只有事实（`pretest / ready / done / blocked`），不含代码猜的动作
 - 同一学情命中决策缓存 → 不再调用模型，同状态必然同决策（8 seed 重跑可比）
 - **延迟**：单次决策 4–6 s（8 个知识点约 1.4k prompt token；包含错误回灌与升级重判的平均值是 5.2 s）。为不让这几秒挡住页面，`/api/agent/observe` 支持 `decide=false`：先返回掌握度更新（约 10 ms），前端渲染结果页，再用 `/api/agent/plan` 把"下一步"补上。学生按下"完成"到看见分数是即时的
@@ -550,7 +551,7 @@ python -m experiments.plots
 
 产品层面：
 
-- **决策由 LLM 做出，因此有成本与延迟**：每次“下一步”约 1.4k–2.3k prompt token、4–6 s（v2 提示词比 v1 长，且 12% 的步数会升级到兜底模型）。链路上有三道处理：末尾强指令 + 同模型一次错误回灌 → 换兜底模型重判（`planner_escalation_models`，token 预算 1200）→ 决策缓存。全部失败时**不用规则顶替**，而是本步返回“无决策”：`agent.decided_by = unavailable`，`unavailable_reason` 取 `no_api_key` / `call_failed` / `bad_output`，`decision.attempts` 记录每个被问过的模型，`next` 为空。
+- **决策由 LLM 做出，因此有成本与延迟**：每次“下一步”约 1.4k–2.3k prompt token、4–6 s（v2 提示词比 v1 长，且部分步数会升级到兜底模型）。链路上有四道处理：末尾强指令 + 同模型一次错误回灌 → 换兜底模型重判（`planner_escalation_models`，token 预算 1200）→ 整条链再循环一轮（`planner_rounds`）→ 决策缓存。全部失败时**不用规则顶替**，而是本步返回“无决策”：`agent.decided_by = unavailable`，`unavailable_reason` 取 `no_api_key` / `call_failed` / `bad_output`，`decision.attempts` 记录每次调用的模型与轮次，`next` 为空。
 - **LLM 模型配置**：主模型为付费 `deepseek/deepseek-v4.1-flash-1017`（**钉住的日期快照**，约 $0.0002 / 次决策），`fallback_models` 配第三方 `z-ai/glm-5.3-flash` 兜底（跨厂商，避免同一家挂了两个 id 一起挂）。免费模型已停用：它是 429 限流和"返回散文/被截断"的主要来源。可在 `config.yaml -> llm` 更换；`decisions.json` 的 `meta.model` 记录决策实际用哪个模型，`meta.prompt_hash` 记录决策实际用哪版提示词，二者都进了决策缓存的键，改任一项都必须重建决策库。
 - **页面等待态**：决策的 2 秒不再阻塞结果页——`observe(decide=false)` 先落状态（~10 ms），结果页立即出现，再用 `/plan` 补上"下一步"；期间按钮转圈、结果页给骨架、页面顶部有进度条，避免用户以为点坏了。
 - **学习状态存于后端 SQLite**：掌握度、错题本、滚动轮次与决策轨迹由 `learner_*` 表持久化，浏览器只缓存最近一次 agent 快照用于渲染。清浏览器数据不丢记录，但换机器/换浏览器共享同一份状态（单用户原型，未做账号隔离）。
