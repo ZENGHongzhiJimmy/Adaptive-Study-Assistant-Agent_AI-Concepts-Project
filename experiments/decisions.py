@@ -45,6 +45,7 @@ from typing import Any, Sequence
 
 from src.agent.policy import TopicState
 from src.agent.planner_llm import LLMPlanner, PlannerDecision, legal_candidates
+from src.agent.prompts.decision import DECISION_VERSION, prompt_fingerprint
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
 DECISIONS_PATH = DATA_DIR / "decisions.json"
@@ -64,9 +65,15 @@ def state_key(
     replay would hand back a decision made from different information.  The
     model name is part of the key so switching models cannot silently reuse
     another model's choices.
+
+    The **prompt fingerprint** is part of the key for the same reason, and its
+    absence caused a real (harmless but misleading) incident: editing the
+    mechanics text left every state hashing identically, so a re-collection
+    answered from the old entries and reported "the prompt changed nothing".
     """
     payload = {
         "model": model,
+        "prompt": prompt_fingerprint(),
         "round": int(round_no),
         "visited": [str(v) for v in visited],
         "recent": [
@@ -172,6 +179,17 @@ class DecisionLog:
         self.failed_states = set(payload.get("no_decision") or [])
         for key, raw in (payload.get("decisions") or {}).items():
             self.records[key] = LoggedDecision.from_dict(raw)
+        # A log banked with different prompt text cannot answer this prompt's
+        # states.  Say it out loud instead of failing later with a bare KeyError
+        # that looks like "the collection step was skipped".
+        recorded = str(self.meta.get("prompt_hash") or "")
+        if recorded and recorded != prompt_fingerprint():
+            warnings.warn(
+                f"[decisions] {self.path.name} 是用 {self.meta.get('prompt_version') or '?'}"
+                f"（{recorded}）收集的，当前提示词是 {DECISION_VERSION}"
+                f"（{prompt_fingerprint()}）：旧条目不会命中，需要重新收集",
+                stacklevel=3,
+            )
 
     def save(self) -> None:
         if self.read_only:
@@ -299,6 +317,13 @@ class DecisionLog:
             "replay_hits": self.hits,
             "new_calls": self.misses,
             "failures": self.failures,
+            # Provenance: which prompt and model produced these decisions.  A
+            # result file that cannot name its prompt is not reproducible.
+            "prompt_version": self.meta.get("prompt_version") or DECISION_VERSION,
+            "prompt_hash": self.meta.get("prompt_hash") or prompt_fingerprint(),
+            "model": self.meta.get("model") or "",
+            "budget": self.meta.get("budget"),
+            "seeds": self.meta.get("seeds"),
         }
 
 

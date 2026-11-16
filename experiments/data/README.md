@@ -10,7 +10,8 @@ experiments/data/
 ├── parse_raw.json                  ← 产品 EXTRACT 流程读这份 PDF 的输出（20 个知识点）
 ├── bank.json                       ← 实验实际使用的题库（8 个知识点 × 7 题 = 56 题）
 ├── materials.json                  ← 两种讲解条件（LLM-only / RAG）的原文与打分
-└── decisions.json                  ← agent 的决策日志（607 条"学情 → 下一步"）
+├── decisions.json                  ← agent 的决策日志（1172 条"学情 → 下一步"）
+└── decisions_v1.json               ← 上一版提示词下的决策库（消融对照，不参与主实验）
 ```
 
 ## 1. 数据来源
@@ -76,7 +77,7 @@ python -m experiments.content --score-only  # 只重算分，不调模型
 
 ## 3.5 agent 的决策日志（decisions.json）
 
-`adaptive` 这一路不写死任何规则：每一步由 `src/agent/planner_llm.py` 让模型在合法候选里选。这个调用很贵（约 1.5k prompt token、2–4 s/步）也很随机，所以只做一次，把结果按"学情哈希 → 决策"冻结下来：
+`adaptive` 这一路不写死任何规则：每一步由 `src/agent/planner_llm.py` 让模型在合法候选里选。这个调用很贵（约 1.4k prompt token、4–6 s/步）也很随机，所以只做一次，把结果按"学情哈希 → 决策"冻结下来：
 
 ```bash
 python -m experiments.collect_decisions            # 补齐缺失的决策（可中断、可续跑）
@@ -85,13 +86,15 @@ python -m experiments.collect_decisions --dry-run  # 只回放，报告覆盖情
 
 | 项 | 值 |
 | ---- | ---- |
-| 条目 | 607 条（5 画像 × 4 种子 × 32 步，去重后） |
-| 主模型 | `deepseek/deepseek-v4.1-flash`，510 条 |
-| 升级到兜底模型 | 97 条（16.0%，首答不可用时换 `z-ai/glm-5.3-flash`） |
-| 建模失败 | 0 |
+| 条目 | 1172 条（5 画像 × 8 种子 × 32 步，去重后） |
+| 主模型 | `deepseek/deepseek-v4.1-flash-1017`，1028 条 |
+| 升级到兜底模型 | 144 条（12.3%，首答不可用时换 `z-ai/glm-5.3-flash`） |
+| 建模失败 | 0（首轮 4 个状态两个模型都没给出可用回复，重跑后正常，原哈希留在 `meta.recovered_after_retry`） |
+| 活动分布 | practice 670 / explain 274 / **review 228**（`review` 占 19.5%；v1 提示词下只有 5 条，0.8%） |
+| 提示词 | `meta.prompt_version = decision-v2`、`meta.prompt_hash` |
 | 每条内容 | `topic_id`、`activity`、一句理由、模型名、是否升级 |
 
-键是"模型看到的全部信息"的哈希（知识点状态、轮次、本轮已服务、最近 4 步、模型名），所以换成别的模型或别的提示词，旧条目自动失效而不是被静默复用。`run_experiment` 以只读方式打开它：**某个状态查不到就报错**，绝不退回 `policy.decide()`——否则实验测的就不是 agent。
+键是"模型看到的全部信息"的哈希（知识点状态、轮次、本轮已服务、最近 4 步、模型名、**提示词指纹**），所以换成别的模型、或改了提示词，旧条目自动失效而不是被静默复用。上一版的决策库改名保留为 `decisions_v1.json`，作为提示词消融的对照；结果同样保留 `results/e1_main_v1.json`。`run_experiment` 以只读方式打开它：**某个状态查不到就报错**，绝不退回 `policy.decide()`——否则实验测的就不是 agent。
 
 ## 4. 复现 / 换数据
 
@@ -109,10 +112,10 @@ python -m experiments.bank --check
 python -m experiments.content
 
 # 让 agent 为每条学情做一次决策（调模型，只跑一次；已有条目免费复用）
-python -m experiments.collect_decisions --seeds 4 --budget 32
+python -m experiments.collect_decisions --seeds 8 --budget 32
 
 # 跑实验（离线，不调用 LLM，读的是已冻结的 bank.json / materials.json / decisions.json）
-python -m experiments.run_experiment --seeds 4 --budget 32
+python -m experiments.run_experiment --seeds 8 --budget 32
 
 # 出图
 python -m experiments.plots

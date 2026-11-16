@@ -58,7 +58,12 @@ from .policy import (
     TopicState,
     is_mastered,
 )
-from .prompts.decision import DECISION_RETRY, DECISION_SYSTEM, DECISION_USER
+from .prompts.decision import (
+    DECISION_MECHANICS,
+    DECISION_RETRY,
+    DECISION_SYSTEM,
+    DECISION_USER,
+)
 
 ACTIVITIES = (EXPLAIN, PRACTICE, REVIEW)
 ACTIVITY_LABEL = {EXPLAIN: "讲解", PRACTICE: "练习", REVIEW: "复习"}
@@ -228,17 +233,12 @@ def build_user_message(
     pending_pretest = sum(1 for t in topics if not t.pretested)
     remaining = sum(1 for t in topics if t.pretested and not is_mastered(t))
 
-    goal = (
-        f"学习目标：让学习者真正掌握尽可能多的知识点"
-        f"（判定条件：掌握度 >= {_pct(MASTERED)}% 且错题清零）。\n"
-        "系统机制（选活动前请先理解）：\n"
-        f"- 讲解：建立概念。第一次读收益最大，重看收益很小；讲解最多把掌握度推到 "
-        f"{_pct(EXPLAIN_CAP)}%。\n"
-        "- 练习：本轮答对的题会从错题本移除，答错会加入；掌握度的提升取决于本轮正确率。\n"
-        "- 复习：逐题纠正错题，本身不提高掌握度；没有错题时复习不产生任何学习。\n"
-        "- 连续两次练习正确率低于 50%，说明概念还没建立，应该回到讲解。\n"
-        "请判断每个知识点现在缺的是「概念」「验证」还是「纠错」，据此选活动；"
-        "并把有限的学习机会给最需要它的知识点。"
+    # Facts of the machinery, rendered with the live policy constants so the
+    # prompt cannot drift from ``policy.py``.  Kept in ``prompts/decision.py``
+    # because it is part of the decision prompt, and because its fingerprint
+    # keys the decision log (see ``experiments/decisions.py::state_key``).
+    goal = DECISION_MECHANICS.format(
+        mastered=_pct(MASTERED), explain_cap=_pct(EXPLAIN_CAP)
     )
     served = [t.topic_id for t in topics if t.topic_id in set(visited)]
     progress = (

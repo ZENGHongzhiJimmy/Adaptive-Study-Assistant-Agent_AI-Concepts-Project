@@ -37,6 +37,7 @@ from experiments.session import run_session
 from experiments.simulator import PROFILES, SimulatedStudent
 from src.agent import policy as P
 from src.agent.planner_llm import legal_candidates
+from src.agent.prompts.decision import prompt_fingerprint
 
 
 def _quality(bank) -> dict[str, dict[str, float]]:
@@ -406,6 +407,13 @@ def test_banked_log_covers_the_committed_protocol():
     log = DecisionLog(DECISIONS_PATH, read_only=True)
     assert log.size > 0, "run `python -m experiments.collect_decisions` first"
     assert log.meta.get("model"), "log must record which model decided"
+    # ``state_key`` hashes the prompt fingerprint, so a log banked with other
+    # prompt text cannot answer this prompt's states - the replay would stop
+    # with a KeyError.  Catch it here instead, where the message is actionable.
+    assert log.meta.get("prompt_hash") == prompt_fingerprint(), (
+        "decisions.json was banked with a different decision prompt; "
+        "re-run `python -m experiments.collect_decisions`"
+    )
 
 
 # --------------------------------------------------------------------------

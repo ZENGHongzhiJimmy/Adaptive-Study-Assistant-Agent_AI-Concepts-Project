@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from src.agent.planner_llm import LLMPlanner
+from src.agent.prompts.decision import DECISION_VERSION, prompt_fingerprint
 from src.utils.config import get_config
 
 from .bank import load_bank
@@ -93,12 +94,24 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"replay ok, no_decision sessions: {failed}")
         return 0
 
-    log = DecisionLog(args.out, planner=_planner(config), attempts=3)
+    # ``attempts`` counts *rounds* of asking, and each round already costs up to
+    # two calls (reply + error-feedback retry) plus the escalation model.  Five
+    # rounds is generous on purpose: a state that fails everything truncates the
+    # session and silently spends less than the equal budget, which is a worse
+    # error than 8 extra calls.  Measured on the v2 bank: 4 of 1139 states needed
+    # a second visit and all four then answered normally.
+    log = DecisionLog(args.out, planner=_planner(config), attempts=5)
     log.meta.update({
         "purpose": "adaptive arm decisions for experiments.run_experiment",
         "model": str(config["llm"]["model"]),
         "fallback_models": list(config["llm"].get("fallback_models") or []),
         "budget": args.budget,
+        "seeds": seeds,
+        "profiles": profiles,
+        # Provenance of the prompt: ``state_key`` includes the fingerprint, so a
+        # log can only be replayed by the prompt that produced it.
+        "prompt_version": DECISION_VERSION,
+        "prompt_hash": prompt_fingerprint(),
     })
     print(f"model={config['llm']['model']}  entries already banked={log.size}", flush=True)
 

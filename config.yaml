@@ -19,7 +19,20 @@ llm:
   # PAID model on purpose. The free tier was the main source of two problems:
   # 429 throttling (50 req/day) and replies that came back truncated or as
   # prose instead of JSON. Cost is ~$0.0002 per decision at 2.5k prompt tokens.
-  model: deepseek/deepseek-v4.1-flash
+  #
+  # PINNED SNAPSHOT, not the floating alias. `deepseek/deepseek-v4.1-flash`
+  # currently resolves to the 20260910 snapshot; the dated id below is the
+  # 20261017 one. Two reasons to pin:
+  #   * a frozen experiment must not change weights because a vendor repointed
+  #     an alias between the banking run and the replay;
+  #   * its cheapest live endpoints are cheaper on both sides of the bill.
+  # Measured 2026-11-16 on /api/v1/models/{id}/endpoints (USD per token):
+  #   alias  : 36 endpoints, cheapest 5.07e-8 prompt / 2.03e-7 completion
+  #   -1017  : 49 endpoints, cheapest 3.00e-8 prompt / 1.00e-7 completion
+  # The median endpoint is 3.0e-7 / 1.2e-6 for BOTH, so the saving is cents at
+  # this scale (~1.2M tokens for a full 8-seed decision bank); pinning is the
+  # real reason, price is a tie-breaker.
+  model: deepseek/deepseek-v4.1-flash-1017
 
   # Fallback models tried in order when the primary model is unavailable
   # (retired id / 429 / network). A DIFFERENT vendor on purpose: if DeepSeek's
