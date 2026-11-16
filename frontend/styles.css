@@ -967,7 +967,9 @@ body.modal-open { overflow: hidden; }
 @keyframes agentSpin { to { transform: rotate(360deg); } }
 
 .btn[disabled] { opacity: .72; cursor: progress; }
-.btn[disabled] .agent-spin { border-top-color: #fff; border-color: rgba(255,255,255,.45); }
+/* 主按钮里的转圈必须保留一圈亮边，否则四个边框同色、旋转看起来就是静止的。
+   顺序很重要：border-color 简写会覆盖先写的 border-top-color。 */
+.btn[disabled] .agent-spin { border-color: rgba(255,255,255,.45); border-top-color: #fff; }
 
 .agent-pending { border-style: dashed; border-color: var(--border-2); }
 .skeleton-line {

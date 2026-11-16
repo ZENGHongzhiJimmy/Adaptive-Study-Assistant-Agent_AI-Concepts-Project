@@ -3,7 +3,7 @@
    本版本为「学生端」专用：
    - 学生自主上传课程资料，后端（LLM + RAG）解析并生成 quiz
    - 学习主页按「上传的课程资料文件」分类，每份资料是一个独立学习模块
-   - 选中资料后，才展示该资料的自主学习路径（Pre-test → 推荐活动 → 进度）
+   - 选中资料后，才展示该资料的自主学习路径（Pre-test → Agent 决策的下一步 → 进度）
    - 课程资料 · AI 问答：上传资料 + AI 解析问答（带引用出处）
    - 学习进度：各知识点掌握度与学习轨迹，可切换资料维度
 
@@ -194,6 +194,19 @@ const Engine = (() => {
      ========================================================= */
 
   function topics() { return state.topics; }
+
+  /* 模型的决策理由偶尔直接写知识点 id（如 t_mwjb0zwd_1），界面必须显示名称。
+     按 id 长度倒序替换，否则 t_xxx_1 会命中 t_xxx_10 的前半段。 */
+  function prettyReason(text) {
+    let out = String(text == null ? '' : text);
+    if (!out) return '';
+    state.topics
+      .filter(t => t && t.id && t.name)
+      .slice()
+      .sort((a, b) => b.id.length - a.id.length)
+      .forEach(t => { out = out.split(t.id).join(t.name); });
+    return out;
+  }
   function topic(id) { return state.topics.find(t => t.id === id); }
 
   function overallMastery(list) {
@@ -808,7 +821,7 @@ const Engine = (() => {
 
   return {
     state, init, reset, save,
-    topics, topic, overallMastery, topicContent,
+    topics, topic, prettyReason, overallMastery, topicContent,
     plan, applyResult, applyPreTest, pretestDone,
     rollPlan, stageOf,
     // Agent：唯一决策来源（/api/agent/*），前端不再自带规则

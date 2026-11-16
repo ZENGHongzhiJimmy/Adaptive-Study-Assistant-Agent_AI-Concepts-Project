@@ -4,6 +4,7 @@ The browser never decides what to do next any more.  It posts the learner state
 it knows about, and these endpoints return the agent's decision:
 
     GET  /api/agent/policy            which policy/engine is serving decisions
+    GET  /api/agent/progress/{id}     live retry progress while a decision runs
     POST /api/agent/plan              Re-plan: what is the next activity?
     POST /api/agent/observe           Update + Re-plan after one activity
     POST /api/agent/pre-test          set the starting mastery per topic
@@ -95,6 +96,21 @@ def policy_info() -> dict[str, Any]:
         "practice_gain": PRACTICE_GAIN,
         "stage_order": STAGE_ORDER,
     }
+
+
+@router.get("/progress/{material_id}")
+def progress(material_id: str) -> dict[str, Any]:
+    """Is a decision running right now, and did it already need a retry?
+
+    Polled by the page only while it is waiting for ``/plan``; the retry hint
+    is shown when ``attempts`` is non-empty, i.e. the first shot was rejected
+    and another model / pass is being asked at this moment.
+    """
+    info = get_agent().progress()
+    if info.get("material_id") and info["material_id"] != material_id:
+        # A decision for another material is in flight; do not attribute it here.
+        return {"busy": False, "material_id": "", "elapsed_ms": 0, "rounds": 0, "attempts": []}
+    return info
 
 
 @router.post("/plan")

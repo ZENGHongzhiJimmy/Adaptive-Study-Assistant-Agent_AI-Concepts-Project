@@ -24,6 +24,7 @@ import json
 import re
 import shutil
 import time
+import uuid
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -396,10 +397,10 @@ class MaterialService:
         if len(data) > 20 * 1024 * 1024:
             raise ValueError("文件过大（上限 20MB）")
 
-        mid = "m_" + re.sub(r"[^a-zA-Z0-9]", "_", str(abs(hash(name + str(len(data))))))
-        # 同一份文件重新上传：清掉上一次的删除标记，否则新上传会被当成
-        # 「已删除的资料」而拒绝解析。
-        self._removed.discard(mid)
+        # 每次上传都是一个新资料：id 不能由「文件名 + 大小」推出，否则重名文件
+        # 会落回同一个 id，命中上一次的解析缓存而看着像「上传成功但不解析」。
+        # 现在重名/重复上传都会成为独立模块，各自走一次真实的解析。
+        mid = "m_" + uuid.uuid4().hex[:12]
         path = self.upload_dir / f"{mid}{suffix}"
         path.write_bytes(data)
 

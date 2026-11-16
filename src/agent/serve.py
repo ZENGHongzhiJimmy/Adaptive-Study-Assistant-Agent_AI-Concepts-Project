@@ -93,6 +93,11 @@ class AgentService:
         self.store = store or LearnerStore()
         self.config = config
         self.planner = make_planner(config) if planner is _UNSET else planner
+        # The decision currently being made (material id + start time).  The
+        # page polls ``progress()`` while it waits so it can say "switching to
+        # the fallback model" the moment that actually happens, instead of
+        # promising it up front on every request.
+        self._deciding: dict[str, Any] = {}
         self._graph = self._build_graph()
 
     def close(self) -> None:
@@ -180,12 +185,19 @@ class AgentService:
                 # to the planner directly - otherwise the model cannot see that
                 # it just did this step and happily repeats it.
                 recent = [just_now, *recent]
-            decision = planner.choose(
-                state["topics"],
-                round_no,
-                visited,
-                recent,
-            )
+            self._deciding = {
+                "material_id": state["material_id"],
+                "started": time.perf_counter(),
+            }
+            try:
+                decision = planner.choose(
+                    state["topics"],
+                    round_no,
+                    visited,
+                    recent,
+                )
+            finally:
+                self._deciding = {}
             if decision is not None:
                 return {"plan": apply_decision(plan, decision, state["topics"])}
 
@@ -307,6 +319,34 @@ class AgentService:
         }
 
     # ------------------------------------------------------------- API
+
+    def progress(self) -> dict[str, Any]:
+        """Live view of the decision in flight, for the page's waiting state.
+
+        ``planner.attempt_log`` grows as each shot fails, so the moment the
+        first attempt is rejected this already shows a retry is running - the
+        page can say "switching models / asking again" while it is happening
+        rather than after the fact. Nothing is returned when idle.
+        """
+        if not self._deciding:
+            return {"busy": False, "material_id": "", "elapsed_ms": 0, "rounds": 0, "attempts": []}
+        planner = self.planner
+        attempts = [
+            {
+                "model": str(item.get("model") or ""),
+                "reason": str(item.get("reason") or ""),
+                "round": int(item.get("round") or 1),
+            }
+            for item in (getattr(planner, "attempt_log", []) or [])
+        ]
+        started = float(self._deciding.get("started") or 0.0)
+        return {
+            "busy": True,
+            "material_id": str(self._deciding.get("material_id") or ""),
+            "elapsed_ms": round((time.perf_counter() - started) * 1000.0) if started else 0,
+            "rounds": int(getattr(planner, "cycles_used", 0) or 0),
+            "attempts": attempts,
+        }
 
     def plan(self, material_id: str, topics_payload: Sequence[dict[str, Any]] | None = None) -> dict[str, Any]:
         """Re-plan only: what should the student do next?"""

@@ -133,16 +133,19 @@ def test_parse_after_delete_is_rejected(tmp_path: Path) -> None:
         svc.parse_material(mid)
 
 
-def test_reupload_same_file_clears_tombstone(tmp_path: Path) -> None:
+def test_reupload_same_file_is_parsed_as_a_new_material(tmp_path: Path) -> None:
+    """重名文件必须重新解析，不能复用上一次的 id 与解析缓存。
+
+    旧实现用「文件名 + 大小」推出 id，同名同大小文件会落回同一个 id，
+    解析接口直接命中缓存，界面上就表现为「能上传但不解析」。
+    """
     svc = _service(tmp_path)
-    mid = _upload_one(svc)
-    svc.delete_material(mid, material_name="lecture.txt")
-    assert mid in svc._removed
+    first = _upload_one(svc)
+    second = _upload_one(svc)
+    assert second != first, "每次上传都应是独立资料"
+    assert {first, second} <= set(svc._materials)
 
-    again = _upload_one(svc)
-    assert again == mid, "同名同大小文件应复用同一个 material id"
-    assert mid not in svc._removed, "重新上传必须清掉删除标记，否则无法解析"
-
-    out = svc.parse_material(mid)
+    out = svc.parse_material(second)
     assert out["topics"][0]["name"] == "梯度下降"
-    assert svc._parse_results[mid]["source"] == "lecture.txt"
+    assert svc._parse_results[second]["source"] == "lecture.txt"
+    assert first not in svc._parse_results, "新资料不能读取别人的解析缓存"

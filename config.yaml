@@ -1,132 +1,99 @@
-# Adaptive Study Assistant Agent - canonical non-sensitive configuration.
+# Canonical non-sensitive configuration: the single source of truth for
+# infrastructure knobs (models, paths, retrieval, chunking, seed).
 #
-# This file is the SINGLE source of truth for infrastructure knobs (models,
-# paths, retrieval, chunking, seeds). It is NOT the source of truth for the
-# evaluated method: the adaptive policy's constants live in
-# src/agent/policy.py and are deliberately not duplicated here.
-# Secrets / endpoints are the only things allowed in .env (see .env.example).
-# NEVER put a real API key here: this file is committed to GitHub.
-# Experiment freeze: do not modify this file; every run logs
-# config_for_log() (version, model, embedding, seed) into events.
+# Secrets and endpoints live in .env only; this file is committed to GitHub.
+# The evaluated method's own numbers (mastery thresholds, delta clamp) are in
+# src/agent/policy.py and are NOT duplicated here - two copies of the same
+# number is how the product and the experiment drifted apart before.
+# Every run stamps config_for_log() into its result metadata, so changing a
+# value below makes new results incomparable with the frozen ones.
 
 platform:
-  version: "0.3.0"
+  version: "0.3.0"        # recorded in every run's metadata
 
 llm:
-  # Primary model (OpenRouter id). Change this to switch models.
-  #
-  # PAID model on purpose. The free tier was the main source of two problems:
-  # 429 throttling (50 req/day) and replies that came back truncated or as
-  # prose instead of JSON. Cost is ~$0.0002 per decision at 2.5k prompt tokens.
-  #
-  # PINNED SNAPSHOT, not the floating alias. `deepseek/deepseek-v4.1-flash`
-  # currently resolves to the 20260910 snapshot; the dated id below is the
-  # 20261017 one. Two reasons to pin:
-  #   * a frozen experiment must not change weights because a vendor repointed
-  #     an alias between the banking run and the replay;
-  #   * its cheapest live endpoints are cheaper on both sides of the bill.
-  # Measured 2026-11-16 on /api/v1/models/{id}/endpoints (USD per token):
-  #   alias  : 36 endpoints, cheapest 5.07e-8 prompt / 2.03e-7 completion
-  #   -1017  : 49 endpoints, cheapest 3.00e-8 prompt / 1.00e-7 completion
-  # The median endpoint is 3.0e-7 / 1.2e-6 for BOTH, so the saving is cents at
-  # this scale (~1.2M tokens for a full 8-seed decision bank); pinning is the
-  # real reason, price is a tie-breaker.
+  # OpenRouter model id. Pinned to a dated snapshot on purpose: a floating
+  # alias can be repointed to new weights between a run and its replay, which
+  # silently breaks a frozen experiment.
+  # Paid on purpose - the free tier hit 429 daily limits and returned replies
+  # truncated or as prose instead of JSON (~$0.0002 per decision).
   model: deepseek/deepseek-v4.1-flash-1017
 
-  # Fallback models tried in order when the primary model is unavailable
-  # (retired id / 429 / network). A DIFFERENT vendor on purpose: if DeepSeek's
-  # endpoint is down, another DeepSeek id would be down with it.
-  # Measured on the same 22-topic state: 3.6-4.5 s, JSON-clean.
+  # Tried in order when the primary is unusable (retired id / 429 / network).
+  # A different vendor on purpose: if DeepSeek is down, another DeepSeek id
+  # goes down with it.
   fallback_models:
     - z-ai/glm-5.3-flash
 
-  # Key / endpoint env var names (values live in .env, never here).
+  # Variable NAMES only - the values are in .env.
   api_key_env: OPENROUTER_API_KEY
   base_url_env: OPENROUTER_BASE_URL
   default_base_url: https://openrouter.ai/api/v1
-  temperature: 0.0              # deterministic content generation for P6
-  max_tokens: 700               # grounded Teach + one structured question
-  timeout_s: 30
-  max_retries: 3
 
+  temperature: 0.0        # 0 = same input, same output
+  max_tokens: 700         # one explanation + one structured question
+  timeout_s: 30           # per request
+  max_retries: 3          # retry with backoff on 429 / timeout / connection errors
+
+# Deterministic signed-hashing bag-of-words embedder: no API key, no model
+# download, no GPU. 256 dimensions is enough for a course-sized corpus.
 embedding:
   backend: hashing
   hashing_dimension: 256
 
 paths:
-  course_materials: ./data/course_materials
-  chroma_persist_dir: ./data/chroma_db
-  sqlite_path: ./data/student_state.db
-  uploads_dir: ./data/uploads
+  course_materials: ./data/course_materials   # indexed by src/ingestion/indexer.py
+  chroma_persist_dir: ./data/chroma_db        # vector store for both indexes
+  sqlite_path: ./data/student_state.db        # learner state (topics / rolls / steps)
+  uploads_dir: ./data/uploads                 # raw files uploaded from the UI
 
-# P1 RAG indexing / retrieval.
+# Chunking and retrieval for the RAG indexes (one per source type).
 retrieval:
-  collection_name: course_chunks
-  upload_collection: student_uploads
-  chunk_size: 800
-  chunk_overlap: 100
-  top_k: 3
+  collection_name: course_chunks      # course material
+  upload_collection: student_uploads  # user uploads
+  chunk_size: 800                     # characters per chunk
+  chunk_overlap: 100                  # keeps sentences that straddle a boundary
+  top_k: 3                            # excerpts fed to one answer
 
 # ---------------------------------------------------------------------------
 # The evaluated method's numbers are NOT here.
 #
-# The adaptive policy being evaluated lives in CODE: src/agent/policy.py
-# (POLICY_ID = "adaptive-v1", MASTERED = 80, EXPLAIN_CAP = 55,
-#  PRACTICE_GAIN = 0.6, delta clamp [-10, +25], 0-100 scale).
-# Do NOT mirror those numbers here - a second copy in YAML is exactly how the
-# product and the experiment drifted apart before.
-#
-# The legacy CLI baseline that used to own `mastery:` / `planner:` in this file
-# was removed with src/agent/graph.py + src/student_model/. The experiments'
-# fixed baseline is methods.CyclicPlanner, not a configurable threshold planner.
+# The adaptive policy lives in code: src/agent/policy.py (POLICY_ID =
+# "adaptive-v1", MASTERED = 80, EXPLAIN_CAP = 55, PRACTICE_GAIN = 0.6,
+# delta clamp [-10, +25], 0-100 scale). A second copy in YAML is exactly how
+# the product and the experiment drifted apart before.
 # ---------------------------------------------------------------------------
 
 # Who picks the next activity (src/agent/planner_llm.py).
 agent:
   # "llm"  -> the model chooses among the legal candidates and writes the reason
-  # "rule" -> policy.decide() only; an explicit demo/test mode, never automatic
-  # Thresholds stay in policy.py and mastery measurement never leaves code, so
-  # the experiments still measure the same thing.  If no API key is configured,
-  # "llm" does NOT degrade to "rule": the response says decided_by=unavailable
-  # and ships no next step, because a rule-made step would misrepresent the
-  # agent.  Failed calls / unusable JSON are handled the same way.
+  # "rule" -> policy.decide() only; a demo/test switch, never the default
+  # With no API key, "llm" does NOT degrade to "rule": the response reports
+  # decided_by=unavailable and ships no step, because a rule-made step would
+  # misrepresent the agent.
   planner: "llm"
-  planner_model: null          # optional cheaper model for the decision step
-  planner_max_tokens: 700      # one JSON object, never a paragraph (thinking models need room)
-  planner_retries: 1           # ask again once if the reply was unusable
+  planner_model: null          # cheaper model for the decision step; null = llm.model
+  planner_max_tokens: 700      # one JSON object; thinking models still need room
+  planner_retries: 1           # same model, one retry with the parse error fed back
   planner_max_candidates: 30   # 8 topics x 3 activities = 24, so this never bites
   planner_cache: true          # identical state -> identical decision on rerun
 
-  # Escalation when the model answers with something unusable (truncated
-  # reasoning, prose instead of JSON, a topic that is not in the list).  The
-  # transport layer only switches models on 429/404/network errors, so a 200
-  # response with a bad body would otherwise lose the decision entirely.
-  #
-  # Listed explicitly as the SAME model as `llm.model`, and that is the point:
-  # measured 2026-11-16, deepseek-v4.1-flash-1017 spends its whole 700-token
-  # budget narrating the choice and is cut off before the JSON ("Needs concept?
-  # Has" - completion_tokens == 700 exactly).  Switching vendor did not fix it
-  # (z-ai/glm-5.3-flash also opened with prose), so escalation re-asks the same
-  # model with planner_escalation_max_tokens and the parse-error feedback.  The
-  # regular budget above stays at 700 - this only buys room on the retry.
-  #   null -> reuse llm.fallback_models; [] -> disable; list -> ask these in order
-  planner_escalation_models:
-    - deepseek/deepseek-v4.1-flash-1017
-  planner_escalation_max_tokens: 1200   # truncation is a common cause; give room
-  planner_escalation_retries: 1         # one error-feedback retry on the escalation model
-
-  # Full passes over [primary, *planner_escalation_models] before giving up.
-  #  1 -> old behaviour: primary, escalation, then "no decision"
-  #  2 -> primary, escalation, primary again, escalation again
-  # Why loop: when every model in one pass truncates its reasoning, that is a
-  # per-call accident, not a property of the state.  The prompt and both token
-  # budgets stay exactly as configured - the second pass only asks again, and
-  # in practice that is what recovers the round.  Worst case is
-  # rounds x models x (retries + 1) calls, so this is a latency/robustness dial.
-  planner_rounds: 2
+  # Re-ask here when the reply is unusable (truncated reasoning, prose instead
+  # of JSON, a topic that is not in the list). The transport only switches
+  # models on 429/404/network, so a 200 with a bad body would otherwise lose
+  # the decision. Still a model decision - it just asks a stronger model.
+  #   null -> reuse llm.fallback_models; [] -> disable
+  planner_escalation_models: null
+  planner_escalation_max_tokens: 1200   # larger budget; truncation is a common cause
+  planner_escalation_retries: 1         # one error-feedback retry on that model
+  # How many times the whole chain [primary, *escalation_models] may be
+  # re-asked: agent.planner_rounds, default 2 (left implicit because the
+  # default is the value we want). Repeating the identical prompt recovers a
+  # pass lost to truncated reasoning; worst case is rounds x len(chain) x
+  # (retries + 1) calls, so keep the number small.
 
 evaluation:
-  subjective_rubric_enabled: false
+  subjective_rubric_enabled: false   # recorded in metadata; grading is deterministic
 
 experiment:
-  seed: 42
+  seed: 42                # every experiment and the decision bank use this seed
