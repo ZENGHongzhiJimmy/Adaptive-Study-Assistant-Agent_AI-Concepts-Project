@@ -9,7 +9,6 @@
 
 # --- Agent orchestration & LLM access ---
 langgraph>=1.0,<2
-langchain-openrouter>=0.2,<0.3
 openai>=1.60,<4
 
 # --- RAG knowledge base ---

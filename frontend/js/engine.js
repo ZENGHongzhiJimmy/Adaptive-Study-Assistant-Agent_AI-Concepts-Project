@@ -22,7 +22,6 @@ const Engine = (() => {
 
   function blankState() {
     return {
-      role: 'student',
       studentName: 'student1',
       hasPreTest: false,           // 兼容字段：所有资料是否都已完成起点评估
       topics: [],                   // 全部知识点（跨资料），各自带 _materialId
@@ -629,11 +628,8 @@ const Engine = (() => {
     return ts.filter(t => !t.pretested);
   }
 
-  /* ---------------- 循环阶段 / 角色 ---------------- */
+  /* ---------------- 循环阶段 ---------------- */
   function setStage(s) { state.loopStage = s; save(); }
-  function stage() { return state.loopStage; }
-  function setRole(r) { state.role = r; save(); }
-  function role() { return state.role; }
 
   /* =========================================================
      学生自主上传资料（经后端解析生成知识点与 quiz）
@@ -793,15 +789,6 @@ const Engine = (() => {
   /* =========================================================
      路径信息（学生端语义：按资料出处分组）
      ========================================================= */
-  function published() {
-    return {
-      count: state.topics.length,
-      courses: [],
-      latest: null,
-      note: '',
-    };
-  }
-
   /* 接受资料 rec/id 或知识点数组；不传 = 全部资料 */
   function pathGroups(arg) {
     const list = Array.isArray(arg) ? arg : (arg ? topicsOf(arg) : state.topics);
@@ -824,8 +811,8 @@ const Engine = (() => {
     // Agent：唯一决策来源（/api/agent/*），前端不再自带规则
     syncAgent, decideNext, agentSnapshot, agentError, agentTopics,
     isMastered, masteredThreshold, masteryGoal, quizBank, explainPages, reviewCards, mistakesOf,
-    setStage, stage, setRole, role,
-    published, pathTopics, pathGroups, pendingTopics,
+    setStage,
+    pathTopics, pathGroups, pendingTopics,
     dismissAppend,
     uploads, addUpload, markUpload, removeUpload, ingestParsed,
     // 资料维度

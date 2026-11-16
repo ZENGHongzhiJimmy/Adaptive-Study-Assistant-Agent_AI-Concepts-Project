@@ -178,16 +178,6 @@ const UI = (() => {
     return            { key: 'low', label: '薄弱',   badge: 'badge-danger'  };
   }
 
-  /* ---------- 掌握度 → 热力图颜色 ---------- */
-  function heatColor(m) {
-    if (m >= 85) return '#15803d';
-    if (m >= 70) return '#22a55a';
-    if (m >= 55) return '#84cc16';
-    if (m >= 40) return '#f59e0b';
-    if (m >= 25) return '#f97316';
-    return '#dc2626';
-  }
-
   /* ---------- 进度条 ---------- */
   function bar(m, width) {
     const lv = level(m);
@@ -231,5 +221,5 @@ const UI = (() => {
     return `<div class="card">${head}<div class="${opts.pad === false ? '' : 'card-body'}">${inner}</div></div>`;
   }
 
-  return { icon, toast, confirm, level, heatColor, bar, ring, empty, card, P };
+  return { icon, toast, confirm, level, bar, ring, empty, card, P };
 })();

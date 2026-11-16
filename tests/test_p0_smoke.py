@@ -16,7 +16,7 @@ from src.utils.config import PROJECT_ROOT, config_for_log, load_config, resolve_
 from src.utils import llm_client as lc
 
 EXPECTED_PACKAGES = {
-    "langgraph", "langchain-openrouter", "openai", "pymupdf",
+    "langgraph", "openai", "pymupdf",
     "chromadb", "numpy",
     "scikit-learn", "matplotlib", "python-dotenv", "PyYAML", "pytest",
 }

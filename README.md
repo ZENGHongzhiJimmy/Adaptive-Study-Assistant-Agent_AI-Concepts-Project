@@ -103,10 +103,10 @@ flowchart LR
     end
 
     subgraph API["FastAPI · src/api/ · /api/*"]
-        UP["上传 · 解析<br/>upload / parse / quiz/generate"]
+        UP["上传 · 解析<br/>upload / parse"]
         QA["RAG 问答<br/>qa/ask"]
         AG["Agent 接口<br/>agent/plan · observe · pre-test"]
-        MG["资料管理<br/>health / status / progress / delete / reset"]
+        MG["资料管理<br/>health / status / delete / reset"]
     end
 
     subgraph CAP["能力层 · src/ingestion · retrieval · utils"]
@@ -322,11 +322,9 @@ npm start        # 或 node server.js
 | GET    | `/api/materials/{material_id}` | 查询资料解析状态与缓存结果（刷新后恢复）                                                                                                                                                       |
 | DELETE | `/api/materials/{material_id}` | 删除指定资料：磁盘文件、ChromaDB 向量、解析缓存、知识点与 agent 学习状态一并清理；在跑的解析线程随后会看到删除标记并丢弃结果                                                                                                     |
 | POST   | `/api/materials/reset`         | 重置全部数据（上传资料、课程材料、ChromaDB 索引与向量库文件），平台回到初始状态                                                                                                                               |
-| POST   | `/api/quiz/generate`           | 基于资料生成 quiz（可选独立入口）                                                                                                                                                        |
 | POST   | `/api/qa/ask`                  | RAG + LLM 问答，返回 `{ answer, sources, grounded, mode }`；可选 `material_id` / `material_name`（限定检索资料）与 `topic` / `focus`（知识点讲解页随堂提问：当前知识点名 + 当页讲解内容，答案按助教讲解方式组织，`mode="tutor"`） |
-| GET    | `/api/progress`                | 已解析知识点列表（掌握度由 agent 在 SQLite 中维护，见 8.1）                                                                                                                                    |
 
-`/api/quiz/generate` 与 `/api/progress` 是可选的独立入口，当前前端不调用；页面上的规划与掌握度全部来自 `/api/agent/*`。
+页面上的规划与掌握度全部来自 `/api/agent/*`。
 
 ### 8.1 Agent 接口（页面上的「下一步」唯一来源）
 

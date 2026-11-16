@@ -45,7 +45,6 @@ paths:
   course_materials: ./data/course_materials
   chroma_persist_dir: ./data/chroma_db
   sqlite_path: ./data/student_state.db
-  results_dir: ./experiments/results
   uploads_dir: ./data/uploads
 
 # P1 RAG indexing / retrieval.
@@ -134,6 +133,3 @@ evaluation:
 
 experiment:
   seed: 42
-
-logging:
-  level: INFO

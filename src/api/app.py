@@ -6,9 +6,7 @@ Exposes the existing P1/P4 capabilities (RAG + LLM) as a REST API for the
     GET  /api/health
     POST /api/materials/upload      multipart: 上传课程资料 (PDF/TXT/MD)
     POST /api/materials/parse       LLM 解析资料 -> 抽取知识点 + 生成讲解与 quiz
-    POST /api/quiz/generate         基于已上传资料生成 quiz（可选独立入口）
     POST /api/qa/ask                RAG + LLM 问答，带引用出处
-    GET  /api/progress              学习进度（SQLite 可选；前端本地状态兜底）
     *    /api/agent/*               自适应 agent（LangGraph + policy.py，见 api/agent.py）
 
 Design:
@@ -26,7 +24,7 @@ from typing import Any
 
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from ..utils.config import get_config
 from .agent import close_agent, get_agent, router as agent_router
@@ -77,12 +75,6 @@ app.include_router(agent_router)
 
 class ParseRequest(BaseModel):
     material_id: str
-
-
-class QuizRequest(BaseModel):
-    material_id: str | None = None
-    topic: str | None = None
-    count: int = Field(default=5, ge=1, le=10)
 
 
 class AskRequest(BaseModel):
@@ -179,18 +171,6 @@ def reset_materials() -> dict[str, Any]:
     return result
 
 
-@app.post("/api/quiz/generate")
-def generate_quiz(req: QuizRequest) -> dict[str, Any]:
-    svc = get_material_service()
-    try:
-        result = svc.generate_quiz(req.material_id, req.topic, req.count)
-    except svc.MissingKey as exc:
-        raise HTTPException(status_code=503, detail=str(exc))
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-    return result
-
-
 @app.post("/api/qa/ask")
 def ask(req: AskRequest) -> dict[str, Any]:
     question = (req.question or "").strip()
@@ -209,12 +189,3 @@ def ask(req: AskRequest) -> dict[str, Any]:
         raise HTTPException(status_code=503, detail=str(exc))
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=f"问答失败：{type(exc).__name__}: {exc}")
-
-
-@app.get("/api/progress")
-def progress() -> dict[str, Any]:
-    svc = get_material_service()
-    return {
-        "topics": svc.list_topics(),
-        "overall_mastery": svc.overall_mastery(),
-    }
